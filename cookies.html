@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#03050f">
+    <title>Política de Cookies · Manolit∞</title>
+    <style>
+      :root { color-scheme: dark; --bg:#03050f; --panel:#0a0c1f; --text:#e8f0ff; --muted:#a3aec4; --accent:#00ffc8; --line:#29304a; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; color: var(--text); background: radial-gradient(circle at 85% 5%, #172247 0, transparent 30%), var(--bg); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; line-height: 1.7; }
+      header, main, footer { width: min(920px, calc(100% - 36px)); margin-inline: auto; }
+      header { padding: 42px 0 24px; border-bottom: 1px solid var(--line); }
+      .brand { color: var(--accent); text-decoration: none; font-weight: 700; letter-spacing: .08em; }
+      h1 { margin: 42px 0 8px; font-size: clamp(2rem, 7vw, 4.3rem); line-height: 1; }
+      h2 { margin-top: 38px; color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: .08em; }
+      p, li { color: var(--muted); }
+      a { color: var(--accent); }
+      .meta { font-size: .78rem; color: #77839d; }
+      .table-wrap { margin: 28px 0; overflow-x: auto; border: 1px solid var(--line); }
+      table { width: 100%; min-width: 720px; border-collapse: collapse; background: rgba(10,12,31,.78); font-size: .82rem; }
+      th, td { padding: 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+      td { color: var(--muted); }
+      code { color: var(--text); }
+      .controls { padding: 20px; border: 1px solid var(--line); background: rgba(10,12,31,.78); }
+      button { padding: 10px 14px; color: #03050f; border: 0; background: var(--accent); cursor: pointer; font: 700 .78rem inherit; }
+      #cookie-reset-status { display: block; min-height: 1.5em; margin-top: 12px; color: var(--muted); }
+      footer { margin-top: 54px; padding: 24px 0 38px; border-top: 1px solid var(--line); color: #77839d; font-size: .78rem; }
+    </style>
+  </head>
+  <body>
+    <header><a class="brand" href="/">MANOLIT∞ · MOTOR CUÁNTICO CLIMÁTICO</a></header>
+    <main>
+      <h1>Política de Cookies</h1>
+      <p class="meta">Última actualización: 14 de julio de 2026</p>
+
+      <h2>1. Uso de almacenamiento local</h2>
+      <p>Actualmente Manolit∞ no instala cookies publicitarias ni de analítica. Utiliza almacenamiento del navegador para recordar la decisión de consentimiento. Las simulaciones se procesan en la sesión del navegador y no se guardan en una base de datos propia.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Clave o estado</th><th>Tecnología</th><th>Finalidad</th><th>Duración</th><th>Tipo</th></tr></thead>
+          <tbody>
+            <tr><td><code>cookies_status</code></td><td>localStorage</td><td>Recordar si la persona usuaria aceptó o rechazó el almacenamiento técnico.</td><td>Hasta que se elimine desde el navegador o mediante el control de esta página.</td><td>Técnica</td></tr>
+            <tr><td>Estado cuántico de sesión</td><td>Memoria temporal del navegador</td><td>Mantener los parámetros y resultados de la simulación mientras la página permanece abierta.</td><td>Finaliza al recargar o cerrar la sesión de la página.</td><td>Técnica y funcional</td></tr>
+            <tr><td>Caché HTTP</td><td>Caché del navegador y red de entrega</td><td>Mejorar la carga de archivos estáticos y reducir transferencias repetidas.</td><td>Según las cabeceras técnicas y la configuración del navegador.</td><td>Técnica</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>2. Aceptar o rechazar</h2>
+      <p>El banner permite aceptar o rechazar. Ambas decisiones se guardan únicamente para evitar mostrar el aviso en cada visita. Rechazar no activa almacenamiento no esencial ni impide acceder al simulador.</p>
+
+      <h2>3. Cambiar la elección</h2>
+      <div class="controls">
+        <p>Puede borrar la preferencia guardada. El banner volverá a mostrarse al regresar a la página principal.</p>
+        <button id="reset-cookie-choice" type="button">RESTABLECER ELECCIÓN</button>
+        <span id="cookie-reset-status" role="status" aria-live="polite"></span>
+      </div>
+
+      <h2>4. Configuración del navegador</h2>
+      <p>También puede eliminar o bloquear cookies y almacenamiento local desde la configuración de su navegador. El bloqueo total del almacenamiento puede hacer que el banner vuelva a aparecer en visitas posteriores.</p>
+    </main>
+    <footer><a href="/aviso-legal.html">Aviso legal</a> · <a href="/privacidad.html">Privacidad</a> · © 2026 Aleksandre Dabrundashvili</footer>
+    <script>
+      document.getElementById('reset-cookie-choice').addEventListener('click', () => {
+        const status = document.getElementById('cookie-reset-status');
+        try {
+          localStorage.removeItem('cookies_status');
+          status.textContent = 'Elección eliminada correctamente.';
+        } catch (error) {
+          status.textContent = 'El navegador no permite modificar el almacenamiento local.';
+        }
+      });
+    </script>
+  </body>
+</html>
