@@ -1,3 +1,16 @@
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+            console.log('Service Worker registrado:', registration.scope);
+        })
+        .catch(err => {
+            console.error('Fallo en el registro del Service Worker:', err);
+        });
+    });
+}
+
+// Aquí debajo continuaría el resto de tu lógica de la aplicación...
 'use strict';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
