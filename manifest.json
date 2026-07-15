@@ -2,7 +2,7 @@
   "name": "Manolito Weather App",
   "short_name": "Manolito",
   "description": "Aplicación de predicción meteorológica con procesamiento cuántico.",
-  "start_url": "/index.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
