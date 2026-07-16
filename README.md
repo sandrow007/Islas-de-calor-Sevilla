@@ -1,4 +1,4 @@
-https://manolito-infinito-sevilla.netlify.app/
+http://manolitoinfinito.space
 Manolit∞ — Sevilla Quantum Dashboard
 El puente indispensable entre los retos climáticos de hoy y la informática cuántica del mañana.
  (Sustituye por tu enlace real)
