@@ -1,4 +1,4 @@
-/*
+
  * MANOLITO AGENT v8.0 - VERDE QUE TE QUIERO VERDE
  * Licencia: MIT - Open Source, pa' to'l mundo.
  * Manolito, el ingeniero sevillano, con más guasa que la feria.
