@@ -7,7 +7,6 @@
    - Traducción MyMemory + Google Translate fallback
    - Open Source 100%, autoinyectable
    - No toca nada del HTML original
-   - AHORA CON INTERFAZ DE CHAT FLOTANTE
    ============================================================================= */
 
 const ManolitoChat = {
@@ -508,9 +507,9 @@ const ManolitoChat = {
   },
 };
 
-// ============================================================================
-// INTERFAZ DE CHAT FLOTANTE — se auto-inyecta, no toca el HTML
-// ============================================================================
+/* ==========================================================================
+   INTERFAZ DE CHAT FLOTANTE (auto‑inyectable)
+   ========================================================================== */
 (function() {
   if (document.getElementById('manolito-chat-root')) return;
 
@@ -606,5 +605,5 @@ const ManolitoChat = {
     if (e.key === 'Enter') sendMessage();
   });
 
-  console.log('🤖 Manolito chat flotante activado. ¡Pregúntale lo que quieras!');
+  console.log('✅ Manolito chat flotante activado. ¡Pregúntale lo que quieras!');
 })();
