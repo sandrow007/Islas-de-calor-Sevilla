@@ -1,4 +1,4 @@
-http://manolitoinfinito.space
+(https://www.islasdecalorsevilla.com)
 Manolit∞ — Sevilla Quantum Dashboard
 El puente indispensable entre los retos climáticos de hoy y la informática cuántica del mañana.
  (Sustituye por tu enlace real)
