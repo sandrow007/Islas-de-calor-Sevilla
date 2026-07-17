@@ -1,89 +1,84 @@
-/* =============================================================================
-   MANOLITO INFINITO v4.2 — IA sevillana + WEB READER
-   ============================================================================= */
+/**
+ * MANOLITO ENGINE v5.0 - Professional Agent Architecture
+ * - DOM Sanitizer (Web Parsing)
+ * - Persistent State Manager
+ * - Async Agent Logic
+ */
 
-const ManolitoChat = {
-  historialIA: [],
+class ManolitoAgent {
+  constructor() {
+    this.memory = JSON.parse(localStorage.getItem('manolito_v5_ctx') || '[]');
+    this.initUI();
+  }
 
-  // Módulo de lectura web
-  async _leerWeb(url) {
+  // Limpiador de HTML profesional (quita basura de webs antes de leer)
+  async _cleanWebText(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const scripts = doc.querySelectorAll('script, style, nav, footer, header, .ads, .sidebar');
+    scripts.forEach(el => el.remove());
+    return doc.body.innerText.replace(/\s+/g, ' ').substring(0, 4000);
+  }
+
+  async fetchWeb(url) {
     try {
-      const res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
+      const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
       const data = await res.json();
-      return data.contents.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000);
+      return await this._cleanWebText(data.contents);
     } catch (e) {
-      return "Illo, esa web no se deja leer o está caída.";
+      return "Error: No se pudo parsear el dominio.";
     }
-  },
+  }
 
-  // Motor principal
-  async responder(mensaje) {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const match = mensaje.match(urlRegex);
-    let contexto = "";
+  async process(input) {
+    const url = input.match(/(https?:\/\/[^\s]+)/g);
+    let context = "";
+    if (url) context = await this.fetchWeb(url[0]);
 
-    if (match) {
-      contexto = await this._leerWeb(match[0]);
-    }
+    const payload = { 
+      role: 'user', 
+      content: context ? `CONTEXTO WEB: ${context}\n\nPREGUNTA: ${input}` : input 
+    };
 
-    const promptFinal = contexto 
-      ? `Web analizada: ${contexto}. Pregunta: ${mensaje}` 
-      : mensaje;
-
-    this.historialIA.push({ role: 'user', content: promptFinal });
-    if (this.historialIA.length > 10) this.historialIA.shift();
+    this.memory.push(payload);
+    if (this.memory.length > 20) this.memory.shift();
 
     try {
-      const res = await fetch('https://text.pollinations.ai/openai', {
+      const response = await fetch('https://text.pollinations.ai/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'system', content: 'Eres Manolito, ingeniero sevillano. Responde siempre en andaluz, directo, sin emojis y usando la información de la web si te la paso.' }].concat(this.historialIA),
-          seed: Math.floor(Math.random() * 999999)
+          messages: [{ role: 'system', content: 'Eres Manolito, ingeniero experto. Directo, analítico, andaluz, sin florituras. Si hay contexto web, úsalo como fuente primaria.' }].concat(this.memory),
+          seed: 999
         })
       });
-      const respuesta = await res.text();
-      this.historialIA.push({ role: 'assistant', content: respuesta });
-      return respuesta;
+      const text = await response.text();
+      this.memory.push({ role: 'assistant', content: text });
+      localStorage.setItem('manolito_v5_ctx', JSON.stringify(this.memory));
+      return text;
     } catch (e) {
-      return "Compadre, los servidores están de resaca. Prueba otra vez.";
+      return "Servidor ocupado. Inténtalo otra vez.";
     }
   }
-};
 
-/* ==========================================================================
-   INTERFAZ DE CHAT (Auto-inyectable)
-   ========================================================================== */
-(function() {
-  if (document.getElementById('manolito-chat-root')) return;
+  initUI() {
+    if (document.getElementById('m-root')) return;
+    const root = document.createElement('div');
+    root.id = 'm-root';
+    root.innerHTML = `<style>#m-root{position:fixed;bottom:20px;right:20px;z-index:99999;}.m-fab{width:60px;height:60px;background:#000;border:2px solid #0f0;border-radius:50%;cursor:pointer;color:#0f0;}#m-panel{display:none;width:350px;height:500px;background:#000;border:2px solid #0f0;flex-direction:column;position:absolute;bottom:70px;right:0;border-radius:8px;}#m-log{flex:1;overflow-y:auto;padding:10px;color:#fff;font-size:12px;}#m-cmd{background:#111;border:none;color:#0f0;padding:10px;outline:none;}</style>
+    <button class="m-fab" id="m-t">M</button><div id="m-panel"><div id="m-log"></div><input id="m-cmd" placeholder="Comando/URL..."></div>`;
+    document.body.appendChild(root);
+    document.getElementById('m-t').onclick = () => document.getElementById('m-panel').style.display = document.getElementById('m-panel').style.display === 'flex' ? 'none' : 'flex';
+    document.getElementById('m-cmd').onkeydown = async (e) => {
+      if (e.key === 'Enter') {
+        const cmd = e.target.value;
+        document.getElementById('m-log').innerHTML += `<div style="color:#aaa">> ${cmd}</div>`;
+        e.target.value = '';
+        const res = await this.process(cmd);
+        document.getElementById('m-log').innerHTML += `<div style="margin-bottom:10px;">${res}</div>`;
+      }
+    };
+  }
+}
 
-  const root = document.createElement('div');
-  root.id = 'manolito-chat-root';
-  root.innerHTML = `
-    <style>
-      .manolito-btn { position: fixed; bottom: 20px; right: 20px; z-index: 9999; width: 50px; height: 50px; border-radius: 50%; background: #00f0ff; border: none; cursor: pointer; }
-      .manolito-window { position: fixed; bottom: 80px; right: 20px; z-index: 9998; width: 300px; height: 400px; background: #000; border: 1px solid #00f0ff; display: none; flex-direction: column; }
-    </style>
-    <button class="manolito-btn" id="manolito-toggle">M</button>
-    <div class="manolito-window" id="manolito-window">
-      <div id="manolito-msg" style="flex:1; overflow-y:auto; padding:10px; color:#fff;"></div>
-      <input type="text" id="manolito-input" style="width:100%;" placeholder="Pregunta o pega URL...">
-    </div>
-  `;
-  document.body.appendChild(root);
-
-  document.getElementById('manolito-toggle').onclick = () => {
-    const w = document.getElementById('manolito-window');
-    w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
-  };
-
-  document.getElementById('manolito-input').onkeypress = async (e) => {
-    if (e.key === 'Enter') {
-      const input = e.target.value;
-      document.getElementById('manolito-msg').innerHTML += `<div>Tú: ${input}</div>`;
-      e.target.value = '';
-      const res = await ManolitoChat.responder(input);
-      document.getElementById('manolito-msg').innerHTML += `<div>Manolito: ${res}</div>`;
-    }
-  };
-})();
+new ManolitoAgent();
