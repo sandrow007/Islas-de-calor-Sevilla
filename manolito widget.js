@@ -1,8 +1,8 @@
 /**
  * MANOLITO ENGINE v5.1 - Professional Agent Architecture (fixed & hardened)
- * - Auto-instancia al cargar (antes NUNCA se llamaba `new ManolitoAgent()`, por eso no se desplegaba)
- * - Shadow DOM: aislado de cualquier CSS de la web anfitriona, se puede pegar en cualquier sitio
- * - Streaming real de la respuesta: no se corta a medias
+ * - Auto-instancia al cargar
+ * - Shadow DOM: aislado de cualquier CSS de la web anfitriona
+ * - Streaming real de la respuesta
  * - Reintento automático (1 vez) si la API falla o se cae
  * - Seguro si el script se carga antes de que exista <body>
  */
@@ -62,12 +62,13 @@
       }
     }
 
-    // Llamada a la API con reintento automático (1 vez) y timeout para que nunca se quede colgado
+    // Llamada a la API corregida y con 40 segundos de tiempo de espera
     async _callModel(messages, attempt = 0) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
+      const timeout = setTimeout(() => controller.abort(), 40000);
       try {
-        const response = await fetch('https://text.pollinations.ai/openai', {
+        // AQUÍ ESTÁ EL ARREGLO: URL base para que devuelva texto humano y no código roto
+        const response = await fetch('https://text.pollinations.ai/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
@@ -202,6 +203,6 @@
     }
   }
 
-  // AQUÍ estaba el fallo: antes nunca se llamaba. Ahora se auto-instancia al cargar el script.
+  // Instancia el motor
   window.Manolito = new ManolitoAgent();
 })();
