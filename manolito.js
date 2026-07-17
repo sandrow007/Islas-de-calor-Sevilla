@@ -1,37 +1,46 @@
+/* MANOLITO AGENT v7.0 - DEFINITIVO */
 const ManolitoChat = {
-  historialIA: JSON.parse(localStorage.getItem('manolito_ctx') || '[]'),
+  memory: JSON.parse(localStorage.getItem('manolito_ctx') || '[]'),
+
+  async _cleanWebText(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    doc.querySelectorAll('script, style, nav, footer, header, .ads, .sidebar, iframe').forEach(el => el.remove());
+    return doc.body.innerText.replace(/\s+/g, ' ').substring(0, 3500);
+  },
+
   async _leerWeb(url) {
     try {
       const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
       const data = await res.json();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(data.contents, 'text/html');
-      doc.querySelectorAll('script, style, nav, footer, header, .ads, .sidebar, iframe').forEach(el => el.remove());
-      return doc.body.innerText.replace(/\s+/g, ' ').substring(0, 3500);
-    } catch (e) { return "Esa web está cerrada, miarma."; }
+      return await this._cleanWebText(data.contents);
+    } catch (e) { return "Esa web está más cerrada que el barco del arroz, miarma."; }
   },
+
   async responder(mensaje) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const match = mensaje.match(urlRegex);
     let contexto = "";
     if (match) contexto = await this._leerWeb(match[0]);
+
     const payload = { role: 'user', content: contexto ? `Web analizada: ${contexto}. Pregunta: ${mensaje}` : mensaje };
-    this.historialIA.push(payload);
-    if (this.historialIA.length > 15) this.historialIA.shift();
+    this.memory.push(payload);
+    if (this.memory.length > 15) this.memory.shift();
+
     try {
       const response = await fetch('https://text.pollinations.ai/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'system', content: "Eres Manolito, ingeniero experto en Sevilla. Directo, serio, profesional, sin emojis, con guasa. Si hay datos web, analízalos. Si te piden una burrada, suelta un 'vaya tela' elegante y corrige con datos." }].concat(this.historialIA),
+          messages: [{ role: 'system', content: "Eres Manolito, el ingeniero sevillano. Directo, serio, profesional, sin emojis y con guasa natural. Si hay datos web, analízalos con rigor. Si te piden una burrada, suelta un 'vaya tela' elegante y corrige con datos." }].concat(this.memory),
           seed: 777
         })
       });
       const text = await response.text();
-      this.historialIA.push({ role: 'assistant', content: text });
-      localStorage.setItem('manolito_ctx', JSON.stringify(this.historialIA));
+      this.memory.push({ role: 'assistant', content: text });
+      localStorage.setItem('manolito_ctx', JSON.stringify(this.memory));
       return text;
-    } catch (e) { return "Servidores de resaca, compadre."; }
+    } catch (e) { return "Servidores de resaca, compadre. Prueba en un rato."; }
   }
 };
 
@@ -53,7 +62,8 @@ window.ManolitoChat = ManolitoChat;
   document.getElementById('m-t').onclick = () => { const p = document.getElementById('m-p'); p.style.display = p.style.display === 'flex' ? 'none' : 'flex'; };
   document.getElementById('m-i').onkeydown = async (e) => {
     if (e.key === 'Enter') {
-      const v = e.target.value; if(!v) return;
+      const v = e.target.value;
+      if(!v) return;
       document.getElementById('m-l').innerHTML += `<div style="margin-bottom:8px; opacity:0.6">> ${v}</div>`;
       e.target.value = '';
       const r = await ManolitoChat.responder(v);
