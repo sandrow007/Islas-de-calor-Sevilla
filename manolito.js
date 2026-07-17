@@ -512,5 +512,4 @@ const ManolitoChat = {
   },
 };
 
-console.log('✅ Manolito Infinito v4.0 cargado correctamente — 45+ idiomas');
-console.log('💬 Usa: ManolitoChat.responder("tu mensaje").then(console.log)');
+
