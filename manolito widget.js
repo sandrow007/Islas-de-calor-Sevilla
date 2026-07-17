@@ -7,7 +7,6 @@
  */
 (function () {
   'use strict';
-
   if (window.__manolitoLoaded) return;
   window.__manolitoLoaded = true;
 
