@@ -51,6 +51,20 @@
       } catch (e) { return ''; }
     }
 
+    // ---- Lee la PROPIA pagina donde vive el widget, en vivo, cada vez que se pregunta ----
+    // Antes Manolito solo miraba una web si le pegabas una URL a mano; nunca se fijaba en la
+    // pagina donde ya esta metido. Ahora captura el texto visible del propio dashboard
+    // (temperaturas, indices, resultados del motor cuantico, lo que sea que haya en pantalla)
+    // en el momento exacto de la pregunta, para que los numeros esten siempre al dia.
+    _getPageContext() {
+      try {
+        const clone = document.body.cloneNode(true);
+        clone.querySelectorAll('#manolito-host, script, style, noscript').forEach(el => el.remove());
+        const text = clone.innerText || clone.textContent || '';
+        return text.replace(/\s+/g, ' ').trim().substring(0, 6000);
+      } catch (e) { return ''; }
+    }
+
     // ---- Extrae SOLO el texto útil de la respuesta, venga como venga ----
     // Antes: se mostraba response.text() a pelo -> salía el JSON completo + el campo "reasoning".
     // Ahora: intenta parsear como JSON tipo OpenAI (choices[0].message.content); si no es JSON, usa el texto tal cual.
@@ -87,12 +101,18 @@
 
     async process(input) {
       const urlMatch = input.match(/(https?:\/\/[^\s]+)/g);
-      let context = '';
-      if (urlMatch) context = await this.fetchWeb(urlMatch[0]);
+      const pageContext = this._getPageContext();
+      let externalContext = '';
+      if (urlMatch) externalContext = await this.fetchWeb(urlMatch[0]);
+
+      let contentParts = [];
+      if (pageContext) contentParts.push(`DATOS ACTUALES DE ESTA PAGINA (${location.href}): ${pageContext}`);
+      if (externalContext) contentParts.push(`CONTEXTO DE LA URL EXTERNA CITADA: ${externalContext}`);
+      contentParts.push(`PREGUNTA: ${input}`);
 
       const payload = {
         role: 'user',
-        content: context ? `CONTEXTO WEB: ${context}\n\nPREGUNTA: ${input}` : input
+        content: contentParts.join('\n\n')
       };
       this.memory.push(payload);
       if (this.memory.length > 20) this.memory.shift();
@@ -100,14 +120,33 @@
       const messages = [
         {
           role: 'system',
-          content: 'Eres Manolito, un ingeniero sevillano con mucha calle y mucho oficio. ' +
-            'Hablas SIEMPRE en andaluz cerrado y natural: usa expresiones reales como "illo", "quillo", ' +
-            '"anda ya", "no te digo ta", "ozu", "mi arma" cuando venga a cuento, aspira o come alguna "s" ' +
-            'al escribir como se hablaria en Sevilla, y se cercano y campechano, pero sin caer en la caricatura ' +
-            'ni exagerar en cada frase. Eres directo, analitico y resolutivo, sin floriruras ni rodeos. ' +
+          content: 'Eres Manolito, un ingeniero sevillano con mucha calle y mucho oficio, y hablas varios ' +
+            'idiomas. REGLA DE IDIOMA: responde SIEMPRE en el mismo idioma en que te escriba el usuario ' +
+            '(ingles, frances, italiano, portugues, aleman, lo que sea) con naturalidad de nativo, sin acento ' +
+            'forzado ni traducir expresiones andaluzas de forma literal a otro idioma. ' +
+            'PERO: si el usuario te escribe en ESPAÑOL, tu idioma de casa es el andaluz sevillano cerrao, y ' +
+            'escribes reflejando como suena de verdad, siguiendo estas reglas de forma natural y sin pasarte: ' +
+            '(1) aspira o come la "s" final de palabra cuando cae antes de consonante o al final de frase: ' +
+            '"lo dato" en vez de "los datos", "ehtamo" en vez de "estamos"; (2) elimina la "d" intervocalica en ' +
+            'participios y palabras comunes: "cansao", "pescao", "to" (todo), "na" (nada), "pa" (para); ' +
+            '(3) usa vocabulario real sevillano donde encaje, sin forzarlo en cada frase: "illo", "quillo", ' +
+            '"ozu", "mi arma", "pisha", "compae", "arma la mundial", "no te digo na", "venga vale", "and ya"; ' +
+            '(4) contrae expresiones como "para que" -> "pa que", "voy a" -> "vo a"; (5) manten la gramatica ' +
+            'clara y legible: el objetivo es sonar a un sevillano real hablando, no una caricatura forzada ni ' +
+            'un texto ilegible. Ejemplo de tono correcto: "Illo, mira, lo dato de la pagina dicen que la ' +
+            'temperatura ehta a 34 grado ahora mismo, y el modelo cuantico predice que pa mañana subira un ' +
+            'poco mas. Vamo a ve si acierta." ' +
+            'En cualquier idioma eres directo, analitico y resolutivo, sin florituras ni rodeos. ' +
             'Responde SIEMPRE solo con la respuesta final en texto plano, nunca en JSON, nunca mostrando tu ' +
             'razonamiento interno ni metadatos de ningun tipo, y siempre completa, sin cortar la idea a medias. ' +
-            'Si hay contexto web, usalo como fuente principal.'
+            'En cada mensaje del usuario recibiras, si estan disponibles, los DATOS ACTUALES DE ESTA PAGINA: son ' +
+            'el contenido real y en vivo de la web donde tu widget esta insertado ahora mismo (temperaturas, ' +
+            'indices, resultados del motor cuantico, mapas, lo que haya en pantalla). Usalos SIEMPRE como fuente ' +
+            'principal para responder sobre "esta web", "esta pagina", "lo que se ve aqui" o cualquier medida o ' +
+            'calculo mostrado en el dashboard. NUNCA pidas un enlace para revisar algo que ya esta en esos datos: ' +
+            'ya estas viendo la pagina, no hace falta que te la manden. Solo pide una URL si el usuario te habla ' +
+            'de OTRA web distinta a la que estas viendo. Si el dato concreto que preguntan no aparece en el ' +
+            'contexto, dilo con naturalidad en vez de inventarlo.'
         }
       ].concat(this.memory);
 
