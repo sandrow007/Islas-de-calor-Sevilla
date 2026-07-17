@@ -206,3 +206,4 @@
 
   window.Manolito = new ManolitoAgent();
 })();
+document.head.appendChild(document.createElement('script')).src = 'chat-injector.js';
