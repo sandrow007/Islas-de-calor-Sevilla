@@ -1,15 +1,13 @@
 /**
- * MANOLITO ENGINE v5.1 - Professional Agent Architecture (fixed & hardened)
- * - Auto-instancia al cargar (antes NUNCA se llamaba `new ManolitoAgent()`, por eso no se desplegaba)
- * - Shadow DOM: aislado de cualquier CSS de la web anfitriona, se puede pegar en cualquier sitio
- * - Streaming real de la respuesta: no se corta a medias
- * - Reintento automático (1 vez) si la API falla o se cae
- * - Seguro si el script se carga antes de que exista <body>
+ * MANOLITO ENGINE v5.2 - Professional Agent Architecture (Fixed JSON Parse)
+ * - Auto-instancia al cargar
+ * - Shadow DOM: aislado de cualquier CSS de la web anfitriona
+ * - Streaming y reintento automático blindado
+ * - Parseo correcto de la respuesta JSON para extraer el texto puro
  */
 (function () {
   'use strict';
 
-  // Evita cargarlo dos veces en la misma página
   if (window.__manolitoLoaded) return;
   window.__manolitoLoaded = true;
 
@@ -37,11 +35,10 @@
       try {
         localStorage.setItem('manolito_v5_ctx', JSON.stringify(this.memory));
       } catch (e) {
-        // localStorage lleno o bloqueado: seguimos funcionando solo en memoria RAM
+        // localStorage lleno o bloqueado
       }
     }
 
-    // Limpiador de HTML profesional (quita basura de webs antes de leer)
     async _cleanWebText(html) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
@@ -62,20 +59,27 @@
       }
     }
 
-    // Llamada a la API con reintento automático (1 vez) y timeout para que nunca se quede colgado
+    // EL ARREGLO ESTÁ AQUÍ: URL correcta y desempaquetado de JSON
     async _callModel(messages, attempt = 0) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
+      const timeout = setTimeout(() => controller.abort(), 40000);
       try {
         const response = await fetch('https://text.pollinations.ai/openai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
-          body: JSON.stringify({ messages, seed: Math.floor(Math.random() * 100000) })
+          body: JSON.stringify({ 
+            messages, 
+            model: 'openai',
+            seed: Math.floor(Math.random() * 100000) 
+          })
         });
         clearTimeout(timeout);
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        return await response.text();
+        
+        // Convertimos el JSON a objeto y extraemos solo la respuesta humana
+        const data = await response.json();
+        return data.choices[0].message.content;
       } catch (e) {
         clearTimeout(timeout);
         if (attempt < 1) return this._callModel(messages, attempt + 1);
@@ -119,7 +123,6 @@
       host.style.cssText = 'all:initial;position:fixed;bottom:20px;right:20px;z-index:2147483647;';
       document.body.appendChild(host);
 
-      // Shadow DOM: aísla el widget de cualquier CSS de la página anfitriona
       const shadow = host.attachShadow({ mode: 'open' });
       shadow.innerHTML = `
         <style>
@@ -178,7 +181,7 @@
         log.insertAdjacentHTML('beforeend', `<div class="u">&gt; ${this._escape(cmd)}</div>`);
         const typing = document.createElement('div');
         typing.id = 'm-typing';
-        typing.textContent = 'Manolito está pensando...';
+        typing.textContent = 'Manolito está procesando...';
         log.appendChild(typing);
         log.scrollTop = log.scrollHeight;
 
@@ -202,6 +205,5 @@
     }
   }
 
-  // AQUÍ estaba el fallo: antes nunca se llamaba. Ahora se auto-instancia al cargar el script.
   window.Manolito = new ManolitoAgent();
 })();
