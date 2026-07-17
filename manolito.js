@@ -1,15 +1,13 @@
 /**
- * MANOLITO ENGINE v5.1 - Professional Agent Architecture (fixed & hardened)
- * - Auto-instancia al cargar (antes NUNCA se llamaba `new ManolitoAgent()`, por eso no se desplegaba)
- * - Shadow DOM: aislado de cualquier CSS de la web anfitriona, se puede pegar en cualquier sitio
- * - Streaming real de la respuesta: no se corta a medias
- * - Reintento automático (1 vez) si la API falla o se cae
- * - Seguro si el script se carga antes de que exista <body>
+ * MANOLITO ENGINE v5.2 - Professional Agent Architecture
+ * - Extrae SOLO el texto de la respuesta (antes se mostraba el JSON crudo completo, incluido el "reasoning" interno del modelo)
+ * - Estilo acorde a la identidad visual de Manolit∞: cian / violeta / magenta sobre fondo azul-marino con cristal esmerilado
+ * - Acento andaluz reforzado explícitamente en el prompt de sistema
+ * - Shadow DOM: aislado de cualquier CSS de la web anfitriona
+ * - Streaming real vía reintento + timeout: la respuesta nunca se corta a medias
  */
 (function () {
   'use strict';
-
-  // Evita cargarlo dos veces en la misma página
   if (window.__manolitoLoaded) return;
   window.__manolitoLoaded = true;
 
@@ -26,22 +24,15 @@
     }
 
     _loadMemory() {
-      try {
-        return JSON.parse(localStorage.getItem('manolito_v5_ctx') || '[]');
-      } catch (e) {
-        return [];
-      }
+      try { return JSON.parse(localStorage.getItem('manolito_v5_ctx') || '[]'); }
+      catch (e) { return []; }
     }
 
     _saveMemory() {
-      try {
-        localStorage.setItem('manolito_v5_ctx', JSON.stringify(this.memory));
-      } catch (e) {
-        // localStorage lleno o bloqueado: seguimos funcionando solo en memoria RAM
-      }
+      try { localStorage.setItem('manolito_v5_ctx', JSON.stringify(this.memory)); }
+      catch (e) { /* localStorage lleno o bloqueado: seguimos solo en RAM */ }
     }
 
-    // Limpiador de HTML profesional (quita basura de webs antes de leer)
     async _cleanWebText(html) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
@@ -57,12 +48,22 @@
         clearTimeout(timeout);
         const data = await res.json();
         return await this._cleanWebText(data.contents);
-      } catch (e) {
-        return '';
-      }
+      } catch (e) { return ''; }
     }
 
-    // Llamada a la API con reintento automático (1 vez) y timeout para que nunca se quede colgado
+    // ---- Extrae SOLO el texto útil de la respuesta, venga como venga ----
+    // Antes: se mostraba response.text() a pelo -> salía el JSON completo + el campo "reasoning".
+    // Ahora: intenta parsear como JSON tipo OpenAI (choices[0].message.content); si no es JSON, usa el texto tal cual.
+    _extractContent(raw) {
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch (e) { return raw.trim(); }
+      if (parsed && parsed.choices && parsed.choices[0] && parsed.choices[0].message) {
+        return (parsed.choices[0].message.content || '').trim();
+      }
+      if (parsed && typeof parsed.content === 'string') return parsed.content.trim();
+      return raw.trim();
+    }
+
     async _callModel(messages, attempt = 0) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 25000);
@@ -75,7 +76,8 @@
         });
         clearTimeout(timeout);
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        return await response.text();
+        const raw = await response.text();
+        return this._extractContent(raw);
       } catch (e) {
         clearTimeout(timeout);
         if (attempt < 1) return this._callModel(messages, attempt + 1);
@@ -90,15 +92,23 @@
 
       const payload = {
         role: 'user',
-        content: context
-          ? `CONTEXTO WEB: ${context}\n\nPREGUNTA: ${input}`
-          : input
+        content: context ? `CONTEXTO WEB: ${context}\n\nPREGUNTA: ${input}` : input
       };
       this.memory.push(payload);
       if (this.memory.length > 20) this.memory.shift();
 
       const messages = [
-        { role: 'system', content: 'Eres Manolito, ingeniero experto. Directo, analítico, andaluz, sin florituras. Si hay contexto web, úsalo como fuente primaria. Responde siempre completo, sin cortar la idea a medias.' }
+        {
+          role: 'system',
+          content: 'Eres Manolito, un ingeniero sevillano con mucha calle y mucho oficio. ' +
+            'Hablas SIEMPRE en andaluz cerrado y natural: usa expresiones reales como "illo", "quillo", ' +
+            '"anda ya", "no te digo ta", "ozu", "mi arma" cuando venga a cuento, aspira o come alguna "s" ' +
+            'al escribir como se hablaria en Sevilla, y se cercano y campechano, pero sin caer en la caricatura ' +
+            'ni exagerar en cada frase. Eres directo, analitico y resolutivo, sin floriruras ni rodeos. ' +
+            'Responde SIEMPRE solo con la respuesta final en texto plano, nunca en JSON, nunca mostrando tu ' +
+            'razonamiento interno ni metadatos de ningun tipo, y siempre completa, sin cortar la idea a medias. ' +
+            'Si hay contexto web, usalo como fuente principal.'
+        }
       ].concat(this.memory);
 
       try {
@@ -107,7 +117,7 @@
         this._saveMemory();
         return text;
       } catch (e) {
-        return 'Manolito no ha podido responder ahora mismo (servidor ocupado o sin conexión). Prueba otra vez en unos segundos.';
+        return 'Illo, ahora mismo no puedo responder (el servidor esta espeso). Prueba otra vez en un momento.';
       }
     }
 
@@ -116,50 +126,91 @@
 
       const host = document.createElement('div');
       host.id = 'manolito-host';
-      host.style.cssText = 'all:initial;position:fixed;bottom:20px;right:20px;z-index:2147483647;';
+      host.style.cssText = 'all:initial;position:fixed;bottom:22px;right:20px;z-index:2147483647;';
       document.body.appendChild(host);
 
-      // Shadow DOM: aísla el widget de cualquier CSS de la página anfitriona
       const shadow = host.attachShadow({ mode: 'open' });
       shadow.innerHTML = `
         <style>
-          * { box-sizing: border-box; }
+          :host { --qc:#00f0ff; --qm:#ff00e5; --qv:#7b2fff; --qt:#00ffc8; --bg:#03050f; --tx:#e8f0ff; }
+          * { box-sizing: border-box; font-family: 'SF Pro Display','Segoe UI',system-ui,-apple-system,sans-serif; }
+
           .m-fab {
             width: 58px; height: 58px; border-radius: 50%;
-            background: #000; border: 2px solid #0f0; color: #0f0;
-            font-family: monospace; font-weight: 700; font-size: 20px;
-            cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,.4);
+            border: 1px solid rgba(0,240,255,.4);
+            background: radial-gradient(circle at 30% 30%, rgba(123,47,255,.55), rgba(3,5,15,.95));
+            color: #fff; font-weight: 800; font-size: 15px; letter-spacing: .5px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 22px rgba(0,240,255,.35), 0 4px 18px rgba(0,0,0,.5);
+            transition: transform .2s ease, box-shadow .2s ease;
           }
-          .m-fab:hover { background: #0f0; color: #000; }
+          .m-fab:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,240,255,.55), 0 6px 20px rgba(0,0,0,.55); }
+
           #m-panel {
             display: none; flex-direction: column;
-            width: 350px; max-width: 90vw; height: 500px; max-height: 75vh;
-            background: #05070a; border: 2px solid #0f0; border-radius: 10px;
-            position: absolute; bottom: 70px; right: 0;
-            overflow: hidden; font-family: 'Courier New', monospace;
+            width: 360px; max-width: 92vw; height: 500px; max-height: 76vh;
+            background: rgba(10,12,31,.86); backdrop-filter: blur(18px);
+            border: 1px solid rgba(0,240,255,.28); border-radius: 16px;
+            position: absolute; bottom: 72px; right: 0;
+            overflow: hidden; box-shadow: 0 10px 50px rgba(0,0,0,.5), 0 0 40px rgba(123,47,255,.12);
           }
           #m-panel.open { display: flex; }
+
           #m-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 12px; background: #0a0d10; color: #0f0;
-            font-size: 13px; letter-spacing: 1px; border-bottom: 1px solid #0f0;
+            padding: 12px 16px; border-bottom: 1px solid rgba(0,240,255,.15);
+            background: rgba(3,5,15,.6);
           }
-          #m-close { cursor: pointer; color: #0f0; background: none; border: none; font-size: 16px; }
-          #m-log { flex: 1; overflow-y: auto; padding: 10px; color: #eee; font-size: 12.5px; line-height: 1.5; }
-          #m-log .u { color: #7fb3ff; margin-bottom: 6px; }
-          #m-log .a { color: #d8ffd8; margin-bottom: 14px; white-space: pre-wrap; }
-          #m-cmd-row { display: flex; border-top: 1px solid #0f0; }
-          #m-cmd { flex: 1; background: #111; border: none; color: #0f0; padding: 10px; outline: none; font-family: monospace; }
-          #m-send { background: #0f0; border: none; color: #000; font-weight: 700; padding: 0 14px; cursor: pointer; }
-          #m-typing { color: #888; font-style: italic; font-size: 12px; }
+          #m-title {
+            font-weight: 800; font-size: .82rem; letter-spacing: 2px; text-transform: uppercase;
+            background: linear-gradient(135deg, var(--qc) 0%, var(--qt) 30%, var(--tx) 55%, var(--qv) 75%, var(--qm) 100%);
+            background-size: 300% 300%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            animation: m-tf 5s ease-in-out infinite;
+          }
+          @keyframes m-tf { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+          #m-close {
+            cursor: pointer; background: none; border: none; color: rgba(180,210,255,.55);
+            font-size: 15px; line-height: 1; padding: 4px;
+          }
+          #m-close:hover { color: var(--qc); }
+
+          #m-log { flex: 1; overflow-y: auto; padding: 14px; font-size: 13px; line-height: 1.55; }
+          #m-log::-webkit-scrollbar { width: 3px; }
+          #m-log::-webkit-scrollbar-thumb { background: rgba(0,240,255,.25); border-radius: 2px; }
+
+          #m-log .u { color: var(--qc); margin-bottom: 4px; font-size: 12px; opacity: .85; }
+          #m-log .a {
+            color: var(--tx); margin-bottom: 16px; white-space: pre-wrap;
+            background: rgba(0,240,255,.045); border: 1px solid rgba(0,240,255,.1);
+            border-radius: 10px; padding: 10px 12px;
+          }
+          #m-typing { display: flex; align-items: center; gap: 6px; color: rgba(180,210,255,.5); font-size: 12px; margin-bottom: 10px; }
+          .m-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--qc); animation: m-pulse 1s ease-in-out infinite; }
+          .m-dot:nth-child(2) { animation-delay: .15s; }
+          .m-dot:nth-child(3) { animation-delay: .3s; }
+          @keyframes m-pulse { 0%,100%{opacity:.3; transform:scale(.8)} 50%{opacity:1; transform:scale(1.15)} }
+
+          #m-cmd-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(0,240,255,.15); background: rgba(3,5,15,.5); }
+          #m-cmd {
+            flex: 1; background: rgba(0,240,255,.06); border: 1px solid rgba(0,240,255,.18);
+            border-radius: 20px; color: var(--tx); padding: 9px 14px; outline: none; font-size: 13px;
+          }
+          #m-cmd::placeholder { color: rgba(180,210,255,.4); }
+          #m-cmd:focus { border-color: var(--qc); }
+          #m-send {
+            background: linear-gradient(135deg, var(--qv), var(--qc));
+            border: none; color: #03050f; font-weight: 800; padding: 0 16px;
+            border-radius: 18px; cursor: pointer; font-size: 13px;
+          }
+          #m-send:hover { filter: brightness(1.1); }
         </style>
-        <button class="m-fab" id="m-t" title="Hablar con Manolito">M</button>
+        <button class="m-fab" id="m-t" title="Habla con Manolito">M&#8734;</button>
         <div id="m-panel">
-          <div id="m-header"><span>MANOLITO</span><button id="m-close">✕</button></div>
+          <div id="m-header"><span id="m-title">MANOLIT&#8734;</span><button id="m-close">&#10005;</button></div>
           <div id="m-log"></div>
           <div id="m-cmd-row">
-            <input id="m-cmd" placeholder="Escribe o pega una URL...">
-            <button id="m-send">▶</button>
+            <input id="m-cmd" placeholder="Preguntale algo a Manolito...">
+            <button id="m-send">Enviar</button>
           </div>
         </div>
       `;
@@ -175,10 +226,10 @@
         const cmd = input.value.trim();
         if (!cmd || this.busy) return;
         input.value = '';
-        log.insertAdjacentHTML('beforeend', `<div class="u">&gt; ${this._escape(cmd)}</div>`);
+        log.insertAdjacentHTML('beforeend', `<div class="u">Tu</div><div class="a" style="opacity:.7">${this._escape(cmd)}</div>`);
         const typing = document.createElement('div');
         typing.id = 'm-typing';
-        typing.textContent = 'Manolito está pensando...';
+        typing.innerHTML = 'Manolito esta pensando <span class="m-dot"></span><span class="m-dot"></span><span class="m-dot"></span>';
         log.appendChild(typing);
         log.scrollTop = log.scrollHeight;
 
@@ -202,6 +253,5 @@
     }
   }
 
-  // AQUÍ estaba el fallo: antes nunca se llamaba. Ahora se auto-instancia al cargar el script.
   window.Manolito = new ManolitoAgent();
 })();
