@@ -6,10 +6,8 @@
  */
 
 const ManolitoChat = {
-  // Memoria del artefacto, guardaíta en el navegador
   memory: JSON.parse(localStorage.getItem('manolito_ctx') || '[]'),
 
-  // Quita toa la morralla de las páginas web
   async _cleanWebText(html) {
     try {
       const parser = new DOMParser();
@@ -22,7 +20,6 @@ const ManolitoChat = {
     }
   },
 
-  // Se bebe una web de un trago
   async _leerWeb(url) {
     try {
       const res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent(url));
@@ -33,7 +30,6 @@ const ManolitoChat = {
     }
   },
 
-  // El que responde con toa la guasa andaluza
   async responder(mensaje) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const match = mensaje.match(urlRegex);
@@ -58,7 +54,7 @@ const ManolitoChat = {
               content: 'Eres Manolito, el ingeniero sevillano. Directo, serio, profesional, sin emojis y con guasa natural. Si hay datos web, analízalos con rigor. Si te piden una burrada, suelta un "vaya tela" elegante y corrige con datos.'
             }
           ].concat(this.memory),
-          seed: 777 // La flor del 777, pa' que siempre responda con arte
+          seed: 777
         })
       });
       const text = await response.text();
@@ -73,15 +69,13 @@ const ManolitoChat = {
 
 window.ManolitoChat = ManolitoChat;
 
-// Monta el chiringuito en la página
 (function() {
-  if (document.getElementById('m-root')) return; // no duplicamos, que parecemos tontos
+  if (document.getElementById('m-root')) return;
 
   const root = document.createElement('div');
   root.id = 'm-root';
   root.innerHTML = `
     <style>
-      /* To' el CSS con el verde de la bandera */
       #m-root {
         position: fixed;
         bottom: 20px;
@@ -160,7 +154,6 @@ window.ManolitoChat = ManolitoChat;
   `;
   document.body.appendChild(root);
 
-  // Mostrar / esconder el panel con salero
   document.getElementById('m-t').onclick = function() {
     const p = document.getElementById('m-p');
     p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
@@ -169,17 +162,16 @@ window.ManolitoChat = ManolitoChat;
     }
   };
 
-  // Enviar pregunta cuando le dan al Enter
   document.getElementById('m-i').onkeydown = function(e) {
     if (e.key === 'Enter') {
       const input = e.target;
       const pregunta = input.value.trim();
       if (!pregunta) return;
       const log = document.getElementById('m-l');
-      log.innerHTML += `<div style="margin-bottom:8px; opacity:0.6; color:#00cc00;">> ${pregunta}</div>`;
+      log.innerHTML += '<div style="margin-bottom:8px; opacity:0.6; color:#00cc00;">> ' + pregunta + '</div>';
       input.value = '';
       ManolitoChat.responder(pregunta).then(function(respuesta) {
-        log.innerHTML += `<div style="margin-bottom:12px; color:#00ff00;">${respuesta}</div>`;
+        log.innerHTML += '<div style="margin-bottom:12px; color:#00ff00;">' + respuesta + '</div>';
         log.scrollTop = log.scrollHeight;
       });
     }
