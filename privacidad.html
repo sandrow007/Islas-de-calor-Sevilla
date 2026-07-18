@@ -5,125 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aviso de Privacidad - Islas de Calor Sevilla</title>
     <style>
-        /* Estilos básicos para que el enlace y el modal se vean bien en cualquier página */
         body {
             margin: 0;
             min-height: 100vh;
             background: #0a0c1f;
             font-family: 'Segoe UI', system-ui, sans-serif;
-        }
-        /* Simulación de contenido para que no esté vacío */
-        .contenido-ejemplo {
             color: #e8f0ff;
-            padding: 40px;
+        }
+        #privacidad-link {
+            position: fixed;
+            left: 14px;
+            bottom: 10px;
+            z-index: 2000;
+            font-size: 0.55rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: rgba(180, 210, 255, 0.4);
+            cursor: pointer;
+            font-family: 'SF Pro Display', sans-serif;
+            transition: color 0.2s;
+        }
+        #privacidad-link:hover {
+            color: #00f0ff;
+        }
+        #privacidad-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: none;
+            background: rgba(3, 5, 15, 0.82);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #privacidad-overlay.visible {
+            display: flex;
+        }
+        .modal-contenido {
+            max-width: 640px;
+            max-height: 80vh;
+            overflow-y: auto;
+            background: rgba(10, 12, 31, 0.96);
+            border: 1px solid rgba(0, 240, 255, 0.28);
+            border-radius: 14px;
+            padding: 28px 26px;
+            color: #e8f0ff;
+            font-size: 0.85rem;
+            line-height: 1.7;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        .modal-cabecera {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .modal-cabecera h2 {
+            margin: 0;
+            font-size: 0.95rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #00f0ff;
+        }
+        .cerrar-btn {
+            background: none;
+            border: none;
+            color: #00f0ff;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .demo-texto {
             text-align: center;
             margin-top: 20vh;
+            font-size: 1.2rem;
         }
     </style>
 </head>
 <body>
 
-    <!-- Esto es solo para que veas algo en la página, puedes quitarlo -->
-    <div class="contenido-ejemplo">
-        <h1>🌡️ Islas de Calor Sevilla</h1>
-        <p>Esta es una demostración del aviso de privacidad.<br>El enlace real aparecerá abajo a la izquierda.</p>
+    <div class="demo-texto">
+        Islas de Calor Sevilla
     </div>
 
-    <!-- Aquí empieza el código del aviso de privacidad (TODO EN UN SOLO BLOQUE) -->
+    <div id="privacidad-link" onclick="document.getElementById('privacidad-overlay').classList.add('visible')">
+        Privacidad y datos
+    </div>
+
+    <div id="privacidad-overlay">
+        <div class="modal-contenido">
+            <div class="modal-cabecera">
+                <h2>Privacidad y datos</h2>
+                <button class="cerrar-btn" onclick="document.getElementById('privacidad-overlay').classList.remove('visible')">X</button>
+            </div>
+
+            <p><strong>Qué recoge esta web por sí misma:</strong> ningún dato personal identificable.
+            Si tu navegador concede permiso de ubicación, se usa solo para centrar el clima en tu zona;
+            si no lo concedes, se usa Sevilla por defecto. No hay cuentas de usuario ni formularios que
+            pidan datos personales.</p>
+
+            <p><strong>Manolito (el asistente):</strong> lo que escribes en el chat, y el contenido visible
+            de la página en ese momento (temperaturas, índices, resultados mostrados en pantalla), se envían
+            a un servicio externo de inteligencia artificial (<em>pollinations.ai</em>) para generar la
+            respuesta. Si pegas una URL en el chat, esa dirección se envía a un servicio externo de lectura
+            de páginas (<em>allorigins.win</em>) para poder leerla. El historial de la conversación se guarda
+            únicamente en tu propio navegador (almacenamiento local), nunca en un servidor nuestro, y puedes
+            borrarlo limpiando los datos del sitio en tu navegador.</p>
+
+            <p><strong>Servicios externos que esta web contacta</strong> para mostrar datos reales
+            (ninguno recibe tu identidad, solo la petición técnica habitual con tu IP, como al visitar
+            cualquier web):</p>
+            <ul>
+                <li>Open-Meteo y NASA POWER — datos meteorológicos</li>
+                <li>NOAA SWPC — clima espacial (índice Kp, flujo solar F10.7)</li>
+                <li>wheretheiss.at — posición de la Estación Espacial Internacional</li>
+                <li>OpenStreetMap, CartoDB, Esri, OpenTopoMap — mapas base</li>
+                <li>pollinations.ai — motor de inteligencia artificial de Manolito</li>
+                <li>allorigins.win — lectura de páginas externas cuando se pega una URL en el chat</li>
+            </ul>
+
+            <p><strong>Lo que NO hacemos:</strong> no usamos cookies de rastreo publicitario, no vendemos
+            ni compartimos datos con terceros con fines comerciales, y no creamos perfiles de usuarios.</p>
+
+            <p style="opacity:.6; font-size:.85em">Última actualización de este aviso: julio de 2026.</p>
+
+        </div>
+    </div>
+
     <script>
-        (function () {
-            'use strict';
-
-            function ready(fn) {
-                if (document.readyState !== 'loading') fn();
-                else document.addEventListener('DOMContentLoaded', fn);
+        document.getElementById('privacidad-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('visible');
             }
-
-            const TEXTO_PRIVACIDAD = `
-                <p><strong>Qué recoge esta web por sí misma:</strong> ningún dato personal identificable.
-                Si tu navegador concede permiso de ubicación, se usa solo para centrar el clima en tu zona;
-                si no lo concedes, se usa Sevilla por defecto. No hay cuentas de usuario ni formularios que
-                pidan datos personales.</p>
-
-                <p><strong>Manolito (el asistente):</strong> lo que escribes en el chat, y el contenido visible
-                de la página en ese momento (temperaturas, índices, resultados mostrados en pantalla), se envían
-                a un servicio externo de inteligencia artificial (<em>pollinations.ai</em>) para generar la
-                respuesta. Si pegas una URL en el chat, esa dirección se envía a un servicio externo de lectura
-                de páginas (<em>allorigins.win</em>) para poder leerla. El historial de la conversación se guarda
-                únicamente en tu propio navegador (almacenamiento local), nunca en un servidor nuestro, y puedes
-                borrarlo limpiando los datos del sitio en tu navegador.</p>
-
-                <p><strong>Servicios externos que esta web contacta</strong> para mostrar datos reales
-                (ninguno recibe tu identidad, solo la petición técnica habitual con tu IP, como al visitar
-                cualquier web):</p>
-                <ul>
-                    <li>Open-Meteo y NASA POWER — datos meteorológicos</li>
-                    <li>NOAA SWPC — clima espacial (índice Kp, flujo solar F10.7)</li>
-                    <li>wheretheiss.at — posición de la Estación Espacial Internacional</li>
-                    <li>OpenStreetMap, CartoDB, Esri, OpenTopoMap — mapas base</li>
-                    <li>pollinations.ai — motor de inteligencia artificial de Manolito</li>
-                    <li>allorigins.win — lectura de páginas externas cuando se pega una URL en el chat</li>
-                </ul>
-
-                <p><strong>Lo que NO hacemos:</strong> no usamos cookies de rastreo publicitario, no vendemos
-                ni compartimos datos con terceros con fines comerciales, y no creamos perfiles de usuarios.</p>
-
-                <p style="opacity:.6;font-size:.85em">Última actualización de este aviso: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}.</p>
-            `;
-
-            function crearModal() {
-                const overlay = document.createElement('div');
-                overlay.id = 'privacidad-overlay';
-                overlay.style.cssText = `
-                    position:fixed; inset:0; z-index:100000; display:none;
-                    background:rgba(3,5,15,.82); backdrop-filter:blur(6px);
-                    align-items:center; justify-content:center; padding:20px;
-                `;
-                overlay.innerHTML = `
-                    <div style="max-width:640px; max-height:80vh; overflow-y:auto; background:rgba(10,12,31,.96);
-                        border:1px solid rgba(0,240,255,.28); border-radius:14px; padding:28px 26px;
-                        color:#e8f0ff; font-family:'SF Pro Display','Segoe UI',system-ui,sans-serif;
-                        font-size:.85rem; line-height:1.7; box-shadow:0 20px 60px rgba(0,0,0,.5);">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                            <h2 style="margin:0; font-size:.95rem; letter-spacing:2px; text-transform:uppercase; color:#00f0ff;">
-                                Privacidad y datos
-                            </h2>
-                            <button id="privacidad-cerrar" style="background:none;border:none;color:#00f0ff;font-size:18px;cursor:pointer;">&#10005;</button>
-                        </div>
-                        ${TEXTO_PRIVACIDAD}
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-                overlay.addEventListener('click', function(e) {
-                    if (e.target === overlay) overlay.style.display = 'none';
-                });
-                overlay.querySelector('#privacidad-cerrar').addEventListener('click', function() {
-                    overlay.style.display = 'none';
-                });
-                return overlay;
-            }
-
-            function crearEnlace(overlay) {
-                const link = document.createElement('div');
-                link.id = 'privacidad-link';
-                link.textContent = 'Privacidad y datos';
-                link.style.cssText = `
-                    position:fixed; left:14px; bottom:10px; z-index:2000;
-                    font-size:.55rem; letter-spacing:1px; text-transform:uppercase;
-                    color:rgba(180,210,255,.4); cursor:pointer; font-family:'SF Pro Display',sans-serif;
-                `;
-                link.addEventListener('mouseenter', function() { link.style.color = '#00f0ff'; });
-                link.addEventListener('mouseleave', function() { link.style.color = 'rgba(180,210,255,.4)'; });
-                link.addEventListener('click', function() { overlay.style.display = 'flex'; });
-                document.body.appendChild(link);
-            }
-
-            ready(function() {
-                if (document.getElementById('privacidad-link')) return;
-                const overlay = crearModal();
-                crearEnlace(overlay);
-            });
-        })();
+        });
     </script>
 </body>
 </html>
