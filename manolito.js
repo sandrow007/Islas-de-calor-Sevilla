@@ -1,19 +1,5 @@
 /**
- * MANOLITO ENGINE v5.5 - Professional Agent Architecture
- * Cambios sobre v5.4:
- * - FIX CRÍTICO: el widget se quedaba colgado en "Manolito esta pensando..." sin
- *   llegar nunca a responder. Causas cubiertas ahora:
- *     a) Se añade un timeout GLOBAL con Promise.race que garantiza una respuesta
- *        (de éxito o de error) en un máximo de 22s, pase lo que pase con la red.
- *     b) send() ahora tiene try/catch propio: si algo revienta en cualquier punto
- *        (localStorage bloqueado, DOM, lo que sea), el indicador "pensando" se
- *        quita SIEMPRE, nunca se queda colgado en pantalla.
- *     c) Los reintentos internos ya no se pueden acumular sin límite: máximo
- *        1 reintento y el timeout global manda por encima de todo.
- * - FIX TRUNCADO: se fija max_tokens explícito y se detecta si la respuesta viene
- *   cortada a medio párrafo (sin punto final ni cierre), en cuyo caso se pide una
- *   continuación automática y se concatena, en vez de servir la frase a medias.
- * - Resto de la personalidad, memoria y estilo visual igual que v5.4.
+ * MANOLITO ENGINE v5.6
  */
 (function () {
   'use strict';
@@ -24,7 +10,6 @@
     constructor() {
       this.memory = this._loadMemory();
       this.busy = false;
-      this.bgAnimId = null;
       this._ready(() => this._esperarFinDeIntro(() => this.initUI()));
     }
 
@@ -92,19 +77,17 @@
       return raw.trim();
     }
 
-    // Heurística simple para detectar si un texto se ha quedado cortado a medias
-    // (sin puntuación de cierre, o terminando en coma/conjunción).
     _pareceCortado(texto) {
       if (!texto) return false;
       const t = texto.trim();
       if (t.length < 2) return false;
       const ultimoChar = t.slice(-1);
       if (['.', '?', '!', '…', '"', ')'].includes(ultimoChar)) return false;
-      // termina en coma, "y", "que", etc. -> huele a corte
       return true;
     }
 
-    async _llamarConTimeout(messages, msTimeout) {
+    // VIA A: POST estilo OpenAI (endpoint /openai)
+    async _viaPost(messages, msTimeout) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), msTimeout);
       try {
@@ -112,11 +95,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
-          body: JSON.stringify({
-            messages,
-            seed: Math.floor(Math.random() * 100000),
-            max_tokens: 1200
-          })
+          body: JSON.stringify({ messages, seed: Math.floor(Math.random() * 100000), max_tokens: 1200 })
         });
         clearTimeout(timeoutId);
         if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -128,21 +107,44 @@
       }
     }
 
-    async _callModel(messages, attempt = 0) {
+    // VIA B: GET simple sobre el ultimo mensaje del usuario + contexto resumido,
+    // como respaldo si la via POST esta bloqueada por CORS/CSP en el dominio.
+    async _viaGet(messages, msTimeout) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), msTimeout);
       try {
-        return await this._llamarConTimeout(messages, 12000);
+        const sistema = messages.find(m => m.role === 'system');
+        const ultimoUsuario = [...messages].reverse().find(m => m.role === 'user');
+        const promptPlano = `${sistema ? sistema.content.slice(0, 1500) : ''}\n\n${ultimoUsuario ? ultimoUsuario.content.slice(0, 2000) : ''}`;
+        const url = `https://text.pollinations.ai/${encodeURIComponent(promptPlano)}?model=openai&seed=${Math.floor(Math.random() * 100000)}`;
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const raw = await response.text();
+        return this._extractContent(raw);
       } catch (e) {
-        if (attempt < 1) return this._callModel(messages, attempt + 1);
+        clearTimeout(timeoutId);
         throw e;
       }
     }
 
-    // Si la respuesta parece cortada a medias, pedimos que la continúe y concatenamos.
+    async _callModel(messages) {
+      try {
+        return await this._viaPost(messages, 10000);
+      } catch (e1) {
+        try {
+          return await this._viaPost(messages, 10000);
+        } catch (e2) {
+          return await this._viaGet(messages, 10000);
+        }
+      }
+    }
+
     async _callModelCompleto(messages) {
       let texto = await this._callModel(messages);
       if (this._pareceCortado(texto)) {
         try {
-          const continuacion = await this._llamarConTimeout(
+          const continuacion = await this._viaPost(
             messages.concat([
               { role: 'assistant', content: texto },
               { role: 'user', content: 'Continúa exactamente donde lo dejaste, sin repetir nada de lo ya dicho.' }
@@ -150,7 +152,7 @@
             8000
           );
           if (continuacion) texto = texto + ' ' + continuacion;
-        } catch (e) { /* si falla la continuación, servimos lo que ya tenemos */ }
+        } catch (e) { /* si falla la continuacion, servimos lo que ya tenemos */ }
       }
       return texto;
     }
@@ -212,11 +214,8 @@
 
       const messages = [{ role: 'system', content: this._systemPrompt() }].concat(this.memory);
 
-      // Timeout global: pase lo que pase (cuelgue de red, reintentos, continuación
-      // por corte), esta promesa SIEMPRE se resuelve antes de 22s con algo que
-      // mostrar. Así nunca se queda "pensando" para siempre.
       const timeoutGlobal = new Promise((resolve) => {
-        setTimeout(() => resolve('__TIMEOUT__'), 22000);
+        setTimeout(() => resolve('__TIMEOUT__'), 26000);
       });
 
       try {
@@ -226,7 +225,7 @@
         ]);
 
         if (resultado === '__TIMEOUT__' || !resultado) {
-          return 'Illo, el servidor se esta tomando mas tiempo de la cuenta. Prueba a preguntarmelo otra vez, que seguro que ahora contesta rapido.';
+          return 'Illo, no me ha dao tiempo a conectar bien esta vez. Preguntame otra vez, anda, que seguro que ahora si entra.';
         }
 
         this.memory.push({ role: 'assistant', content: resultado });
@@ -237,94 +236,8 @@
       }
     }
 
-    _dibujarMiniGiralda(ctx, cx, cy, escala, t) {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.scale(escala, escala);
-      const pulso = 6 + Math.sin(t * 0.05) * 3;
-      const grad = ctx.createLinearGradient(0, -60, 0, 20);
-      grad.addColorStop(0, '#ff00e5');
-      grad.addColorStop(0.35, '#7b2fff');
-      grad.addColorStop(0.7, '#00f0ff');
-      grad.addColorStop(1, '#00ffc8');
-      ctx.strokeStyle = grad;
-      ctx.fillStyle = 'rgba(10,12,31,0.9)';
-      ctx.lineWidth = 1.4;
-      ctx.shadowColor = '#00f0ff';
-      ctx.shadowBlur = pulso;
-
-      ctx.beginPath(); ctx.rect(-9, 12, 18, 8); ctx.fill(); ctx.stroke();
-      const tramos = [
-        { y: 12, w: 15 }, { y: -2, w: 12 }, { y: -16, w: 9 }, { y: -30, w: 6.5 }
-      ];
-      for (let i = 0; i < tramos.length - 1; i++) {
-        const a = tramos[i], b = tramos[i + 1];
-        ctx.beginPath();
-        ctx.moveTo(-a.w / 2, a.y); ctx.lineTo(-b.w / 2, b.y);
-        ctx.lineTo(b.w / 2, b.y); ctx.lineTo(a.w / 2, a.y);
-        ctx.closePath(); ctx.fill(); ctx.stroke();
-      }
-      ctx.beginPath(); ctx.arc(0, 4, 3.4, Math.PI, 0); ctx.stroke();
-      ctx.beginPath(); ctx.rect(-4, -38, 8, 8); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.arc(0, -44, 2.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, -46); ctx.lineTo(0, -52); ctx.stroke();
-      ctx.beginPath(); ctx.arc(0, -53, 1.3, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
-      ctx.restore();
-    }
-
-    _iniciarLogoAnimado(canvas) {
-      const ctx = canvas.getContext('2d');
-      const W = canvas.width, H = canvas.height;
-      let t = 0, activo = true;
-      canvas.__detener = () => { activo = false; };
-      const loop = () => {
-        if (!activo) return;
-        ctx.clearRect(0, 0, W, H);
-        this._dibujarMiniGiralda(ctx, W / 2, H - 8, 0.72, t);
-        t++;
-        requestAnimationFrame(loop);
-      };
-      loop();
-    }
-
-    _iniciarFondoParticulas(canvas) {
-      const ctx = canvas.getContext('2d');
-      const colores = ['#00f0ff', '#ff00e5', '#7b2fff', '#00ffc8'];
-      let particulas = [], activo = true;
-      canvas.__detener = () => { activo = false; };
-
-      const ajustarTamano = () => {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-      };
-      ajustarTamano();
-      particulas = Array.from({ length: 34 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.12,
-        vy: (Math.random() - 0.5) * 0.12,
-        r: 0.5 + Math.random() * 1.1,
-        c: colores[Math.floor(Math.random() * colores.length)]
-      }));
-
-      const loop = () => {
-        if (!activo) return;
-        ctx.fillStyle = 'rgba(6,8,20,0.14)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        particulas.forEach(p => {
-          p.x += p.vx; p.y += p.vy;
-          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = p.c;
-          ctx.globalAlpha = 0.55;
-          ctx.fill();
-          ctx.globalAlpha = 1;
-        });
-        requestAnimationFrame(loop);
-      };
-      loop();
+    _colorInicioAleatorio() {
+      return Math.floor(Math.random() * 360);
     }
 
     initUI() {
@@ -341,23 +254,34 @@
           :host { --qc:#00f0ff; --qm:#ff00e5; --qv:#7b2fff; --qt:#00ffc8; --bg:#03050f; --tx:#e8f0ff; }
           * { box-sizing: border-box; font-family: 'SF Pro Display','Segoe UI',system-ui,-apple-system,sans-serif; }
 
+          @keyframes m-spin { to { transform: rotate(360deg); } }
+          @keyframes m-pulse-ring { 0%,100% { box-shadow: 0 0 18px 2px rgba(0,240,255,.33); } 50% { box-shadow: 0 0 30px 6px rgba(0,240,255,.5); } }
+
           .m-fab {
             width: 58px; height: 58px; border-radius: 50%;
-            border: 1px solid rgba(0,240,255,.4);
-            background: radial-gradient(circle at 30% 30%, rgba(123,47,255,.55), rgba(3,5,15,.95));
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 22px rgba(0,240,255,.35), 0 4px 18px rgba(0,0,0,.5);
-            transition: transform .2s ease, box-shadow .2s ease; padding: 0;
+            border: none; cursor: pointer; padding: 0; position: relative;
+            animation: m-pulse-ring 2.6s ease-in-out infinite;
           }
-          .m-fab:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,240,255,.55), 0 6px 20px rgba(0,0,0,.55); }
-          .m-fab canvas { width: 34px; height: 46px; display: block; }
+          .m-fab .m-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(from var(--m-start, 0deg), #00f0ff, #7b2fff, #ff00e5, #00ffc8, #00f0ff);
+            animation: m-spin 6s linear infinite;
+          }
+          .m-fab .m-core {
+            position: absolute; inset: 4px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #14172f, #03050f 70%);
+            display: flex; align-items: center; justify-content: center;
+          }
+          .m-fab .m-letra {
+            font-weight: 800; font-size: 17px; letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--qc), var(--qt), var(--qm));
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+          }
+          .m-fab:hover .m-ring { animation-duration: 2.5s; }
 
           #m-panel {
             display: none; flex-direction: column;
             width: 360px; max-width: 92vw;
-            /* Antes: altura fija 500px que en pantallas bajas se salia por arriba
-               y "cortaba" el panel contra el borde de la ventana. Ahora se ajusta
-               al espacio real disponible entre el boton y el borde superior. */
             height: min(500px, calc(100vh - 160px));
             max-height: 76vh;
             background: rgba(10,12,31,.86); backdrop-filter: blur(18px);
@@ -372,7 +296,23 @@
             padding: 10px 14px; border-bottom: 1px solid rgba(0,240,255,.15);
             background: rgba(3,5,15,.6); position: relative; z-index: 2; flex-shrink: 0;
           }
-          #m-header-logo { width: 26px; height: 40px; flex-shrink: 0; }
+          .m-header-icon { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; position: relative; }
+          .m-header-icon .m-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(from var(--m-start, 0deg), #00f0ff, #7b2fff, #ff00e5, #00ffc8, #00f0ff);
+            animation: m-spin 6s linear infinite;
+          }
+          .m-header-icon .m-core {
+            position: absolute; inset: 3px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #14172f, #03050f 70%);
+            display: flex; align-items: center; justify-content: center;
+          }
+          .m-header-icon .m-letra {
+            font-weight: 800; font-size: 12px; letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--qc), var(--qt), var(--qm));
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+          }
+
           #m-title-wrap { flex: 1; min-width: 0; }
           #m-title {
             font-weight: 800; font-size: .82rem; letter-spacing: 2px; text-transform: uppercase;
@@ -421,10 +361,16 @@
           #m-send:hover { filter: brightness(1.1); }
           #m-send:disabled { opacity: .5; cursor: default; }
         </style>
-        <button class="m-fab" id="m-t" title="Habla con Manolito"><canvas id="m-fab-logo" width="60" height="60"></canvas></button>
+        <button class="m-fab" id="m-t" title="Habla con Manolito">
+          <div class="m-ring"></div>
+          <div class="m-core"><span class="m-letra">M∞</span></div>
+        </button>
         <div id="m-panel">
           <div id="m-header">
-            <canvas id="m-header-logo" width="52" height="80"></canvas>
+            <div class="m-header-icon" id="m-header-icon">
+              <div class="m-ring"></div>
+              <div class="m-core"><span class="m-letra">M∞</span></div>
+            </div>
             <div id="m-title-wrap">
               <span id="m-title">MANOLIT&#8734;</span>
               <div id="m-subtitle">TU MOTOR CUANTICO, EN ANDALUZ</div>
@@ -447,17 +393,18 @@
       const input = shadow.getElementById('m-cmd');
       const sendBtn = shadow.getElementById('m-send');
       const bgCanvas = shadow.getElementById('m-bg-canvas');
-      const headerLogo = shadow.getElementById('m-header-logo');
-      const fabLogo = shadow.getElementById('m-fab-logo');
+      const fabIcon = shadow.getElementById('m-t');
+      const headerIcon = shadow.getElementById('m-header-icon');
 
-      this._iniciarLogoAnimado(fabLogo);
+      fabIcon.style.setProperty('--m-start', this._colorInicioAleatorio() + 'deg');
 
       let fondoActivo = false;
-      shadow.getElementById('m-t').onclick = () => {
+      fabIcon.onclick = () => {
         const abrir = !panel.classList.contains('open');
         panel.classList.toggle('open');
         if (abrir) {
-          if (!fondoActivo) { this._iniciarFondoParticulas(bgCanvas); this._iniciarLogoAnimado(headerLogo); fondoActivo = true; }
+          headerIcon.style.setProperty('--m-start', this._colorInicioAleatorio() + 'deg');
+          if (!fondoActivo) { this._iniciarFondoParticulas(bgCanvas); fondoActivo = true; }
         }
       };
       shadow.getElementById('m-close').onclick = () => panel.classList.remove('open');
@@ -484,8 +431,6 @@
           log.insertAdjacentHTML('beforeend', `<div class="a">${this._escape(res)}</div>`);
           log.scrollTop = log.scrollHeight;
         } catch (e) {
-          // Red de seguridad final: pase lo que pase, el indicador desaparece
-          // y el usuario ve un mensaje, nunca un cuelgue silencioso.
           if (typing && typing.parentNode) typing.remove();
           log.insertAdjacentHTML('beforeend', `<div class="a">Illo, algo ha petao por aqui dentro. Intentalo otra vez, anda.</div>`);
           log.scrollTop = log.scrollHeight;
@@ -497,6 +442,46 @@
 
       shadow.getElementById('m-send').onclick = send;
       input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+    }
+
+    _iniciarFondoParticulas(canvas) {
+      const ctx = canvas.getContext('2d');
+      const colores = ['#00f0ff', '#ff00e5', '#7b2fff', '#00ffc8'];
+      let particulas = [], activo = true;
+      canvas.__detener = () => { activo = false; };
+
+      const ajustarTamano = () => {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      };
+      ajustarTamano();
+      particulas = Array.from({ length: 34 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.12,
+        vy: (Math.random() - 0.5) * 0.12,
+        r: 0.5 + Math.random() * 1.1,
+        c: colores[Math.floor(Math.random() * colores.length)]
+      }));
+
+      const loop = () => {
+        if (!activo) return;
+        ctx.fillStyle = 'rgba(6,8,20,0.14)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        particulas.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.c;
+          ctx.globalAlpha = 0.55;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        });
+        requestAnimationFrame(loop);
+      };
+      loop();
     }
 
     _escape(str) {
