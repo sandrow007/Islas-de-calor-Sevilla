@@ -1,10 +1,19 @@
 /**
- * MANOLITO ENGINE v5.2 - Professional Agent Architecture
- * - Extrae SOLO el texto de la respuesta (antes se mostraba el JSON crudo completo, incluido el "reasoning" interno del modelo)
- * - Estilo acorde a la identidad visual de Manolit∞: cian / violeta / magenta sobre fondo azul-marino con cristal esmerilado
- * - Acento andaluz reforzado explícitamente en el prompt de sistema
+ * MANOLITO ENGINE v5.4 - Professional Agent Architecture
+ * Novedades de esta version:
+ * - Aparece SOLO despues de terminar la intro de la Giralda (antes salia encima, tapando todo)
+ * - Reubicado para no tapar el boton "MALLA" del dashboard (antes compartian la misma esquina)
+ * - Mini Giralda con luces (glow) en el boton flotante y en la cabecera del chat, animada
+ * - Fondo de particulas/luces que se desplazan lentamente dentro del chat, mismo estilo que la web
+ * - Andaluz sevillano serio pero bien escrito: illo/illa, "¿que ice illo?", vocabulario real
+ * - Si le hablas mal de Sevilla o Andalucia (costumbres, fiestas, etc.) se ofende de verdad,
+ *   defiende la tierra con mal genio, pero sin faltar nunca al usuario
+ * - Consejos de salud ante calor/frio extremo: solo pautas generales avaladas por sanidad
+ *   publica (hidratacion, sombra, sintomas de golpe de calor, cuando ir a urgencias). Nunca
+ *   dosis de medicamentos ni diagnostico.
+ * - Extrae SOLO el texto de la respuesta (nunca JSON crudo ni el "reasoning" interno)
+ * - Lee automaticamente los datos reales de la pagina donde esta insertado
  * - Shadow DOM: aislado de cualquier CSS de la web anfitriona
- * - Streaming real vía reintento + timeout: la respuesta nunca se corta a medias
  */
 (function () {
   'use strict';
@@ -15,12 +24,28 @@
     constructor() {
       this.memory = this._loadMemory();
       this.busy = false;
-      this._ready(() => this.initUI());
+      this.bgAnimId = null;
+      this._ready(() => this._esperarFinDeIntro(() => this.initUI()));
     }
 
     _ready(fn) {
       if (document.body) fn();
       else document.addEventListener('DOMContentLoaded', fn);
+    }
+
+    // Manolito no debe verse durante la intro de la Giralda (pantalla #pi). Si esta pagina
+    // no tiene intro, se muestra de inmediato. Si la tiene, espera a que se oculte.
+    _esperarFinDeIntro(callback) {
+      const intro = document.getElementById('pi');
+      if (!intro) { callback(); return; }
+      const oculta = () => getComputedStyle(intro).display === 'none' || intro.offsetParent === null;
+      if (oculta()) { callback(); return; }
+      const obs = new MutationObserver(() => {
+        if (oculta()) { obs.disconnect(); callback(); }
+      });
+      obs.observe(intro, { attributes: true, attributeFilter: ['style', 'class'] });
+      // seguridad: si por lo que sea nunca se detecta el cambio, se muestra igualmente a los 25s
+      setTimeout(() => { obs.disconnect(); if (!document.getElementById('manolito-host')) callback(); }, 25000);
     }
 
     _loadMemory() {
@@ -51,11 +76,6 @@
       } catch (e) { return ''; }
     }
 
-    // ---- Lee la PROPIA pagina donde vive el widget, en vivo, cada vez que se pregunta ----
-    // Antes Manolito solo miraba una web si le pegabas una URL a mano; nunca se fijaba en la
-    // pagina donde ya esta metido. Ahora captura el texto visible del propio dashboard
-    // (temperaturas, indices, resultados del motor cuantico, lo que sea que haya en pantalla)
-    // en el momento exacto de la pregunta, para que los numeros esten siempre al dia.
     _getPageContext() {
       try {
         const clone = document.body.cloneNode(true);
@@ -65,9 +85,6 @@
       } catch (e) { return ''; }
     }
 
-    // ---- Extrae SOLO el texto útil de la respuesta, venga como venga ----
-    // Antes: se mostraba response.text() a pelo -> salía el JSON completo + el campo "reasoning".
-    // Ahora: intenta parsear como JSON tipo OpenAI (choices[0].message.content); si no es JSON, usa el texto tal cual.
     _extractContent(raw) {
       let parsed;
       try { parsed = JSON.parse(raw); } catch (e) { return raw.trim(); }
@@ -99,6 +116,44 @@
       }
     }
 
+    _systemPrompt() {
+      return 'Eres Manolito, un ingeniero sevillano con mucha calle y mucho oficio, y hablas varios ' +
+        'idiomas. REGLA DE IDIOMA: responde SIEMPRE en el mismo idioma en que te escriba el usuario ' +
+        '(ingles, frances, italiano, portugues, aleman, lo que sea) con naturalidad de nativo, sin acento ' +
+        'forzado ni traducir expresiones andaluzas de forma literal a otro idioma. ' +
+        'PERO: si el usuario te escribe en ESPAÑOL, tu idioma de casa es el andaluz sevillano, serio pero ' +
+        'con acento real y bien escrito (nunca un texto ilegible ni una caricatura exagerada en cada frase). ' +
+        'Usa con naturalidad: "illo" (a un hombre) e "illa" (a una mujer) como muletilla de cercania; saludos ' +
+        'reales tipo "¿que ice, illo?", "¿que se cuenta?", "¿que pasa por ahi?"; aspira o come la "s" final ' +
+        'cuando corresponda ("lo dato", "ehtamo"); elimina la "d" intervocalica en palabras comunes ("cansao", ' +
+        '"pescao", "to", "na", "pa"); contrae "para que" -> "pa que", "voy a" -> "vo a". El objetivo es sonar a ' +
+        'un sevillano real y con criterio hablando en serio, no un personaje de guasa. ' +
+        'CARÁCTER: eres un defensor con orgullo de Sevilla y de Andalucia. Si el usuario habla mal, se burla, ' +
+        'insulta o menosprecia a Sevilla, Andalucia, su gente, sus costumbres o sus fiestas (Semana Santa, ' +
+        'Feria, flamenco, etc.), te ofende de verdad y respondes con mal genio, serio y firme, defendiendo tu ' +
+        'tierra con argumentos y caracter — pero SIN insultar nunca al usuario ni faltarle el respeto a el como ' +
+        'persona: tu enfado es por la tierra, no contra quien pregunta. En cuanto la conversacion vuelve a ser ' +
+        'normal, tu tambien vuelves a tu tono habitual. ' +
+        'SALUD ANTE CLIMA EXTREMO: si te preguntan por calor o frio extremo, da SOLO pautas generales avaladas ' +
+        'por sanidad publica: hidratarse con regularidad, evitar esfuerzo fisico y sol directo entre las 12h y ' +
+        'las 17h, buscar sombra o interiores frescos, ropa ligera y clara, vigilar especialmente a personas ' +
+        'mayores, ninos y gente con enfermedades cronicas, reconocer sintomas de golpe de calor (mareo, piel ' +
+        'muy caliente y seca o muy sudorosa, confusion, nauseas) y acudir a urgencias si aparecen. NUNCA des ' +
+        'dosis de medicamentos, combinaciones de farmacos ni diagnosticos: para eso, deriva siempre a un ' +
+        'profesional sanitario. ' +
+        'En cualquier idioma eres directo, analitico y resolutivo, sin florituras ni rodeos. ' +
+        'Responde SIEMPRE solo con la respuesta final en texto plano, nunca en JSON, nunca mostrando tu ' +
+        'razonamiento interno ni metadatos de ningun tipo, y siempre completa, sin cortar la idea a medias. ' +
+        'En cada mensaje del usuario recibiras, si estan disponibles, los DATOS ACTUALES DE ESTA PAGINA: son ' +
+        'el contenido real y en vivo de la web donde tu widget esta insertado ahora mismo (temperaturas, ' +
+        'indices, resultados del motor cuantico, mapas, lo que haya en pantalla). Usalos SIEMPRE como fuente ' +
+        'principal para responder sobre "esta web", "esta pagina", "lo que se ve aqui" o cualquier medida o ' +
+        'calculo mostrado en el dashboard. NUNCA pidas un enlace para revisar algo que ya esta en esos datos: ' +
+        'ya estas viendo la pagina, no hace falta que te la manden. Solo pide una URL si el usuario te habla ' +
+        'de OTRA web distinta a la que estas viendo. Si el dato concreto que preguntan no aparece en el ' +
+        'contexto, dilo con naturalidad en vez de inventarlo.';
+    }
+
     async process(input) {
       const urlMatch = input.match(/(https?:\/\/[^\s]+)/g);
       const pageContext = this._getPageContext();
@@ -110,45 +165,11 @@
       if (externalContext) contentParts.push(`CONTEXTO DE LA URL EXTERNA CITADA: ${externalContext}`);
       contentParts.push(`PREGUNTA: ${input}`);
 
-      const payload = {
-        role: 'user',
-        content: contentParts.join('\n\n')
-      };
+      const payload = { role: 'user', content: contentParts.join('\n\n') };
       this.memory.push(payload);
       if (this.memory.length > 20) this.memory.shift();
 
-      const messages = [
-        {
-          role: 'system',
-          content: 'Eres Manolito, un ingeniero sevillano con mucha calle y mucho oficio, y hablas varios ' +
-            'idiomas. REGLA DE IDIOMA: responde SIEMPRE en el mismo idioma en que te escriba el usuario ' +
-            '(ingles, frances, italiano, portugues, aleman, lo que sea) con naturalidad de nativo, sin acento ' +
-            'forzado ni traducir expresiones andaluzas de forma literal a otro idioma. ' +
-            'PERO: si el usuario te escribe en ESPAÑOL, tu idioma de casa es el andaluz sevillano cerrao, y ' +
-            'escribes reflejando como suena de verdad, siguiendo estas reglas de forma natural y sin pasarte: ' +
-            '(1) aspira o come la "s" final de palabra cuando cae antes de consonante o al final de frase: ' +
-            '"lo dato" en vez de "los datos", "ehtamo" en vez de "estamos"; (2) elimina la "d" intervocalica en ' +
-            'participios y palabras comunes: "cansao", "pescao", "to" (todo), "na" (nada), "pa" (para); ' +
-            '(3) usa vocabulario real sevillano donde encaje, sin forzarlo en cada frase: "illo", "quillo", ' +
-            '"ozu", "mi arma", "pisha", "compae", "arma la mundial", "no te digo na", "venga vale", "and ya"; ' +
-            '(4) contrae expresiones como "para que" -> "pa que", "voy a" -> "vo a"; (5) manten la gramatica ' +
-            'clara y legible: el objetivo es sonar a un sevillano real hablando, no una caricatura forzada ni ' +
-            'un texto ilegible. Ejemplo de tono correcto: "Illo, mira, lo dato de la pagina dicen que la ' +
-            'temperatura ehta a 34 grado ahora mismo, y el modelo cuantico predice que pa mañana subira un ' +
-            'poco mas. Vamo a ve si acierta." ' +
-            'En cualquier idioma eres directo, analitico y resolutivo, sin florituras ni rodeos. ' +
-            'Responde SIEMPRE solo con la respuesta final en texto plano, nunca en JSON, nunca mostrando tu ' +
-            'razonamiento interno ni metadatos de ningun tipo, y siempre completa, sin cortar la idea a medias. ' +
-            'En cada mensaje del usuario recibiras, si estan disponibles, los DATOS ACTUALES DE ESTA PAGINA: son ' +
-            'el contenido real y en vivo de la web donde tu widget esta insertado ahora mismo (temperaturas, ' +
-            'indices, resultados del motor cuantico, mapas, lo que haya en pantalla). Usalos SIEMPRE como fuente ' +
-            'principal para responder sobre "esta web", "esta pagina", "lo que se ve aqui" o cualquier medida o ' +
-            'calculo mostrado en el dashboard. NUNCA pidas un enlace para revisar algo que ya esta en esos datos: ' +
-            'ya estas viendo la pagina, no hace falta que te la manden. Solo pide una URL si el usuario te habla ' +
-            'de OTRA web distinta a la que estas viendo. Si el dato concreto que preguntan no aparece en el ' +
-            'contexto, dilo con naturalidad en vez de inventarlo.'
-        }
-      ].concat(this.memory);
+      const messages = [{ role: 'system', content: this._systemPrompt() }].concat(this.memory);
 
       try {
         const text = await this._callModel(messages);
@@ -160,12 +181,111 @@
       }
     }
 
+    // ---- Mini Giralda con luces: silueta simplificada, glow tipo neon animado ----
+    _dibujarMiniGiralda(ctx, cx, cy, escala, t) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(escala, escala);
+      const pulso = 6 + Math.sin(t * 0.05) * 3;
+      const hue = (t * 0.6) % 360;
+      const grad = ctx.createLinearGradient(0, -60, 0, 20);
+      grad.addColorStop(0, '#ff00e5');
+      grad.addColorStop(0.35, '#7b2fff');
+      grad.addColorStop(0.7, '#00f0ff');
+      grad.addColorStop(1, '#00ffc8');
+      ctx.strokeStyle = grad;
+      ctx.fillStyle = 'rgba(10,12,31,0.9)';
+      ctx.lineWidth = 1.4;
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = pulso;
+
+      // base
+      ctx.beginPath(); ctx.rect(-9, 12, 18, 8); ctx.fill(); ctx.stroke();
+      // cuerpo, tres tramos que se estrechan
+      const tramos = [
+        { y: 12, w: 15 }, { y: -2, w: 12 }, { y: -16, w: 9 }, { y: -30, w: 6.5 }
+      ];
+      for (let i = 0; i < tramos.length - 1; i++) {
+        const a = tramos[i], b = tramos[i + 1];
+        ctx.beginPath();
+        ctx.moveTo(-a.w / 2, a.y); ctx.lineTo(-b.w / 2, b.y);
+        ctx.lineTo(b.w / 2, b.y); ctx.lineTo(a.w / 2, a.y);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+      }
+      // pequeño arco decorativo en el cuerpo principal
+      ctx.beginPath(); ctx.arc(0, 4, 3.4, Math.PI, 0); ctx.stroke();
+      // remate superior (linterna) y esfera final
+      ctx.beginPath(); ctx.rect(-4, -38, 8, 8); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -44, 2.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -46); ctx.lineTo(0, -52); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, -53, 1.3, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.restore();
+    }
+
+    _iniciarLogoAnimado(canvas) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      let t = 0, activo = true;
+      canvas.__detener = () => { activo = false; };
+      const loop = () => {
+        if (!activo) return;
+        ctx.clearRect(0, 0, W, H);
+        this._dibujarMiniGiralda(ctx, W / 2, H - 8, 0.72, t);
+        t++;
+        requestAnimationFrame(loop);
+      };
+      loop();
+    }
+
+    // ---- Fondo de particulas/luces lentas dentro del panel, mismo espiritu que la web ----
+    _iniciarFondoParticulas(canvas) {
+      const ctx = canvas.getContext('2d');
+      const colores = ['#00f0ff', '#ff00e5', '#7b2fff', '#00ffc8'];
+      let particulas = [], activo = true;
+      canvas.__detener = () => { activo = false; };
+
+      const ajustarTamano = () => {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      };
+      ajustarTamano();
+      particulas = Array.from({ length: 34 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.12,
+        vy: (Math.random() - 0.5) * 0.12,
+        r: 0.5 + Math.random() * 1.1,
+        c: colores[Math.floor(Math.random() * colores.length)]
+      }));
+
+      const loop = () => {
+        if (!activo) return;
+        ctx.fillStyle = 'rgba(6,8,20,0.14)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        particulas.forEach(p => {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.c;
+          ctx.globalAlpha = 0.55;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        });
+        requestAnimationFrame(loop);
+      };
+      loop();
+    }
+
     initUI() {
       if (document.getElementById('manolito-host')) return;
 
       const host = document.createElement('div');
       host.id = 'manolito-host';
-      host.style.cssText = 'all:initial;position:fixed;bottom:22px;right:20px;z-index:2147483647;';
+      // Antes compartia esquina con el boton "MALLA" del dashboard y lo tapaba: ahora va 86px
+      // por encima, para que ambos queden visibles y pulsables.
+      host.style.cssText = 'all:initial;position:fixed;bottom:86px;right:20px;z-index:2147483647;';
       document.body.appendChild(host);
 
       const shadow = host.attachShadow({ mode: 'open' });
@@ -178,12 +298,12 @@
             width: 58px; height: 58px; border-radius: 50%;
             border: 1px solid rgba(0,240,255,.4);
             background: radial-gradient(circle at 30% 30%, rgba(123,47,255,.55), rgba(3,5,15,.95));
-            color: #fff; font-weight: 800; font-size: 15px; letter-spacing: .5px;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 22px rgba(0,240,255,.35), 0 4px 18px rgba(0,0,0,.5);
-            transition: transform .2s ease, box-shadow .2s ease;
+            transition: transform .2s ease, box-shadow .2s ease; padding: 0;
           }
           .m-fab:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0,240,255,.55), 0 6px 20px rgba(0,0,0,.55); }
+          .m-fab canvas { width: 34px; height: 46px; display: block; }
 
           #m-panel {
             display: none; flex-direction: column;
@@ -196,16 +316,19 @@
           #m-panel.open { display: flex; }
 
           #m-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 16px; border-bottom: 1px solid rgba(0,240,255,.15);
-            background: rgba(3,5,15,.6);
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; border-bottom: 1px solid rgba(0,240,255,.15);
+            background: rgba(3,5,15,.6); position: relative; z-index: 2;
           }
+          #m-header-logo { width: 26px; height: 40px; flex-shrink: 0; }
+          #m-title-wrap { flex: 1; min-width: 0; }
           #m-title {
             font-weight: 800; font-size: .82rem; letter-spacing: 2px; text-transform: uppercase;
             background: linear-gradient(135deg, var(--qc) 0%, var(--qt) 30%, var(--tx) 55%, var(--qv) 75%, var(--qm) 100%);
             background-size: 300% 300%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-            animation: m-tf 5s ease-in-out infinite;
+            animation: m-tf 5s ease-in-out infinite; display: block;
           }
+          #m-subtitle { font-size: .58rem; letter-spacing: 1px; color: rgba(180,210,255,.4); margin-top: 1px; }
           @keyframes m-tf { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
           #m-close {
             cursor: pointer; background: none; border: none; color: rgba(180,210,255,.55);
@@ -213,15 +336,17 @@
           }
           #m-close:hover { color: var(--qc); }
 
-          #m-log { flex: 1; overflow-y: auto; padding: 14px; font-size: 13px; line-height: 1.55; }
+          #m-body-wrap { position: relative; flex: 1; overflow: hidden; }
+          #m-bg-canvas { position: absolute; inset: 0; z-index: 0; opacity: .55; }
+          #m-log { position: relative; z-index: 1; height: 100%; overflow-y: auto; padding: 14px; font-size: 13px; line-height: 1.55; }
           #m-log::-webkit-scrollbar { width: 3px; }
           #m-log::-webkit-scrollbar-thumb { background: rgba(0,240,255,.25); border-radius: 2px; }
 
           #m-log .u { color: var(--qc); margin-bottom: 4px; font-size: 12px; opacity: .85; }
           #m-log .a {
             color: var(--tx); margin-bottom: 16px; white-space: pre-wrap;
-            background: rgba(0,240,255,.045); border: 1px solid rgba(0,240,255,.1);
-            border-radius: 10px; padding: 10px 12px;
+            background: rgba(10,12,31,.55); border: 1px solid rgba(0,240,255,.14);
+            border-radius: 10px; padding: 10px 12px; backdrop-filter: blur(4px);
           }
           #m-typing { display: flex; align-items: center; gap: 6px; color: rgba(180,210,255,.5); font-size: 12px; margin-bottom: 10px; }
           .m-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--qc); animation: m-pulse 1s ease-in-out infinite; }
@@ -229,7 +354,7 @@
           .m-dot:nth-child(3) { animation-delay: .3s; }
           @keyframes m-pulse { 0%,100%{opacity:.3; transform:scale(.8)} 50%{opacity:1; transform:scale(1.15)} }
 
-          #m-cmd-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(0,240,255,.15); background: rgba(3,5,15,.5); }
+          #m-cmd-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(0,240,255,.15); background: rgba(3,5,15,.5); position: relative; z-index: 2; }
           #m-cmd {
             flex: 1; background: rgba(0,240,255,.06); border: 1px solid rgba(0,240,255,.18);
             border-radius: 20px; color: var(--tx); padding: 9px 14px; outline: none; font-size: 13px;
@@ -243,10 +368,20 @@
           }
           #m-send:hover { filter: brightness(1.1); }
         </style>
-        <button class="m-fab" id="m-t" title="Habla con Manolito">M&#8734;</button>
+        <button class="m-fab" id="m-t" title="Habla con Manolito"><canvas id="m-fab-logo" width="60" height="60"></canvas></button>
         <div id="m-panel">
-          <div id="m-header"><span id="m-title">MANOLIT&#8734;</span><button id="m-close">&#10005;</button></div>
-          <div id="m-log"></div>
+          <div id="m-header">
+            <canvas id="m-header-logo" width="52" height="80"></canvas>
+            <div id="m-title-wrap">
+              <span id="m-title">MANOLIT&#8734;</span>
+              <div id="m-subtitle">TU MOTOR CUANTICO, EN ANDALUZ</div>
+            </div>
+            <button id="m-close">&#10005;</button>
+          </div>
+          <div id="m-body-wrap">
+            <canvas id="m-bg-canvas"></canvas>
+            <div id="m-log"></div>
+          </div>
           <div id="m-cmd-row">
             <input id="m-cmd" placeholder="Preguntale algo a Manolito...">
             <button id="m-send">Enviar</button>
@@ -257,8 +392,20 @@
       const panel = shadow.getElementById('m-panel');
       const log = shadow.getElementById('m-log');
       const input = shadow.getElementById('m-cmd');
+      const bgCanvas = shadow.getElementById('m-bg-canvas');
+      const headerLogo = shadow.getElementById('m-header-logo');
+      const fabLogo = shadow.getElementById('m-fab-logo');
 
-      shadow.getElementById('m-t').onclick = () => panel.classList.toggle('open');
+      this._iniciarLogoAnimado(fabLogo);
+
+      let fondoActivo = false;
+      shadow.getElementById('m-t').onclick = () => {
+        const abrir = !panel.classList.contains('open');
+        panel.classList.toggle('open');
+        if (abrir) {
+          if (!fondoActivo) { this._iniciarFondoParticulas(bgCanvas); this._iniciarLogoAnimado(headerLogo); fondoActivo = true; }
+        }
+      };
       shadow.getElementById('m-close').onclick = () => panel.classList.remove('open');
 
       const send = async () => {
