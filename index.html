@@ -1,11 +1,11 @@
-<link rel="manifest" href="manifest.json">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
 <!DOCTYPE html>
 <html lang="es">
-  <head>
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+
     <title>Manolit&#x221E; Motor Cuantico Climatico</title>
     <!--
   MANOLIT∞ QUANTUM CLIMATE ENGINE v6.0 — refactored
@@ -1251,7 +1251,8 @@
         }
       }
     </style>
-  </head>
+  <base target="_blank">
+</head>
   <body>
     <!-- Banner de consentimiento de cookies -->
     <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #111; border-top: 1px solid #444; color: #fff; padding: 15px 20px; z-index: 9999; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; box-sizing: border-box; font-family: monospace;">
@@ -4237,7 +4238,11 @@
         };
         s('ilat', '--&deg;');
         s('ilon', '--&deg;');
-        s('ialt', '~408 < span class = "du" > km < /span>');s('ivel','~27574 < span class = "du" > km / h < /span>');}function drawISSTrack(lat, lon) {
+        s('ialt', '~408 <span class="du">km</span>');
+        s('ivel', '~27574 <span class="du">km/h</span>');
+      }
+
+      function drawISSTrack(lat, lon) {
               const cvs = document.getElementById('isst');
               if (!cvs) return;
               const ctx = cvs.getContext('2d');
@@ -5284,11 +5289,13 @@
                                                         rejectBtn.addEventListener('click', () => saveCookieStatus('rejected'));
                                                       });
     </script>
+  
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js');
+        });
+      }
+    </script>
   </body>
 </html>
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js');
-    });
-}
