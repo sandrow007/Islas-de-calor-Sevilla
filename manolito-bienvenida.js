@@ -1,18 +1,21 @@
 /**
- * MANOLITO∞ — Flujo de bienvenida + entrada directa (versión autocontenida)
+ * MANOLITO∞ — Flujo de bienvenida (versión final comprobada)
  */
 (function () {
   'use strict';
-  console.log('✅ Manolito splash script cargado correctamente.');
+
+  // Confirmación en consola de que el script se ejecuta
+  console.log('✅ Splash de Manolito cargado correctamente.');
 
   const STORAGE_KEY = 'manolito_welcome_choice_v1';
 
-  // DOM ready helper
+  // Helper para esperar a que la página esté lista
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
     else document.addEventListener('DOMContentLoaded', fn);
   }
 
+  // Persistencia en localStorage
   function getChoice() {
     try { return localStorage.getItem(STORAGE_KEY); } catch (e) { return null; }
   }
@@ -23,16 +26,19 @@
     } catch (e) {}
   }
 
+  // Función que arranca el modo elegido
   function enterMode(mode) {
-    console.log('🌐 Modo seleccionado:', mode);
-    // Aquí puedes llamar a tu función real de inicio, por ejemplo:
-    // if (typeof window.initManolito === 'function') window.initManolito(mode);
-    // o disparar un evento: document.dispatchEvent(new CustomEvent('manolito:mode', { detail: { mode } }));
+    console.log('🚀 Modo seleccionado:', mode);
+    // Si tienes una función global window.initManolito, se llamará aquí
+    if (typeof window.initManolito === 'function') {
+      window.initManolito(mode);
+    } else {
+      // Si no, se lanza un evento que tu app puede escuchar
+      document.dispatchEvent(new CustomEvent('manolito:mode', { detail: { mode } }));
+    }
   }
 
-  /* ================================================================
-     ESTILOS (completos)
-     ================================================================ */
+  // Estilos completos del splash
   const splashCSS = `
     #mwl-splash {
       position: fixed; inset: 0; z-index: 99999;
@@ -104,16 +110,6 @@
     }
     .mwl-remember input { accent-color: #00f0ff; cursor: pointer; }
     .mwl-remember label { cursor: pointer; }
-    #mwl-skip-giralda {
-      position: fixed; top: 18px; right: 18px; z-index: 99998;
-      background: rgba(10,12,31,.85); border: 1px solid rgba(0,240,255,.25);
-      color: #00f0ff; font-size: .6rem; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; padding: 8px 14px; border-radius: 20px;
-      cursor: pointer; backdrop-filter: blur(10px);
-      opacity: 0; pointer-events: none; transition: opacity .4s;
-    }
-    #mwl-skip-giralda.vis { opacity: 1; pointer-events: auto; }
-    #mwl-skip-giralda:hover { background: rgba(0,240,255,.15); }
   `;
 
   function injectStyles() {
@@ -124,8 +120,8 @@
     document.head.appendChild(s);
   }
 
+  // Construir y mostrar el splash
   function showSplash() {
-    console.log('🎨 Mostrando splash de bienvenida...');
     injectStyles();
 
     const saved = getChoice();
@@ -133,7 +129,6 @@
       try {
         const parsed = JSON.parse(saved);
         if (parsed.skipWelcome) {
-          console.log('⏩ Saltando bienvenida por preferencia guardada.');
           enterMode(parsed.mode);
           return;
         }
@@ -153,11 +148,17 @@
         <div class="mwl-btns">
           <div class="mwl-btn" data-mode="direct">
             <span class="mwl-ico">📡</span>
-            <span><div class="mwl-lbl">Entrada Directa</div><div class="mwl-desc">Pronóstico estándar</div></span>
+            <span>
+              <div class="mwl-lbl">Entrada Directa</div>
+              <div class="mwl-desc">Pronóstico estándar con datos reales</div>
+            </span>
           </div>
           <div class="mwl-btn mwl-giralda" data-mode="giralda">
             <span class="mwl-ico">🌀</span>
-            <span><div class="mwl-lbl">Giralda</div><div class="mwl-desc">Modo experimental</div></span>
+            <span>
+              <div class="mwl-lbl">Giralda</div>
+              <div class="mwl-desc">Modo experimental con predicción simbólica</div>
+            </span>
           </div>
         </div>
         <button class="mwl-skip">Saltar →</button>
@@ -169,15 +170,18 @@
     `;
     document.body.appendChild(splash);
 
+    // Evento de botones
     splash.querySelectorAll('.mwl-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const mode = btn.dataset.mode;
-        setChoice(mode, splash.querySelector('#mwl-remember-check').checked);
+        const remember = splash.querySelector('#mwl-remember-check');
+        setChoice(mode, remember ? remember.checked : false);
         splash.remove();
         enterMode(mode);
       });
     });
 
+    // Botón "Saltar"
     splash.querySelector('.mwl-skip').addEventListener('click', () => {
       splash.remove();
       enterMode('direct');
@@ -186,4 +190,5 @@
 
   // Arrancar cuando el DOM esté listo
   ready(showSplash);
+
 })();
