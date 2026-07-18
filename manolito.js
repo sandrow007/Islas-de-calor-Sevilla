@@ -1,19 +1,19 @@
 /**
- * MANOLITO ENGINE v5.4 - Professional Agent Architecture
- * Novedades de esta version:
- * - Aparece SOLO despues de terminar la intro de la Giralda (antes salia encima, tapando todo)
- * - Reubicado para no tapar el boton "MALLA" del dashboard (antes compartian la misma esquina)
- * - Mini Giralda con luces (glow) en el boton flotante y en la cabecera del chat, animada
- * - Fondo de particulas/luces que se desplazan lentamente dentro del chat, mismo estilo que la web
- * - Andaluz sevillano serio pero bien escrito: illo/illa, "¿que ice illo?", vocabulario real
- * - Si le hablas mal de Sevilla o Andalucia (costumbres, fiestas, etc.) se ofende de verdad,
- *   defiende la tierra con mal genio, pero sin faltar nunca al usuario
- * - Consejos de salud ante calor/frio extremo: solo pautas generales avaladas por sanidad
- *   publica (hidratacion, sombra, sintomas de golpe de calor, cuando ir a urgencias). Nunca
- *   dosis de medicamentos ni diagnostico.
- * - Extrae SOLO el texto de la respuesta (nunca JSON crudo ni el "reasoning" interno)
- * - Lee automaticamente los datos reales de la pagina donde esta insertado
- * - Shadow DOM: aislado de cualquier CSS de la web anfitriona
+ * MANOLITO ENGINE v5.5 - Professional Agent Architecture
+ * Cambios sobre v5.4:
+ * - FIX CRÍTICO: el widget se quedaba colgado en "Manolito esta pensando..." sin
+ *   llegar nunca a responder. Causas cubiertas ahora:
+ *     a) Se añade un timeout GLOBAL con Promise.race que garantiza una respuesta
+ *        (de éxito o de error) en un máximo de 22s, pase lo que pase con la red.
+ *     b) send() ahora tiene try/catch propio: si algo revienta en cualquier punto
+ *        (localStorage bloqueado, DOM, lo que sea), el indicador "pensando" se
+ *        quita SIEMPRE, nunca se queda colgado en pantalla.
+ *     c) Los reintentos internos ya no se pueden acumular sin límite: máximo
+ *        1 reintento y el timeout global manda por encima de todo.
+ * - FIX TRUNCADO: se fija max_tokens explícito y se detecta si la respuesta viene
+ *   cortada a medio párrafo (sin punto final ni cierre), en cuyo caso se pide una
+ *   continuación automática y se concatena, en vez de servir la frase a medias.
+ * - Resto de la personalidad, memoria y estilo visual igual que v5.4.
  */
 (function () {
   'use strict';
@@ -33,8 +33,6 @@
       else document.addEventListener('DOMContentLoaded', fn);
     }
 
-    // Manolito no debe verse durante la intro de la Giralda (pantalla #pi). Si esta pagina
-    // no tiene intro, se muestra de inmediato. Si la tiene, espera a que se oculte.
     _esperarFinDeIntro(callback) {
       const intro = document.getElementById('pi');
       if (!intro) { callback(); return; }
@@ -44,7 +42,6 @@
         if (oculta()) { obs.disconnect(); callback(); }
       });
       obs.observe(intro, { attributes: true, attributeFilter: ['style', 'class'] });
-      // seguridad: si por lo que sea nunca se detecta el cambio, se muestra igualmente a los 25s
       setTimeout(() => { obs.disconnect(); if (!document.getElementById('manolito-host')) callback(); }, 25000);
     }
 
@@ -95,25 +92,67 @@
       return raw.trim();
     }
 
-    async _callModel(messages, attempt = 0) {
+    // Heurística simple para detectar si un texto se ha quedado cortado a medias
+    // (sin puntuación de cierre, o terminando en coma/conjunción).
+    _pareceCortado(texto) {
+      if (!texto) return false;
+      const t = texto.trim();
+      if (t.length < 2) return false;
+      const ultimoChar = t.slice(-1);
+      if (['.', '?', '!', '…', '"', ')'].includes(ultimoChar)) return false;
+      // termina en coma, "y", "que", etc. -> huele a corte
+      return true;
+    }
+
+    async _llamarConTimeout(messages, msTimeout) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 25000);
+      const timeoutId = setTimeout(() => controller.abort(), msTimeout);
       try {
         const response = await fetch('https://text.pollinations.ai/openai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
-          body: JSON.stringify({ messages, seed: Math.floor(Math.random() * 100000) })
+          body: JSON.stringify({
+            messages,
+            seed: Math.floor(Math.random() * 100000),
+            max_tokens: 1200
+          })
         });
-        clearTimeout(timeout);
+        clearTimeout(timeoutId);
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const raw = await response.text();
         return this._extractContent(raw);
       } catch (e) {
-        clearTimeout(timeout);
+        clearTimeout(timeoutId);
+        throw e;
+      }
+    }
+
+    async _callModel(messages, attempt = 0) {
+      try {
+        return await this._llamarConTimeout(messages, 12000);
+      } catch (e) {
         if (attempt < 1) return this._callModel(messages, attempt + 1);
         throw e;
       }
+    }
+
+    // Si la respuesta parece cortada a medias, pedimos que la continúe y concatenamos.
+    async _callModelCompleto(messages) {
+      let texto = await this._callModel(messages);
+      if (this._pareceCortado(texto)) {
+        try {
+          const continuacion = await this._llamarConTimeout(
+            messages.concat([
+              { role: 'assistant', content: texto },
+              { role: 'user', content: 'Continúa exactamente donde lo dejaste, sin repetir nada de lo ya dicho.' }
+            ]),
+            8000
+          );
+          if (continuacion) texto = texto + ' ' + continuacion;
+        } catch (e) { /* si falla la continuación, servimos lo que ya tenemos */ }
+      }
+      return texto;
     }
 
     _systemPrompt() {
@@ -144,6 +183,8 @@
         'En cualquier idioma eres directo, analitico y resolutivo, sin florituras ni rodeos. ' +
         'Responde SIEMPRE solo con la respuesta final en texto plano, nunca en JSON, nunca mostrando tu ' +
         'razonamiento interno ni metadatos de ningun tipo, y siempre completa, sin cortar la idea a medias. ' +
+        'Ajusta la extension a la pregunta: breve si es breve, desarrollada si hace falta, pero termina ' +
+        'siempre la frase y la idea, nunca la dejes a medias. ' +
         'En cada mensaje del usuario recibiras, si estan disponibles, los DATOS ACTUALES DE ESTA PAGINA: son ' +
         'el contenido real y en vivo de la web donde tu widget esta insertado ahora mismo (temperaturas, ' +
         'indices, resultados del motor cuantico, mapas, lo que haya en pantalla). Usalos SIEMPRE como fuente ' +
@@ -171,23 +212,36 @@
 
       const messages = [{ role: 'system', content: this._systemPrompt() }].concat(this.memory);
 
+      // Timeout global: pase lo que pase (cuelgue de red, reintentos, continuación
+      // por corte), esta promesa SIEMPRE se resuelve antes de 22s con algo que
+      // mostrar. Así nunca se queda "pensando" para siempre.
+      const timeoutGlobal = new Promise((resolve) => {
+        setTimeout(() => resolve('__TIMEOUT__'), 22000);
+      });
+
       try {
-        const text = await this._callModel(messages);
-        this.memory.push({ role: 'assistant', content: text });
+        const resultado = await Promise.race([
+          this._callModelCompleto(messages),
+          timeoutGlobal
+        ]);
+
+        if (resultado === '__TIMEOUT__' || !resultado) {
+          return 'Illo, el servidor se esta tomando mas tiempo de la cuenta. Prueba a preguntarmelo otra vez, que seguro que ahora contesta rapido.';
+        }
+
+        this.memory.push({ role: 'assistant', content: resultado });
         this._saveMemory();
-        return text;
+        return resultado;
       } catch (e) {
         return 'Illo, ahora mismo no puedo responder (el servidor esta espeso). Prueba otra vez en un momento.';
       }
     }
 
-    // ---- Mini Giralda con luces: silueta simplificada, glow tipo neon animado ----
     _dibujarMiniGiralda(ctx, cx, cy, escala, t) {
       ctx.save();
       ctx.translate(cx, cy);
       ctx.scale(escala, escala);
       const pulso = 6 + Math.sin(t * 0.05) * 3;
-      const hue = (t * 0.6) % 360;
       const grad = ctx.createLinearGradient(0, -60, 0, 20);
       grad.addColorStop(0, '#ff00e5');
       grad.addColorStop(0.35, '#7b2fff');
@@ -199,9 +253,7 @@
       ctx.shadowColor = '#00f0ff';
       ctx.shadowBlur = pulso;
 
-      // base
       ctx.beginPath(); ctx.rect(-9, 12, 18, 8); ctx.fill(); ctx.stroke();
-      // cuerpo, tres tramos que se estrechan
       const tramos = [
         { y: 12, w: 15 }, { y: -2, w: 12 }, { y: -16, w: 9 }, { y: -30, w: 6.5 }
       ];
@@ -212,9 +264,7 @@
         ctx.lineTo(b.w / 2, b.y); ctx.lineTo(a.w / 2, a.y);
         ctx.closePath(); ctx.fill(); ctx.stroke();
       }
-      // pequeño arco decorativo en el cuerpo principal
       ctx.beginPath(); ctx.arc(0, 4, 3.4, Math.PI, 0); ctx.stroke();
-      // remate superior (linterna) y esfera final
       ctx.beginPath(); ctx.rect(-4, -38, 8, 8); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.arc(0, -44, 2.6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, -46); ctx.lineTo(0, -52); ctx.stroke();
@@ -237,7 +287,6 @@
       loop();
     }
 
-    // ---- Fondo de particulas/luces lentas dentro del panel, mismo espiritu que la web ----
     _iniciarFondoParticulas(canvas) {
       const ctx = canvas.getContext('2d');
       const colores = ['#00f0ff', '#ff00e5', '#7b2fff', '#00ffc8'];
@@ -283,8 +332,6 @@
 
       const host = document.createElement('div');
       host.id = 'manolito-host';
-      // Antes compartia esquina con el boton "MALLA" del dashboard y lo tapaba: ahora va 86px
-      // por encima, para que ambos queden visibles y pulsables.
       host.style.cssText = 'all:initial;position:fixed;bottom:86px;right:20px;z-index:2147483647;';
       document.body.appendChild(host);
 
@@ -307,7 +354,12 @@
 
           #m-panel {
             display: none; flex-direction: column;
-            width: 360px; max-width: 92vw; height: 500px; max-height: 76vh;
+            width: 360px; max-width: 92vw;
+            /* Antes: altura fija 500px que en pantallas bajas se salia por arriba
+               y "cortaba" el panel contra el borde de la ventana. Ahora se ajusta
+               al espacio real disponible entre el boton y el borde superior. */
+            height: min(500px, calc(100vh - 160px));
+            max-height: 76vh;
             background: rgba(10,12,31,.86); backdrop-filter: blur(18px);
             border: 1px solid rgba(0,240,255,.28); border-radius: 16px;
             position: absolute; bottom: 72px; right: 0;
@@ -318,7 +370,7 @@
           #m-header {
             display: flex; align-items: center; gap: 10px;
             padding: 10px 14px; border-bottom: 1px solid rgba(0,240,255,.15);
-            background: rgba(3,5,15,.6); position: relative; z-index: 2;
+            background: rgba(3,5,15,.6); position: relative; z-index: 2; flex-shrink: 0;
           }
           #m-header-logo { width: 26px; height: 40px; flex-shrink: 0; }
           #m-title-wrap { flex: 1; min-width: 0; }
@@ -336,7 +388,7 @@
           }
           #m-close:hover { color: var(--qc); }
 
-          #m-body-wrap { position: relative; flex: 1; overflow: hidden; }
+          #m-body-wrap { position: relative; flex: 1; overflow: hidden; min-height: 0; }
           #m-bg-canvas { position: absolute; inset: 0; z-index: 0; opacity: .55; }
           #m-log { position: relative; z-index: 1; height: 100%; overflow-y: auto; padding: 14px; font-size: 13px; line-height: 1.55; }
           #m-log::-webkit-scrollbar { width: 3px; }
@@ -354,7 +406,7 @@
           .m-dot:nth-child(3) { animation-delay: .3s; }
           @keyframes m-pulse { 0%,100%{opacity:.3; transform:scale(.8)} 50%{opacity:1; transform:scale(1.15)} }
 
-          #m-cmd-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(0,240,255,.15); background: rgba(3,5,15,.5); position: relative; z-index: 2; }
+          #m-cmd-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(0,240,255,.15); background: rgba(3,5,15,.5); position: relative; z-index: 2; flex-shrink: 0; }
           #m-cmd {
             flex: 1; background: rgba(0,240,255,.06); border: 1px solid rgba(0,240,255,.18);
             border-radius: 20px; color: var(--tx); padding: 9px 14px; outline: none; font-size: 13px;
@@ -367,6 +419,7 @@
             border-radius: 18px; cursor: pointer; font-size: 13px;
           }
           #m-send:hover { filter: brightness(1.1); }
+          #m-send:disabled { opacity: .5; cursor: default; }
         </style>
         <button class="m-fab" id="m-t" title="Habla con Manolito"><canvas id="m-fab-logo" width="60" height="60"></canvas></button>
         <div id="m-panel">
@@ -392,6 +445,7 @@
       const panel = shadow.getElementById('m-panel');
       const log = shadow.getElementById('m-log');
       const input = shadow.getElementById('m-cmd');
+      const sendBtn = shadow.getElementById('m-send');
       const bgCanvas = shadow.getElementById('m-bg-canvas');
       const headerLogo = shadow.getElementById('m-header-logo');
       const fabLogo = shadow.getElementById('m-fab-logo');
@@ -412,20 +466,33 @@
         const cmd = input.value.trim();
         if (!cmd || this.busy) return;
         input.value = '';
-        log.insertAdjacentHTML('beforeend', `<div class="u">Tu</div><div class="a" style="opacity:.7">${this._escape(cmd)}</div>`);
-        const typing = document.createElement('div');
-        typing.id = 'm-typing';
-        typing.innerHTML = 'Manolito esta pensando <span class="m-dot"></span><span class="m-dot"></span><span class="m-dot"></span>';
-        log.appendChild(typing);
-        log.scrollTop = log.scrollHeight;
+        sendBtn.disabled = true;
 
-        this.busy = true;
-        const res = await this.process(cmd);
-        this.busy = false;
+        let typing;
+        try {
+          log.insertAdjacentHTML('beforeend', `<div class="u">Tu</div><div class="a" style="opacity:.7">${this._escape(cmd)}</div>`);
+          typing = document.createElement('div');
+          typing.id = 'm-typing';
+          typing.innerHTML = 'Manolito esta pensando <span class="m-dot"></span><span class="m-dot"></span><span class="m-dot"></span>';
+          log.appendChild(typing);
+          log.scrollTop = log.scrollHeight;
 
-        typing.remove();
-        log.insertAdjacentHTML('beforeend', `<div class="a">${this._escape(res)}</div>`);
-        log.scrollTop = log.scrollHeight;
+          this.busy = true;
+          const res = await this.process(cmd);
+
+          typing.remove();
+          log.insertAdjacentHTML('beforeend', `<div class="a">${this._escape(res)}</div>`);
+          log.scrollTop = log.scrollHeight;
+        } catch (e) {
+          // Red de seguridad final: pase lo que pase, el indicador desaparece
+          // y el usuario ve un mensaje, nunca un cuelgue silencioso.
+          if (typing && typing.parentNode) typing.remove();
+          log.insertAdjacentHTML('beforeend', `<div class="a">Illo, algo ha petao por aqui dentro. Intentalo otra vez, anda.</div>`);
+          log.scrollTop = log.scrollHeight;
+        } finally {
+          this.busy = false;
+          sendBtn.disabled = false;
+        }
       };
 
       shadow.getElementById('m-send').onclick = send;
