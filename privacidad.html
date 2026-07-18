@@ -1,169 +1,129 @@
-<style>
-  #privacidad-modulo {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 100000;
-    background: rgba(3, 5, 15, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  #privacidad-modulo.active {
-    display: flex;
-    opacity: 1;
-  }
-  .q-modal-card {
-    max-width: 660px;
-    width: 100%;
-    max-height: 82vh;
-    overflow-y: auto;
-    background: linear-gradient(135deg, rgba(8, 10, 24, 0.98), rgba(13, 17, 38, 0.96));
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    border-radius: 12px;
-    padding: 32px 28px;
-    color: #e2ebf8;
-    font-family: 'SF Pro Display', '-apple-system', system-ui, sans-serif;
-    font-size: 0.86rem;
-    line-height: 1.7;
-    box-shadow: 0 0 50px rgba(0, 240, 255, 0.12), inset 0 0 24px rgba(0, 0, 0, 0.7);
-  }
-  /* Barra de scroll temática estilo terminal de datos */
-  .q-modal-card::-webkit-scrollbar {
-    width: 4px;
-  }
-  .q-modal-card::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.3);
-  }
-  .q-modal-card::-webkit-scrollbar-thumb {
-    background: rgba(0, 240, 255, 0.35);
-    border-radius: 4px;
-  }
-  .q-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 22px;
-    border-bottom: 1px solid rgba(0, 240, 255, 0.15);
-    padding-bottom: 12px;
-  }
-  .q-modal-title {
-    margin: 0;
-    font-size: 0.95rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #00f0ff;
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
-  }
-  .q-modal-close {
-    background: none;
-    border: none;
-    color: rgba(0, 240, 255, 0.6);
-    font-size: 22px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .q-modal-close:hover {
-    color: #ff0055;
-    transform: scale(1.1);
-  }
-  .q-modal-card p {
-    margin-bottom: 16px;
-    color: #cbd5e1;
-  }
-  .q-modal-card strong {
-    color: #00f0ff;
-    font-weight: 600;
-  }
-  .q-list-tech {
-    margin: 12px 0 20px 16px;
-    padding: 0;
-    list-style-type: none;
-  }
-  .q-list-tech li {
-    position: relative;
-    margin-bottom: 8px;
-    padding-left: 16px;
-    color: #e2ebf8;
-  }
-  .q-list-tech li::before {
-    content: "»";
-    position: absolute;
-    left: 0;
-    color: #ff0055;
-    font-weight: bold;
-    text-shadow: 0 0 4px rgba(255, 0, 85, 0.4);
-  }
-  #privacidad-link {
-    position: fixed;
-    left: 16px;
-    bottom: 12px;
-    z-index: 2000;
-    font-size: 0.58rem;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: rgba(0, 240, 255, 0.35);
-    cursor: pointer;
-    font-family: system-ui, sans-serif;
-    transition: all 0.3s ease;
-    padding: 4px;
-  }
-  #privacidad-link:hover {
-    color: #00f0ff;
-    text-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
-  }
-</style>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviso de Privacidad - Islas de Calor Sevilla</title>
+    <style>
+        /* Estilos básicos para que el enlace y el modal se vean bien en cualquier página */
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #0a0c1f;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        /* Simulación de contenido para que no esté vacío */
+        .contenido-ejemplo {
+            color: #e8f0ff;
+            padding: 40px;
+            text-align: center;
+            margin-top: 20vh;
+        }
+    </style>
+</head>
+<body>
 
-<section id="privacidad-modulo" onclick="if(event.target === this) togglePrivacidad(false)">
-    <div class="q-modal-card">
-        <div class="q-modal-header">
-            <h2 class="q-modal-title">💾 Transparencia y Telemetría</h2>
-            <button class="q-modal-close" onclick="togglePrivacidad(false)">&times;</button>
-        </div>
-
-        <p><strong>Filosofía del Entorno:</strong> Este nodo web opera bajo un modelo estricto de cliente puro. Toda la computación gráfica e interpretación visual de datos térmicos se procesan de forma local en tu propia máquina.</p>
-
-        <p><strong>Geolocalización Volátil:</strong> Si concedes permisos de ubicación a tu terminal, las coordenadas se utilizan únicamente en la memoria efímera de tu navegador para centrar las capas climáticas en tu área urbana. Si los deniegas o bloqueas, el sistema asigna el nodo central de Sevilla por defecto. No existen registros de geolocalización persistentes.</p>
-
-        <p><strong>Manolito Core (Asistente IA):</strong> Las interacciones dentro del chat de Manolito y el estado de variables de tu interfaz se transmiten en tiempo real de forma segura al motor computacional descentralizado de <em>pollinations.ai</em> con el único fin de generar respuestas dinámicas. Si insertas una URL externa en la línea de comandos, se enruta a través de la pasarela técnica de <em>allorigins.win</em> para evadir bloqueos de políticas CORS. <strong>El historial completo de interacciones se almacena localmente en tu propio dispositivo (`localStorage`)</strong>; jamás se aloja en un servidor centralizado nuestro y puedes borrarlo al purgar los datos de tu sitio.</p>
-
-        <p><strong>Conexión de Nodos Externos:</strong> Para inyectar telemetría real en la matriz urbana sin utilizar cookies comerciales, tu navegador consulta directamente los siguientes puntos de datos técnicos mediante llamadas estándar (exponiendo tu IP solo para la petición técnica de red):</p>
-        
-        <ul class="q-list-tech">
-            <li><strong>Open-Meteo & NASA POWER:</strong> Telemetría macro-meteorológica urbana.</li>
-            <li><strong>NOAA SWPC:</strong> Variables heliofísicas y clima espacial (Índice Kp y Flujo F10.7).</li>
-            <li><strong>wheretheiss.at:</strong> Posición orbital de la Estación Espacial Internacional (ISS).</li>
-            <li><strong>OpenStreetMap, CartoDB, Esri, OpenTopoMap:</strong> Motores de mapeado base.</li>
-        </ul>
-
-        <p><strong>Garantías de Inmunidad:</strong> No utilizamos cookies de rastreo publicitario masivo ni herramientas invasivas de análisis de perfiles comerciales. Tus datos de navegación permanecen completamente soberanos e inalterados.</p>
-
-        <p style="opacity:.4; font-size:.78em; margin-top:24px; border-top:1px solid rgba(0, 240, 255, 0.15); padding-top:12px;">Última compilación del aviso: Julio 2026. Sevilla Quantum Node.</p>
+    <!-- Esto es solo para que veas algo en la página, puedes quitarlo -->
+    <div class="contenido-ejemplo">
+        <h1>🌡️ Islas de Calor Sevilla</h1>
+        <p>Esta es una demostración del aviso de privacidad.<br>El enlace real aparecerá abajo a la izquierda.</p>
     </div>
-</section>
 
-<div id="privacidad-link" onclick="togglePrivacidad(true)">
-    [ Privacidad & Datos ]
-</div>
+    <!-- Aquí empieza el código del aviso de privacidad (TODO EN UN SOLO BLOQUE) -->
+    <script>
+        (function () {
+            'use strict';
 
-<script>
-function togglePrivacidad(show) {
-    const modulo = document.getElementById('privacidad-modulo');
-    if (show) {
-        modulo.style.display = 'flex';
-        modulo.offsetHeight; // Forzar reflow del DOM para asegurar la transición suave
-        modulo.classList.add('active');
-    } else {
-        modulo.classList.remove('active');
-        setTimeout(() => {
-            if(!modulo.classList.contains('active')) {
-                modulo.style.display = 'none';
+            function ready(fn) {
+                if (document.readyState !== 'loading') fn();
+                else document.addEventListener('DOMContentLoaded', fn);
             }
-        }, 300); // Sincronizado exactamente con el tiempo de animación de CSS
-    }
-}
-</script>
+
+            const TEXTO_PRIVACIDAD = `
+                <p><strong>Qué recoge esta web por sí misma:</strong> ningún dato personal identificable.
+                Si tu navegador concede permiso de ubicación, se usa solo para centrar el clima en tu zona;
+                si no lo concedes, se usa Sevilla por defecto. No hay cuentas de usuario ni formularios que
+                pidan datos personales.</p>
+
+                <p><strong>Manolito (el asistente):</strong> lo que escribes en el chat, y el contenido visible
+                de la página en ese momento (temperaturas, índices, resultados mostrados en pantalla), se envían
+                a un servicio externo de inteligencia artificial (<em>pollinations.ai</em>) para generar la
+                respuesta. Si pegas una URL en el chat, esa dirección se envía a un servicio externo de lectura
+                de páginas (<em>allorigins.win</em>) para poder leerla. El historial de la conversación se guarda
+                únicamente en tu propio navegador (almacenamiento local), nunca en un servidor nuestro, y puedes
+                borrarlo limpiando los datos del sitio en tu navegador.</p>
+
+                <p><strong>Servicios externos que esta web contacta</strong> para mostrar datos reales
+                (ninguno recibe tu identidad, solo la petición técnica habitual con tu IP, como al visitar
+                cualquier web):</p>
+                <ul>
+                    <li>Open-Meteo y NASA POWER — datos meteorológicos</li>
+                    <li>NOAA SWPC — clima espacial (índice Kp, flujo solar F10.7)</li>
+                    <li>wheretheiss.at — posición de la Estación Espacial Internacional</li>
+                    <li>OpenStreetMap, CartoDB, Esri, OpenTopoMap — mapas base</li>
+                    <li>pollinations.ai — motor de inteligencia artificial de Manolito</li>
+                    <li>allorigins.win — lectura de páginas externas cuando se pega una URL en el chat</li>
+                </ul>
+
+                <p><strong>Lo que NO hacemos:</strong> no usamos cookies de rastreo publicitario, no vendemos
+                ni compartimos datos con terceros con fines comerciales, y no creamos perfiles de usuarios.</p>
+
+                <p style="opacity:.6;font-size:.85em">Última actualización de este aviso: ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long' })}.</p>
+            `;
+
+            function crearModal() {
+                const overlay = document.createElement('div');
+                overlay.id = 'privacidad-overlay';
+                overlay.style.cssText = `
+                    position:fixed; inset:0; z-index:100000; display:none;
+                    background:rgba(3,5,15,.82); backdrop-filter:blur(6px);
+                    align-items:center; justify-content:center; padding:20px;
+                `;
+                overlay.innerHTML = `
+                    <div style="max-width:640px; max-height:80vh; overflow-y:auto; background:rgba(10,12,31,.96);
+                        border:1px solid rgba(0,240,255,.28); border-radius:14px; padding:28px 26px;
+                        color:#e8f0ff; font-family:'SF Pro Display','Segoe UI',system-ui,sans-serif;
+                        font-size:.85rem; line-height:1.7; box-shadow:0 20px 60px rgba(0,0,0,.5);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                            <h2 style="margin:0; font-size:.95rem; letter-spacing:2px; text-transform:uppercase; color:#00f0ff;">
+                                Privacidad y datos
+                            </h2>
+                            <button id="privacidad-cerrar" style="background:none;border:none;color:#00f0ff;font-size:18px;cursor:pointer;">&#10005;</button>
+                        </div>
+                        ${TEXTO_PRIVACIDAD}
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) overlay.style.display = 'none';
+                });
+                overlay.querySelector('#privacidad-cerrar').addEventListener('click', function() {
+                    overlay.style.display = 'none';
+                });
+                return overlay;
+            }
+
+            function crearEnlace(overlay) {
+                const link = document.createElement('div');
+                link.id = 'privacidad-link';
+                link.textContent = 'Privacidad y datos';
+                link.style.cssText = `
+                    position:fixed; left:14px; bottom:10px; z-index:2000;
+                    font-size:.55rem; letter-spacing:1px; text-transform:uppercase;
+                    color:rgba(180,210,255,.4); cursor:pointer; font-family:'SF Pro Display',sans-serif;
+                `;
+                link.addEventListener('mouseenter', function() { link.style.color = '#00f0ff'; });
+                link.addEventListener('mouseleave', function() { link.style.color = 'rgba(180,210,255,.4)'; });
+                link.addEventListener('click', function() { overlay.style.display = 'flex'; });
+                document.body.appendChild(link);
+            }
+
+            ready(function() {
+                if (document.getElementById('privacidad-link')) return;
+                const overlay = crearModal();
+                crearEnlace(overlay);
+            });
+        })();
+    </script>
+</body>
+</html>
