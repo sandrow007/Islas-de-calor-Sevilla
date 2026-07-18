@@ -1,21 +1,22 @@
 /**
- * MANOLITO∞ — Flujo de bienvenida (versión final comprobada)
+ * MANOLITO∞ — Flujo de bienvenida (v2, con integración real)
+ * FALLO CORREGIDO: el botón "Entrada Directa" llamaba a window.initManolito, una función
+ * que no existe en esta web, así que no hacía nada al pulsarlo. Ahora se conecta de verdad
+ * con window.revealDash() (la función real del dashboard) para saltar la intro.
+ * También se quitan los emojis de los botones (prohibidos en esta web) y se usan iconos SVG.
  */
 (function () {
   'use strict';
-
-  // Confirmación en consola de que el script se ejecuta
-  console.log('✅ Splash de Manolito cargado correctamente.');
+  if (window.__manolitoWelcomeLoaded) return;
+  window.__manolitoWelcomeLoaded = true;
 
   const STORAGE_KEY = 'manolito_welcome_choice_v1';
 
-  // Helper para esperar a que la página esté lista
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
     else document.addEventListener('DOMContentLoaded', fn);
   }
 
-  // Persistencia en localStorage
   function getChoice() {
     try { return localStorage.getItem(STORAGE_KEY); } catch (e) { return null; }
   }
@@ -26,19 +27,33 @@
     } catch (e) {}
   }
 
-  // Función que arranca el modo elegido
-  function enterMode(mode) {
-    console.log('🚀 Modo seleccionado:', mode);
-    // Si tienes una función global window.initManolito, se llamará aquí
-    if (typeof window.initManolito === 'function') {
-      window.initManolito(mode);
-    } else {
-      // Si no, se lanza un evento que tu app puede escuchar
-      document.dispatchEvent(new CustomEvent('manolito:mode', { detail: { mode } }));
+  // ---- Aquí estaba el fallo: antes llamaba a una funcion inventada que no existia ----
+  function entrarDirecto(reintentos) {
+    if (typeof window.revealDash === 'function') {
+      if (typeof window.__stopIntro === 'function') window.__stopIntro();
+      window.revealDash();
+      return;
     }
+    if (reintentos > 0) {
+      setTimeout(() => entrarDirecto(reintentos - 1), 200);
+      return;
+    }
+    // ultimo recurso, por si revealDash no llega a existir nunca en esta pagina
+    const pi = document.getElementById('pi');
+    const pd = document.getElementById('pd');
+    if (pi) pi.style.display = 'none';
+    if (pd) { pd.style.display = 'block'; pd.style.opacity = '1'; }
   }
 
-  // Estilos completos del splash
+  function enterMode(mode) {
+    if (mode === 'direct') {
+      entrarDirecto(15); // reintenta hasta ~3s por si este script carga antes que el resto
+    }
+    // En modo 'giralda' no hace falta nada: la intro ya esta debajo del splash y sigue
+    // su flujo normal (tocar la Giralda 5 veces), tal cual estaba pensada.
+    document.dispatchEvent(new CustomEvent('manolito:mode', { detail: { mode } }));
+  }
+
   const splashCSS = `
     #mwl-splash {
       position: fixed; inset: 0; z-index: 99999;
@@ -92,10 +107,12 @@
       color: #e8f0ff; text-align: left; transition: all .25s;
     }
     .mwl-btn:hover { border-color: rgba(0,240,255,.45); background: rgba(0,240,255,.1); transform: translateY(-1px); }
-    .mwl-btn .mwl-ico { font-size: 1.6rem; flex-shrink: 0; width: 36px; text-align: center; }
+    .mwl-btn .mwl-ico { flex-shrink: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #00f0ff; }
+    .mwl-btn .mwl-ico svg { width: 22px; height: 22px; }
     .mwl-btn .mwl-lbl { font-size: .88rem; font-weight: 700; letter-spacing: .3px; }
     .mwl-btn .mwl-desc { font-size: .62rem; color: rgba(180,210,255,.55); margin-top: 2px; }
     .mwl-btn.mwl-giralda { border-color: rgba(255,0,229,.2); background: rgba(255,0,229,.05); }
+    .mwl-btn.mwl-giralda .mwl-ico { color: #ff00e5; }
     .mwl-btn.mwl-giralda:hover { border-color: rgba(255,0,229,.5); background: rgba(255,0,229,.1); }
     .mwl-skip {
       display: inline-flex; align-items: center; gap: 6px;
@@ -120,8 +137,12 @@
     document.head.appendChild(s);
   }
 
-  // Construir y mostrar el splash
+  // Iconos SVG en vez de emojis (antena/señal para Directa, espiral para Giralda)
+  const ICONO_DIRECTA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20v-6"/><circle cx="12" cy="10" r="3"/><path d="M7 7a7 7 0 0 1 10 0"/><path d="M4 4a11 11 0 0 1 16 0"/></svg>`;
+  const ICONO_GIRALDA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v3"/><path d="M12 3c4 1 6 4 6 8s-3 7-6 7-6-3-6-7 2-7 6-8Z"/><path d="M12 8c2 .6 3 2 3 4s-1.4 3.4-3 3.4S9 13.6 9 12s1-3.4 3-4Z"/></svg>`;
+
   function showSplash() {
+    if (document.getElementById('mwl-splash')) return;
     injectStyles();
 
     const saved = getChoice();
@@ -139,7 +160,7 @@
     splash.id = 'mwl-splash';
     splash.innerHTML = `
       <div class="mwl-wrap">
-        <div class="mwl-logo">Manolit∞</div>
+        <div class="mwl-logo">Manolit&#8734;</div>
         <div class="mwl-sub">Laboratorio de ideas climáticas</div>
         <div class="mwl-honest">
           El clima real viene de <strong>Open-Meteo</strong> y <strong>NASA POWER</strong>.<br>
@@ -147,21 +168,21 @@
         </div>
         <div class="mwl-btns">
           <div class="mwl-btn" data-mode="direct">
-            <span class="mwl-ico">📡</span>
+            <span class="mwl-ico">${ICONO_DIRECTA}</span>
             <span>
               <div class="mwl-lbl">Entrada Directa</div>
               <div class="mwl-desc">Pronóstico estándar con datos reales</div>
             </span>
           </div>
           <div class="mwl-btn mwl-giralda" data-mode="giralda">
-            <span class="mwl-ico">🌀</span>
+            <span class="mwl-ico">${ICONO_GIRALDA}</span>
             <span>
               <div class="mwl-lbl">Giralda</div>
               <div class="mwl-desc">Modo experimental con predicción simbólica</div>
             </span>
           </div>
         </div>
-        <button class="mwl-skip">Saltar →</button>
+        <button class="mwl-skip">Saltar &#8594;</button>
         <div class="mwl-remember">
           <input type="checkbox" id="mwl-remember-check" />
           <label for="mwl-remember-check">No volver a preguntar</label>
@@ -170,7 +191,6 @@
     `;
     document.body.appendChild(splash);
 
-    // Evento de botones
     splash.querySelectorAll('.mwl-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const mode = btn.dataset.mode;
@@ -181,14 +201,11 @@
       });
     });
 
-    // Botón "Saltar"
     splash.querySelector('.mwl-skip').addEventListener('click', () => {
       splash.remove();
       enterMode('direct');
     });
   }
 
-  // Arrancar cuando el DOM esté listo
   ready(showSplash);
-
 })();
