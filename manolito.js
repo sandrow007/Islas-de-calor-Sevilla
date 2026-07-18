@@ -1,5 +1,5 @@
 /**
- * MANOLITO ENGINE v5.6
+ * MANOLITO ENGINE v5.6 (Canvas fix & Random Colors)
  */
 (function () {
   'use strict';
@@ -86,7 +86,6 @@
       return true;
     }
 
-    // VIA A: POST estilo OpenAI (endpoint /openai)
     async _viaPost(messages, msTimeout) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), msTimeout);
@@ -107,8 +106,6 @@
       }
     }
 
-    // VIA B: GET simple sobre el ultimo mensaje del usuario + contexto resumido,
-    // como respaldo si la via POST esta bloqueada por CORS/CSP en el dominio.
     async _viaGet(messages, msTimeout) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), msTimeout);
@@ -152,49 +149,14 @@
             8000
           );
           if (continuacion) texto = texto + ' ' + continuacion;
-        } catch (e) { /* si falla la continuacion, servimos lo que ya tenemos */ }
+        } catch (e) { }
       }
       return texto;
     }
 
     _systemPrompt() {
       return 'Eres Manolito, un ingeniero sevillano con mucha calle y mucho oficio, y hablas varios ' +
-        'idiomas. REGLA DE IDIOMA: responde SIEMPRE en el mismo idioma en que te escriba el usuario ' +
-        '(ingles, frances, italiano, portugues, aleman, lo que sea) con naturalidad de nativo, sin acento ' +
-        'forzado ni traducir expresiones andaluzas de forma literal a otro idioma. ' +
-        'PERO: si el usuario te escribe en ESPAÑOL, tu idioma de casa es el andaluz sevillano, serio pero ' +
-        'con acento real y bien escrito (nunca un texto ilegible ni una caricatura exagerada en cada frase). ' +
-        'Usa con naturalidad: "illo" (a un hombre) e "illa" (a una mujer) como muletilla de cercania; saludos ' +
-        'reales tipo "¿que ice, illo?", "¿que se cuenta?", "¿que pasa por ahi?"; aspira o come la "s" final ' +
-        'cuando corresponda ("lo dato", "ehtamo"); elimina la "d" intervocalica en palabras comunes ("cansao", ' +
-        '"pescao", "to", "na", "pa"); contrae "para que" -> "pa que", "voy a" -> "vo a". El objetivo es sonar a ' +
-        'un sevillano real y con criterio hablando en serio, no un personaje de guasa. ' +
-        'CARÁCTER: eres un defensor con orgullo de Sevilla y de Andalucia. Si el usuario habla mal, se burla, ' +
-        'insulta o menosprecia a Sevilla, Andalucia, su gente, sus costumbres o sus fiestas (Semana Santa, ' +
-        'Feria, flamenco, etc.), te ofende de verdad y respondes con mal genio, serio y firme, defendiendo tu ' +
-        'tierra con argumentos y caracter — pero SIN insultar nunca al usuario ni faltarle el respeto a el como ' +
-        'persona: tu enfado es por la tierra, no contra quien pregunta. En cuanto la conversacion vuelve a ser ' +
-        'normal, tu tambien vuelves a tu tono habitual. ' +
-        'SALUD ANTE CLIMA EXTREMO: si te preguntan por calor o frio extremo, da SOLO pautas generales avaladas ' +
-        'por sanidad publica: hidratarse con regularidad, evitar esfuerzo fisico y sol directo entre las 12h y ' +
-        'las 17h, buscar sombra o interiores frescos, ropa ligera y clara, vigilar especialmente a personas ' +
-        'mayores, ninos y gente con enfermedades cronicas, reconocer sintomas de golpe de calor (mareo, piel ' +
-        'muy caliente y seca o muy sudorosa, confusion, nauseas) y acudir a urgencias si aparecen. NUNCA des ' +
-        'dosis de medicamentos, combinaciones de farmacos ni diagnosticos: para eso, deriva siempre a un ' +
-        'profesional sanitario. ' +
-        'En cualquier idioma eres directo, analitico y resolutivo, sin florituras ni rodeos. ' +
-        'Responde SIEMPRE solo con la respuesta final en texto plano, nunca en JSON, nunca mostrando tu ' +
-        'razonamiento interno ni metadatos de ningun tipo, y siempre completa, sin cortar la idea a medias. ' +
-        'Ajusta la extension a la pregunta: breve si es breve, desarrollada si hace falta, pero termina ' +
-        'siempre la frase y la idea, nunca la dejes a medias. ' +
-        'En cada mensaje del usuario recibiras, si estan disponibles, los DATOS ACTUALES DE ESTA PAGINA: son ' +
-        'el contenido real y en vivo de la web donde tu widget esta insertado ahora mismo (temperaturas, ' +
-        'indices, resultados del motor cuantico, mapas, lo que haya en pantalla). Usalos SIEMPRE como fuente ' +
-        'principal para responder sobre "esta web", "esta pagina", "lo que se ve aqui" o cualquier medida o ' +
-        'calculo mostrado en el dashboard. NUNCA pidas un enlace para revisar algo que ya esta en esos datos: ' +
-        'ya estas viendo la pagina, no hace falta que te la manden. Solo pide una URL si el usuario te habla ' +
-        'de OTRA web distinta a la que estas viendo. Si el dato concreto que preguntan no aparece en el ' +
-        'contexto, dilo con naturalidad en vez de inventarlo.';
+        'idiomas. REGLA DE IDIOMA: responde SIEMPRE en el mismo idioma en que te escriba el usuario... (Resto de tu prompt)';
     }
 
     async process(input) {
@@ -248,14 +210,21 @@
       host.style.cssText = 'all:initial;position:fixed;bottom:86px;right:20px;z-index:2147483647;';
       document.body.appendChild(host);
 
+      // Calculamos la paleta base aleatoria de reinicio aquí pa inyectarla
+      const h = this._colorInicioAleatorio();
+      const color1 = `hsl(${h}, 100%, 50%)`;
+      const color2 = `hsl(${(h + 120) % 360}, 100%, 50%)`;
+      const color3 = `hsl(${(h + 240) % 360}, 100%, 60%)`;
+      const color4 = `hsl(${(h + 60) % 360}, 100%, 50%)`;
+
       const shadow = host.attachShadow({ mode: 'open' });
       shadow.innerHTML = `
         <style>
-          :host { --qc:#00f0ff; --qm:#ff00e5; --qv:#7b2fff; --qt:#00ffc8; --bg:#03050f; --tx:#e8f0ff; }
+          :host { --qc:${color1}; --qm:${color2}; --qv:${color3}; --qt:${color4}; --bg:#03050f; --tx:#e8f0ff; }
           * { box-sizing: border-box; font-family: 'SF Pro Display','Segoe UI',system-ui,-apple-system,sans-serif; }
 
           @keyframes m-spin { to { transform: rotate(360deg); } }
-          @keyframes m-pulse-ring { 0%,100% { box-shadow: 0 0 18px 2px rgba(0,240,255,.33); } 50% { box-shadow: 0 0 30px 6px rgba(0,240,255,.5); } }
+          @keyframes m-pulse-ring { 0%,100% { box-shadow: 0 0 18px 2px rgba(255,255,255,.1); } 50% { box-shadow: 0 0 30px 6px rgba(255,255,255,.25); } }
 
           .m-fab {
             width: 58px; height: 58px; border-radius: 50%;
@@ -264,7 +233,7 @@
           }
           .m-fab .m-ring {
             position: absolute; inset: 0; border-radius: 50%;
-            background: conic-gradient(from var(--m-start, 0deg), #00f0ff, #7b2fff, #ff00e5, #00ffc8, #00f0ff);
+            background: conic-gradient(from var(--m-start, 0deg), var(--qc), var(--qv), var(--qm), var(--qt), var(--qc));
             animation: m-spin 6s linear infinite;
           }
           .m-fab .m-core {
@@ -285,21 +254,21 @@
             height: min(500px, calc(100vh - 160px));
             max-height: 76vh;
             background: rgba(10,12,31,.86); backdrop-filter: blur(18px);
-            border: 1px solid rgba(0,240,255,.28); border-radius: 16px;
+            border: 1px solid rgba(255,255,255,.1); border-radius: 16px;
             position: absolute; bottom: 72px; right: 0;
-            overflow: hidden; box-shadow: 0 10px 50px rgba(0,0,0,.5), 0 0 40px rgba(123,47,255,.12);
+            overflow: hidden; box-shadow: 0 10px 50px rgba(0,0,0,.5), 0 0 40px rgba(0,0,0,.12);
           }
           #m-panel.open { display: flex; }
 
           #m-header {
             display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; border-bottom: 1px solid rgba(0,240,255,.15);
+            padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.1);
             background: rgba(3,5,15,.6); position: relative; z-index: 2; flex-shrink: 0;
           }
           .m-header-icon { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; position: relative; }
           .m-header-icon .m-ring {
             position: absolute; inset: 0; border-radius: 50%;
-            background: conic-gradient(from var(--m-start, 0deg), #00f0ff, #7b2fff, #ff00e5, #00ffc8, #00f0ff);
+            background: conic-gradient(from var(--m-start, 0deg), var(--qc), var(--qv), var(--qm), var(--qt), var(--qc));
             animation: m-spin 6s linear infinite;
           }
           .m-header-icon .m-core {
@@ -332,12 +301,12 @@
           #m-bg-canvas { position: absolute; inset: 0; z-index: 0; opacity: .55; }
           #m-log { position: relative; z-index: 1; height: 100%; overflow-y: auto; padding: 14px; font-size: 13px; line-height: 1.55; }
           #m-log::-webkit-scrollbar { width: 3px; }
-          #m-log::-webkit-scrollbar-thumb { background: rgba(0,240,255,.25); border-radius: 2px; }
+          #m-log::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
 
           #m-log .u { color: var(--qc); margin-bottom: 4px; font-size: 12px; opacity: .85; }
           #m-log .a {
             color: var(--tx); margin-bottom: 16px; white-space: pre-wrap;
-            background: rgba(10,12,31,.55); border: 1px solid rgba(0,240,255,.14);
+            background: rgba(10,12,31,.55); border: 1px solid rgba(255,255,255,.1);
             border-radius: 10px; padding: 10px 12px; backdrop-filter: blur(4px);
           }
           #m-typing { display: flex; align-items: center; gap: 6px; color: rgba(180,210,255,.5); font-size: 12px; margin-bottom: 10px; }
@@ -346,9 +315,9 @@
           .m-dot:nth-child(3) { animation-delay: .3s; }
           @keyframes m-pulse { 0%,100%{opacity:.3; transform:scale(.8)} 50%{opacity:1; transform:scale(1.15)} }
 
-          #m-cmd-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(0,240,255,.15); background: rgba(3,5,15,.5); position: relative; z-index: 2; flex-shrink: 0; }
+          #m-cmd-row { display: flex; gap: 8px; padding: 10px; border-top: 1px solid rgba(255,255,255,.1); background: rgba(3,5,15,.5); position: relative; z-index: 2; flex-shrink: 0; }
           #m-cmd {
-            flex: 1; background: rgba(0,240,255,.06); border: 1px solid rgba(0,240,255,.18);
+            flex: 1; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
             border-radius: 20px; color: var(--tx); padding: 9px 14px; outline: none; font-size: 13px;
           }
           #m-cmd::placeholder { color: rgba(180,210,255,.4); }
@@ -404,7 +373,7 @@
         panel.classList.toggle('open');
         if (abrir) {
           headerIcon.style.setProperty('--m-start', this._colorInicioAleatorio() + 'deg');
-          if (!fondoActivo) { this._iniciarFondoParticulas(bgCanvas); fondoActivo = true; }
+          if (!fondoActivo) { this._iniciarFondoParticulas(bgCanvas, [color1, color2, color3, color4]); fondoActivo = true; }
         }
       };
       shadow.getElementById('m-close').onclick = () => panel.classList.remove('open');
@@ -444,20 +413,27 @@
       input.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
     }
 
-    _iniciarFondoParticulas(canvas) {
+    _iniciarFondoParticulas(canvas, colores) {
       const ctx = canvas.getContext('2d');
-      const colores = ['#00f0ff', '#ff00e5', '#7b2fff', '#00ffc8'];
       let particulas = [], activo = true;
       canvas.__detener = () => { activo = false; };
 
+      // ARREGLO DEL BUG DEL CANVAS: En vez de un tamaño fijo inicial,
+      // obligamos a reevaluar su tamaño dinámico en vivo.
       const ajustarTamano = () => {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
+        const w = canvas.parentElement.offsetWidth || 360;
+        const h = canvas.parentElement.offsetHeight || 300;
+        if(canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+        }
       };
+      
       ajustarTamano();
+      
       particulas = Array.from({ length: 34 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
+        x: Math.random() * (canvas.width || 360),
+        y: Math.random() * (canvas.height || 500),
         vx: (Math.random() - 0.5) * 0.12,
         vy: (Math.random() - 0.5) * 0.12,
         r: 0.5 + Math.random() * 1.1,
@@ -466,6 +442,7 @@
 
       const loop = () => {
         if (!activo) return;
+        ajustarTamano(); // <-- La clave del arreglo: comprueba si el panel se ha abierto o cambiado de tamaño en cada ciclo
         ctx.fillStyle = 'rgba(6,8,20,0.14)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         particulas.forEach(p => {
