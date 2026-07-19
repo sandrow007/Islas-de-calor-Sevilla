@@ -3690,7 +3690,6 @@ function updatePhysicsPanel(ph) {
   const cl = ATMOS.confidence > 0.85 ? 'dq-hi' : ATMOS.confidence > 0.5 ? 'dq-md' : 'dq-lo';
   sv('dq-badge', `<span class="dqb ${cl}">Acuerdo: ${ATMOS.agreement} (${(ATMOS.confidence*100).toFixed(0)}%)</span>` + (ATMOS.npData ? ` <span class="ci" style="display:inline-block;margin-left:6px">&#177;${ATMOS.uncertainty.toFixed(1)}&#xB0;C | NASA: ${ATMOS.npData.T?.toFixed(1)||'--'}&#xB0;C</span>` : ''));
 }
-      }
       /* ================================================================
          MODULE: Logo Canvas
          ================================================================ */
@@ -4547,12 +4546,10 @@ const layerEsri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/servi
   maxZoom: 19
 });
 const layerTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OSM, SRTM &copy; <a href="https://opentopomap.org/">OpenTopoMap</a>',
-  subdomains: 'abc', maxZoom: 17
-});
-
-                                              attribution: '&copy; OSM, SRTM &copy;  < a href = "https://opentopomap.org/" > OpenTopoMap < /a>',subdomains:'abc',maxZoom:17});
-                                              layerOSM.addTo(leafMap);
+          attribution: '&copy; OSM, SRTM &copy; <a href="https://opentopomap.org/">OpenTopoMap</a>',
+          subdomains: 'abc', maxZoom: 17
+        });
+        layerOSM.addTo(leafMap);
                                               uHiLayer = L.layerGroup();
                                               addHeatIslands();
                                               uHiLayer.addTo(leafMap);
