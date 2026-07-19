@@ -4547,42 +4547,94 @@
                                               attribution: '&copy; OSM, SRTM &copy;  < a href = "https://opentopomap.org/" > OpenTopoMap < /a>',subdomains:'abc',maxZoom:17});
                                               layerOSM.addTo(leafMap);
                                               uHiLayer = L.layerGroup();
-                                              addHeatIslands();
-                                              uHiLayer.addTo(leafMap);
-                                              addLandmarks();
-                                              addLegend();
-                                              L.control.layers({
-                                                'OpenStreetMap': layerOSM,
-                                                'CartoDB Dark': layerDark,
-                                                'CartoDB Voyager': layerVoyager,
-                                                'ESRI Satelite': layerEsri,
-                                                'Topografico': layerTopo
-                                              }, {
-                                                'Islas de calor UHI': uHiLayer
-                                              }, {
-                                                position: 'topright',
-                                                collapsed: false
-                                              }).addTo(leafMap);
-                                            }
-
-                                            function qUHI(T_air, dens) {
-                                              const phUrban = physCore.compute(T_air, ATMOS.RH, ATMOS.P, ATMOS.ws, ATMOS.S_in || 200, 'urban');
-                                              const surfType = dens < 0.25 ? 'vegetation' : dens < 0.5 ? 'grass' : dens < 0.75 ? 'asphalt' : 'urban';
-                                              const phSurf = physCore.compute(T_air, ATMOS.RH, ATMOS.P, ATMOS.ws, ATMOS.S_in || 200, surfType);
-                                              const phRef = physCore.compute(T_air, ATMOS.RH, ATMOS.P, ATMOS.ws, ATMOS.S_in || 200, 'vegetation');
-                                              return {
-                                                T_surface: phSurf.T_surface,
-                                                UHI: (phSurf.T_surface - phRef.T_surface).toFixed(2),
-                                                alpha: phSurf.alpha,
-                                                R_net: phSurf.R_net.toFixed(0),
-                                              };
-                                            }
+ uHiLayer.addTo(leafMap);
+              landmarkLayer = L.layerGroup();
+              addLandmarks();
+              landmarkLayer.addTo(leafMap);
+              addLegend();
+(async () => {
+                const capEl = document.querySelector('#cmap .ci');
+                if (capEl) capEl.textContent = 'Calculando densidad urbana real desde OpenStreetMap...';
+                const [r1, r2] = await Promise.all([
+                  actualizarDensidadesReales(HEAT_ZONES, 2),
+                  actualizarDensidadesRealesObjetos(LANDMARKS)
+                ]);
+                densidadCargada = true;
+                updateMapUHI();
+                addLandmarks();
+                if (capEl) capEl.textContent =
+                  `OSM · CartoDB Dark · Voyager · ESRI · Topo · UHI: Stefan-Boltzmann + Brutsaert (1975) · Densidad real OSM: ${r1.ok}/${r1.total} zonas, ${r2.ok}/${r2.total} puntos de referencia`;
+              })();
 
                                             function updateMapUHI() {
                                               if (!uHiLayer) return;
                                               uHiLayer.clearLayers();
                                               addHeatIslands();
                                             }
+		* ================================================================
+   MODULE: Densidad urbana REAL desde OpenStreetMap (sustituye la
+   estimación manual). Cuenta la superficie real de edificios frente
+   al área total de un radio alrededor de cada punto.
+   ================================================================ */
+function bboxAlrededor(lat, lon, radioM) {
+  const dLat = radioM / 111320;
+  const dLon = radioM / (111320 * Math.cos(lat * Math.PI / 180));
+  return { south: lat - dLat, west: lon - dLon, north: lat + dLat, east: lon + dLon };
+}
+ 
+function areaPoligonoM(coordsLatLon, latRef) {
+  const R = 6371000;
+  const pts = coordsLatLon.map(([la, lo]) => [
+    (lo * Math.PI / 180) * R * Math.cos(latRef * Math.PI / 180),
+    (la * Math.PI / 180) * R
+  ]);
+  let area = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const [x1, y1] = pts[i], [x2, y2] = pts[(i + 1) % pts.length];
+    area += x1 * y2 - x2 * y1;
+  }
+  return Math.abs(area / 2);
+}
+ 
+async function densidadRealOSM(lat, lon, radioM = 350) {
+  const bb = bboxAlrededor(lat, lon, radioM);
+  const bboxStr = `${bb.south},${bb.west},${bb.north},${bb.east}`;
+  const query = `[out:json][timeout:20];(way["building"](${bboxStr}););out geom;`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST', body: query, signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const totalArea = (bb.north - bb.south) * 111320 * (bb.east - bb.west) * 111320 * Math.cos(lat * Math.PI / 180);
+    let built = 0;
+    (data.elements || []).forEach(el => {
+      if (!el.geometry || el.geometry.length < 3) return;
+      const coords = el.geometry.map(g => [g.lat, g.lon]);
+      built += areaPoligonoM(coords, lat);
+    });
+    return Math.max(0.05, Math.min(0.95, built / totalArea));
+  } catch (e) {
+    clearTimeout(timeout);
+    return null; // fallo real: quien llame conserva la estimacion manual anterior, sin inventar nada
+  }
+}
+ 
+// Ejecuta las peticiones a Overpass de 2 en 2 para no saturar el servidor publico y gratuito
+async function actualizarDensidadesReales(lista, indiceDens) {
+  let ok = 0, total = lista.length;
+  for (let i = 0; i < lista.length; i += 2) {
+    const lote = lista.slice(i, i + 2);
+    await Promise.all(lote.map(async item => {
+      const real = await densidadRealOSM(item[0], item[1]);
+      if (real !== null) { item[indiceDens] = real; ok++; }
+    }));
+  }
+  return { ok, total };
+}
                                             const HEAT_ZONES = [
                                               [37.393, -5.990, .88, 'Centro Historico'],
                                               [37.386, -5.979, .80, 'Nervion - Alameda'],
@@ -4603,7 +4655,33 @@
                                               [37.392, -6.012, .40, 'Triana Este'],
                                               [37.374, -5.960, .65, 'Bellavista'],
                                             ];
-                                            let heatLayer = null;
+		const LANDMARKS = [
+  { lat: 37.3861, lon: -5.9928, name: 'Giralda &amp; Catedral (s.XII-XVI)', d: .88, real: false },
+  { lat: 37.3826, lon: -5.9962, name: 'Torre del Oro (1220)', d: .72, real: false },
+  { lat: 37.3773, lon: -5.9869, name: 'Plaza de Espana (1929)', d: .65, real: false },
+  { lat: 37.3714, lon: -5.9956, name: 'Parque Maria Luisa', d: .15, real: false },
+  { lat: 37.3880, lon: -6.0022, name: 'Puente de Triana', d: .70, real: false },
+  { lat: 37.4193, lon: -5.8931, name: 'Aeropuerto SVQ', d: .85, real: false },
+  { lat: 37.3839, lon: -5.9705, name: 'Estadio R. Sanchez-Pizjuan', d: .88, real: false },
+  { lat: 37.4131, lon: -6.0013, name: 'Isla de la Cartuja (Expo 92)', d: .50, real: false },
+  { lat: 37.3561, lon: -5.9878, name: 'Universidad de Sevilla', d: .55, real: false },
+];
+ 
+// Igual que HEAT_ZONES, pero para objetos {lat, lon, d} en vez de arrays [lat, lon, dens]
+async function actualizarDensidadesRealesObjetos(lista) {
+  let ok = 0, total = lista.length;
+  for (let i = 0; i < lista.length; i += 2) {
+    const lote = lista.slice(i, i + 2);
+    await Promise.all(lote.map(async item => {
+      const real = await densidadRealOSM(item.lat, item.lon);
+      if (real !== null) { item.d = real; item.real = true; ok++; }
+    }));
+  }
+  return { ok, total };
+}
+		  let heatLayer = null;
+    let landmarkLayer = null;
+    let densidadCargada = false;
 
                                             function addHeatIslands() {
                                               if (!uHiLayer) return;
@@ -4651,89 +4729,33 @@
 																																																													<br>
        Albedo: ${q.alpha.toFixed(3)} | R_neta: ${q.R_net} W/m&#xB2;
 																																																														<br>
-       Densidad urbana: ${Math.round(dens*100)}%
-																																																															<br>
+Densidad urbana: ${Math.round(dens*100)}% ${densidadCargada ? '(real, OpenStreetMap)' : '(estimación provisional)'}
+ 																																																															<br>
 																																																																<span style="font-size:9px;color:rgba(0,200,200,.7)">Stefan-Boltzmann + Brutsaert (1975)</span>`);
                                               });
                                             }
 
-                                            function addLandmarks() {
-                                              if (!leafMap) return;
+                                         function addLandmarks() {
+                                              if (!leafMap || !landmarkLayer) return;
+                                              landmarkLayer.clearLayers();
                                               const T = ATMOS.T || 25;
-                                              const pts = [{
-                                                lat: 37.3861,
-                                                lon: -5.9928,
-                                                name: 'Giralda &amp; Catedral (s.XII-XVI)',
-                                                d: .88
-                                              }, {
-                                                lat: 37.3826,
-                                                lon: -5.9962,
-                                                name: 'Torre del Oro (1220)',
-                                                d: .72
-                                              }, {
-                                                lat: 37.3773,
-                                                lon: -5.9869,
-                                                name: 'Plaza de Espana (1929)',
-                                                d: .65
-                                              }, {
-                                                lat: 37.3714,
-                                                lon: -5.9956,
-                                                name: 'Parque Maria Luisa',
-                                                d: .15
-                                              }, {
-                                                lat: 37.3880,
-                                                lon: -6.0022,
-                                                name: 'Puente de Triana',
-                                                d: .70
-                                              }, {
-                                                lat: 37.4193,
-                                                lon: -5.8931,
-                                                name: 'Aeropuerto SVQ',
-                                                d: .85
-                                              }, {
-                                                lat: 37.3839,
-                                                lon: -5.9705,
-                                                name: 'Estadio R. Sanchez-Pizjuan',
-                                                d: .88
-                                              }, {
-                                                lat: 37.4131,
-                                                lon: -6.0013,
-                                                name: 'Isla de la Cartuja (Expo 92)',
-                                                d: .50
-                                              }, {
-                                                lat: 37.3561,
-                                                lon: -5.9878,
-                                                name: 'Universidad de Sevilla',
-                                                d: .55
-                                              }, ];
-                                              pts.forEach(pt => {
+                                              LANDMARKS.forEach(pt => {
                                                 const q = qUHI(T, pt.d);
                                                 const uhi = parseFloat(q.UHI);
                                                 const col = uhi < 0 ? '#00ff88' : uhi < 2 ? '#ffee00' : uhi < 3.5 ? '#ff8800' : '#ff3300';
                                                 const icon = L.divIcon({
-                                                  html: `
-																																																																			<div style="width:9px;height:9px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col};border:1px solid rgba(255,255,255,.32)"></div>`,
+                                                  html: `<div style="width:9px;height:9px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col};border:1px solid rgba(255,255,255,.32)"></div>`,
                                                   className: '',
                                                   iconSize: [9, 9],
                                                   iconAnchor: [4, 4]
                                                 });
-                                                L.marker([pt.lat, pt.lon], {
-                                                  icon
-                                                }).addTo(leafMap).bindPopup(`
-																																																																			<b style="color:#00f0ff">${pt.name}</b>
-																																																																			<br>
-       UHI: 
-																																																																				<b>${uhi>0?'+':''}${uhi}&deg;C</b> | T sup: 
-																																																																				<b>${q.T_surface.toFixed(1)}&deg;C</b>`);
+                                                L.marker([pt.lat, pt.lon], { icon }).addTo(landmarkLayer).bindPopup(
+                                                  `<b style="color:#00f0ff">${pt.name}</b><br>UHI: <b>${uhi>0?'+':''}${uhi}&deg;C</b> | T sup: <b>${q.T_surface.toFixed(1)}&deg;C</b><br>Densidad: ${Math.round(pt.d*100)}% ${pt.real ? '(real, OpenStreetMap)' : '(estimación provisional)'}`
+                                                );
                                               });
                                               L.circleMarker([CFG.lat, CFG.lon], {
-                                                radius: 8,
-                                                color: '#00f0ff',
-                                                fillColor: '#00f0ff',
-                                                fillOpacity: .75,
-                                                weight: 2
-                                              }).addTo(leafMap).bindPopup(`
-																																																																				<b style="color:#00f0ff">${CFG.city}</b>`);
+                                                radius: 8, color: '#00f0ff', fillColor: '#00f0ff', fillOpacity: .75, weight: 2
+                                              }).addTo(landmarkLayer).bindPopup(`<b style="color:#00f0ff">${CFG.city}</b>`);
                                             }
 
                                             function addLegend() {
@@ -4750,7 +4772,7 @@
 																																																																				<div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:9px">
 																																																																					<span style="width:11px;height:11px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0"></span>${l}
 																																																																				</div>`).join('')}
-      
+    
 																																																																				<div style="font-size:8px;color:rgba(0,240,255,.34);margin-top:5px">Stefan-Boltzmann + Brutsaert (1975)</div>`;
                                                 return div;
                                               };
