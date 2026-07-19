@@ -44,8 +44,7 @@ Asegúrate de que los archivos index.html, style.css, script.js y _redirects est
 .
 Despliega en Netlify conectando tu rama de GitHub.
 📺 Demo
-Video de Arquitectura: Ver en YouTube https://www.youtube.com/watch?v=rKME-jXhXLM
-
+Video de Arquitectura: Ver en YouTube [https://www.youtube.com/watch?v=ruExRH0H5Qc&t=3s]
  Licencia
 Este proyecto está bajo la Licencia MIT. Puedes usarlo y modificarlo siempre que mantengas el aviso de derechos de autor
 .
