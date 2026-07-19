@@ -51,7 +51,7 @@
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 9000);
-        const res = await fetch(`<https://api.allorigins.win/get?url=${encodeURIComponent(url)}>`, { signal: controller.signal });
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: controller.signal });
         clearTimeout(timeout);
         const data = await res.json();
         return await this._cleanWebText(data.contents);
@@ -113,7 +113,7 @@
         const sistema = messages.find(m => m.role === 'system');
         const ultimoUsuario = [...messages].reverse().find(m => m.role === 'user');
         const promptPlano = `${sistema ? sistema.content.slice(0, 1500) : ''}\n\n${ultimoUsuario ? ultimoUsuario.content.slice(0, 2000) : ''}`;
-        const url = `<https://text.pollinations.ai/${encodeURIComponent(promptPlano)}?model=openai&seed=${Math.floor(Math.random()> * 100000)}`;
+        const url = `https://text.pollinations.ai/${encodeURIComponent(promptPlano)}?model=openai&seed=${Math.floor(Math.random() * 100000)}`;
         const response = await fetch(url, { signal: controller.signal });
         clearTimeout(timeoutId);
         if (!response.ok) throw new Error('HTTP ' + response.status);
