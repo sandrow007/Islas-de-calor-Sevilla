@@ -4741,21 +4741,17 @@ function addHeatIslands() {
 
 function addLandmarks() {
   if (!leafMap || !landmarkLayer) return;
-
   landmarkLayer.clearLayers();
-
   const T = ATMOS.T || 25;
   const RH = ATMOS.RH || 50;
   const P = ATMOS.P || 1013;
   const ws = ATMOS.ws || 5;
   const S_in = ATMOS.S_in || 0;
-
   const physBase = physCore.compute(T, RH, P, ws, S_in, 'urban');
 
   LANDMARKS.forEach(pt => {
     const uhi = parseFloat((physBase.delta_UHI * pt.d).toFixed(1));
     const t_surface = T + uhi;
-
     const col =
       uhi < 0 ? '#00ff88' :
       uhi < 2 ? '#ffee00' :
@@ -4830,7 +4826,6 @@ function addLegend() {
 
   lg.addTo(leafMap);
 }
-
                                             /* ================================================================================================
                                                MODULE: REAL QUANTUM ENGINE — 4 dedicated dashboard sections (Q1-Q4)
                                                Genuine complex-amplitude state-vector simulator (H / RY / RZ / CNOT + Born-rule measurement),
