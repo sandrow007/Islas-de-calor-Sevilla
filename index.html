@@ -4545,33 +4545,47 @@
                                         attribution: '&copy;  < a href = "https://www.esri.com/" > Esri < /a>, DigitalGlobe, Earthstar Geographics, USGS',maxZoom:19});
                                         const layerTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                                               attribution: '&copy; OSM, SRTM &copy;  < a href = "https://opentopomap.org/" > OpenTopoMap < /a>',subdomains:'abc',maxZoom:17});
-                                              layerOSM.addTo(leafMap);
+                                              l                                             layerOSM.addTo(leafMap);
                                               uHiLayer = L.layerGroup();
- uHiLayer.addTo(leafMap);
-              landmarkLayer = L.layerGroup();
-              addLandmarks();
-              landmarkLayer.addTo(leafMap);
-              addLegend();
-(async () => {
-                const capEl = document.querySelector('#cmap .ci');
-                if (capEl) capEl.textContent = 'Calculando densidad urbana real desde OpenStreetMap...';
-                const [r1, r2] = await Promise.all([
-                  actualizarDensidadesReales(HEAT_ZONES, 2),
-                  actualizarDensidadesRealesObjetos(LANDMARKS)
-                ]);
-                densidadCargada = true;
-                updateMapUHI();
-                addLandmarks();
-                if (capEl) capEl.textContent =
-                  `OSM · CartoDB Dark · Voyager · ESRI · Topo · UHI: Stefan-Boltzmann + Brutsaert (1975) · Densidad real OSM: ${r1.ok}/${r1.total} zonas, ${r2.ok}/${r2.total} puntos de referencia`;
-              })();
-
+                                              addHeatIslands();
+                                              uHiLayer.addTo(leafMap);
+                                              landmarkLayer = L.layerGroup();
+                                              addLandmarks();
+                                              landmarkLayer.addTo(leafMap);
+                                              addLegend();
+                                              L.control.layers({
+                                                'OpenStreetMap': layerOSM,
+                                                'CartoDB Dark': layerDark,
+                                                'CartoDB Voyager': layerVoyager,
+                                                'ESRI Satelite': layerEsri,
+                                                'Topografico': layerTopo
+                                              }, {
+                                                'Islas de calor UHI': uHiLayer
+                                              }, {
+                                                position: 'topright',
+                                                collapsed: false
+                                              }).addTo(leafMap);
+                                              (async () => {
+                                                const capEl = document.querySelector('#cmap .ci');
+                                                if (capEl) capEl.textContent = 'Calculando densidad urbana real desde OpenStreetMap...';
+                                                const [r1, r2] = await Promise.all([
+                                                  actualizarDensidadesReales(HEAT_ZONES, 2),
+                                                  actualizarDensidadesRealesObjetos(LANDMARKS)
+                                                ]);
+                                                densidadCargada = true;
+                                                updateMapUHI();
+                                                addLandmarks();
+                                                if (capEl) capEl.textContent =
+                                                  `OSM · CartoDB Dark · Voyager · ESRI · Topo · UHI: Stefan-Boltzmann + Brutsaert (1975) · Densidad real OSM: ${r1.ok}/${r1.total} zonas, ${r2.ok}/${r2.total} puntos de referencia`;
+                                              })();
+                                            }
+ 
                                             function updateMapUHI() {
                                               if (!uHiLayer) return;
                                               uHiLayer.clearLayers();
                                               addHeatIslands();
                                             }
-		* ================================================================
+		/* ================================================================
    MODULE: Densidad urbana REAL desde OpenStreetMap (sustituye la
    estimación manual). Cuenta la superficie real de edificios frente
    al área total de un radio alrededor de cada punto.
