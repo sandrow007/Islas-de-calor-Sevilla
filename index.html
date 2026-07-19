@@ -4520,8 +4520,8 @@ function updatePhysicsPanel(ph) {
               if (!el || leafMap) return;
               if (typeof L === 'undefined') {
                 el.innerHTML = '<div class="ci">Leaflet requiere internet</div>';
-return;
-}
+                return;
+              }
                 leafMap = L.map('lmap', {
                   center: [CFG.lat, CFG.lon],
                   zoom: CFG.mapZoom,
@@ -4563,7 +4563,8 @@ const layerTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
                                                 'ESRI Satelite': layerEsri,
                                                 'Topografico': layerTopo
                                               }, {
-                                                'Islas de calor UHI': uHiLayer
+                                                'Islas de calor UHI': uHiLayer,
+                                                'Puntos de referencia': landmarkLayer
                                               }, {
                                                 position: 'topright',
                                                 collapsed: false
@@ -5369,4 +5370,4 @@ function addLegend() {
       }
     </script>
   </body> 
-</html>
+</html> 
