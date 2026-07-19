@@ -4317,23 +4317,23 @@ function updatePhysicsPanel(ph) {
                 const sl = ['G0 Quieto', 'G1 Menor', 'G2 Moderado', 'G3 Fuerte', 'G4+ Severo'];
                 const rows = [
                   ['Indice Kp', `
-																																																								<span style="color:${sc[si]}">${kp.toFixed(1)}</span>`],
+				<span style="color:${sc[si]}">${kp.toFixed(1)}</span>`],
                   ['Tormenta', `
-																																																								<span style="color:${sc[si]}">${sl[si]}</span>`],
+				<span style="color:${sc[si]}">${sl[si]}</span>`],
                   ['Flujo F10.7', `${f107?f107.toFixed(1):'--'} sfu`],
                   ['Obs.', kl?.time_tag || '--']
                 ];
                 const c = document.getElementById('swc');
                 if (c) c.innerHTML = rows.map(r => `
-																																																								<div class="swr">
-																																																									<span>${r[0]}</span>
-																																																									<span class="swv">${r[1]}</span>
-																																																								</div>`).join('') + `
-																																																								<div class="ci">services.swpc.noaa.gov</div>`;
+				<div class="swr">
+				<span>${r[0]}</span>
+				<span class="swv">${r[1]}</span>
+		        </div>`).join('') + `
+				<div class="ci">services.swpc.noaa.gov</div>`;
               } catch (e) {
                 const c = document.getElementById('swc');
                 if (c) c.innerHTML = `
-																																																								<div class="ci">NOAA: ${e.message}</div>`;
+	            <div class="ci">NOAA: ${e.message}</div>`;
               }
             }
             /* ================================================================
@@ -4741,44 +4741,93 @@ function addHeatIslands() {
 
 function addLandmarks() {
   if (!leafMap || !landmarkLayer) return;
+
   landmarkLayer.clearLayers();
+
   const T = ATMOS.T || 25;
   const RH = ATMOS.RH || 50;
   const P = ATMOS.P || 1013;
   const ws = ATMOS.ws || 5;
   const S_in = ATMOS.S_in || 0;
+
   const physBase = physCore.compute(T, RH, P, ws, S_in, 'urban');
 
   LANDMARKS.forEach(pt => {
     const uhi = parseFloat((physBase.delta_UHI * pt.d).toFixed(1));
     const t_surface = T + uhi;
-    const col = uhi < 0 ? '#00ff88' : uhi < 2 ? '#ffee00' : uhi < 3.5 ? '#ff8800' : '#ff3300';
+
+    const col =
+      uhi < 0 ? '#00ff88' :
+      uhi < 2 ? '#ffee00' :
+      uhi < 3.5 ? '#ff8800' :
+      '#ff3300';
+
     const icon = L.divIcon({
       html: `<div style="width:9px;height:9px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col};border:1px solid rgba(255,255,255,.32)"></div>`,
-      className: '', iconSize: [9, 9], iconAnchor: [4, 4]
+      className: '',
+      iconSize: [9, 9],
+      iconAnchor: [4, 4]
     });
-    L.marker([pt.lat, pt.lon], { icon }).addTo(landmarkLayer).bindPopup(
-      `<b style="color:#00f0ff">${pt.name}</b><br>UHI: <b>${uhi>0?'+':''}${uhi}&deg;C</b> | T sup: <b>${t_surface.toFixed(1)}&deg;C</b><br>Densidad: ${Math.round(pt.d*100)}% ${pt.real ? '(real, OpenStreetMap)' : '(estimación provisional)'}`
-    );
+
+    L.marker([pt.lat, pt.lon], { icon })
+      .addTo(landmarkLayer)
+      .bindPopup(
+        `<b style="color:#00f0ff">${pt.name}</b><br>
+         UHI: <b>${uhi > 0 ? '+' : ''}${uhi}&deg;C</b> |
+         T sup: <b>${t_surface.toFixed(1)}&deg;C</b><br>
+         Densidad: ${Math.round(pt.d * 100)}% 
+         ${pt.real ? '(real, OpenStreetMap)' : '(estimación provisional)'}`
+      );
   });
-  L.circleMarker([CFG.lat, CFG.lon], { radius: 8, color: '#00f0ff', fillColor: '#00f0ff', fillOpacity: .75, weight: 2 }).addTo(landmarkLayer).bindPopup(`<b style="color:#00f0ff">${CFG.city}</b>`);
+
+  L.circleMarker(
+    [CFG.lat, CFG.lon],
+    {
+      radius: 8,
+      color: '#00f0ff',
+      fillColor: '#00f0ff',
+      fillOpacity: .75,
+      weight: 2
+    }
+  )
+  .addTo(landmarkLayer)
+  .bindPopup(`<b style="color:#00f0ff">${CFG.city}</b>`);
 }
 
 function addLegend() {
   if (!leafMap) return;
+
   const lg = L.control({ position: 'bottomleft' });
+
   lg.onAdd = function() {
     const div = L.DomUtil.create('div', 'uhi-legend');
+
     div.innerHTML = `
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#00f0ff;margin-bottom:6px">UHI (&deg;C)</div>
-      ${[['rgba(255,50,0,.82)','+3.5+'],['rgba(255,136,0,.82)','+1.5 a +3.5'],['rgba(255,238,0,.82)','0 a +1.5'],['rgba(0,255,100,.82)','Efecto frio']]
-        .map(([c,l])=>`
-          <div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:9px">
-            <span style="width:11px;height:11px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0"></span>${l}
-          </div>`).join('')}
-      <div style="font-size:8px;color:rgba(0,240,255,.34);margin-top:5px">Stefan-Boltzmann + Brutsaert (1975)</div>`;
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#00f0ff;margin-bottom:6px">
+        UHI (&deg;C)
+      </div>
+
+      ${[
+        ['rgba(255,50,0,.82)', '+3.5+'],
+        ['rgba(255,136,0,.82)', '+1.5 a +3.5'],
+        ['rgba(255,238,0,.82)', '0 a +1.5'],
+        ['rgba(0,255,100,.82)', 'Efecto frio']
+      ]
+      .map(([c, l]) => `
+        <div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:9px">
+          <span style="width:11px;height:11px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0"></span>
+          ${l}
+        </div>
+      `).join('')}
+
+      <div style="font-size:8px;color:rgba(0,240,255,.34);margin-top:5px">
+        Stefan-Boltzmann + Brutsaert (1975)
+      </div>
+    `;
+
     return div;
   };
+
   lg.addTo(leafMap);
 }
 
