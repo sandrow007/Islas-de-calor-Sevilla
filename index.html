@@ -4695,103 +4695,109 @@ async function actualizarDensidadesRealesObjetos(lista) {
 }
 		  let heatLayer = null;
     let landmarkLayer = null;
-    let densidadCargada = false;
+    let densidadCargada = false
+		
+function addHeatIslands() {
+  if (!uHiLayer) return;
+  
+  const T = ATMOS.T || 25;
+  const RH = ATMOS.RH || 50;
+  const P = ATMOS.P || 1013;
+  const ws = ATMOS.ws || 5;
+  const S_in = ATMOS.S_in || 0;
 
-                                            function addHeatIslands() {
-                                              if (!uHiLayer) return;
-                                              const T = ATMOS.T || 25;
-                                              if (typeof L.heatLayer === 'function') {
-                                                const heatPoints = HEAT_ZONES.map(([lat, lon, dens]) => {
-                                                  const q = qUHI(T, dens);
-                                                  const uhi = parseFloat(q.UHI);
-                                                  const intensity = Math.max(.08, Math.min(1, (uhi + 1) / 5.5));
-                                                  return [lat, lon, intensity];
-                                                });
-                                                heatLayer = L.heatLayer(heatPoints, {
-                                                  radius: 52,
-                                                  blur: 38,
-                                                  maxZoom: 17,
-                                                  minOpacity: .38,
-                                                  gradient: {
-                                                    0.0: 'rgba(0,255,140,.75)',
-                                                    0.3: 'rgba(180,255,0,.78)',
-                                                    0.55: 'rgba(255,221,0,.82)',
-                                                    0.75: 'rgba(255,136,0,.85)',
-                                                    1.0: 'rgba(255,40,0,.9)'
-                                                  }
-                                                });
-                                                heatLayer.addTo(uHiLayer);
-                                              }
-                                              HEAT_ZONES.forEach(([lat, lon, dens, name]) => {
-                                                const q = qUHI(T, dens);
-                                                const uhi = parseFloat(q.UHI);
-                                                L.circleMarker([lat, lon], {
-                                                  radius: 16,
-                                                  color: 'transparent',
-                                                  fillColor: 'transparent',
-                                                  fillOpacity: 0,
-                                                  weight: 0,
-                                                  interactive: true
-                                                }).addTo(uHiLayer).bindPopup(`
-																																																											<b style="color:#00f0ff">${name}</b>
-																																																											<br>
-       UHI (PhysicsCore): 
-																																																												<b>${uhi>0?'+':''}${uhi}&deg;C</b>
-																																																												<br>
-       T sup. estimada: 
-																																																													<b>${q.T_surface.toFixed(1)}&deg;C</b>
-																																																													<br>
-       Albedo: ${q.alpha.toFixed(3)} | R_neta: ${q.R_net} W/m&#xB2;
-																																																														<br>
-Densidad urbana: ${Math.round(dens*100)}% ${densidadCargada ? '(real, OpenStreetMap)' : '(estimación provisional)'}
- 																																																															<br>
-																																																																<span style="font-size:9px;color:rgba(0,200,200,.7)">Stefan-Boltzmann + Brutsaert (1975)</span>`);
-                                              });
-                                            }
+  const physBase = physCore.compute(T, RH, P, ws, S_in, 'urban');
 
-                                         function addLandmarks() {
-                                              if (!leafMap || !landmarkLayer) return;
-                                              landmarkLayer.clearLayers();
-                                              const T = ATMOS.T || 25;
-                                              LANDMARKS.forEach(pt => {
-                                                const q = qUHI(T, pt.d);
-                                                const uhi = parseFloat(q.UHI);
-                                                const col = uhi < 0 ? '#00ff88' : uhi < 2 ? '#ffee00' : uhi < 3.5 ? '#ff8800' : '#ff3300';
-                                                const icon = L.divIcon({
-                                                  html: `<div style="width:9px;height:9px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col};border:1px solid rgba(255,255,255,.32)"></div>`,
-                                                  className: '',
-                                                  iconSize: [9, 9],
-                                                  iconAnchor: [4, 4]
-                                                });
-                                                L.marker([pt.lat, pt.lon], { icon }).addTo(landmarkLayer).bindPopup(
-                                                  `<b style="color:#00f0ff">${pt.name}</b><br>UHI: <b>${uhi>0?'+':''}${uhi}&deg;C</b> | T sup: <b>${q.T_surface.toFixed(1)}&deg;C</b><br>Densidad: ${Math.round(pt.d*100)}% ${pt.real ? '(real, OpenStreetMap)' : '(estimación provisional)'}`
-                                                );
-                                              });
-                                              L.circleMarker([CFG.lat, CFG.lon], {
-                                                radius: 8, color: '#00f0ff', fillColor: '#00f0ff', fillOpacity: .75, weight: 2
-                                              }).addTo(landmarkLayer).bindPopup(`<b style="color:#00f0ff">${CFG.city}</b>`);
-                                            }
+  if (typeof L.heatLayer === 'function') {
+    const heatPoints = HEAT_ZONES.map(([lat, lon, dens]) => {
+      const uhi = parseFloat(physBase.delta_UHI) * dens;
+      const intensity = Math.max(.08, Math.min(1, (uhi + 1) / 5.5));
+      return [lat, lon, intensity];
+    });
+    heatLayer = L.heatLayer(heatPoints, {
+      radius: 52, blur: 38, maxZoom: 17, minOpacity: .38,
+      gradient: {
+        0.0: 'rgba(0,255,140,.75)', 0.3: 'rgba(180,255,0,.78)',
+        0.55: 'rgba(255,221,0,.82)', 0.75: 'rgba(255,136,0,.85)',
+        1.0: 'rgba(255,40,0,.9)'
+      }
+    });
+    heatLayer.addTo(uHiLayer);
+  }
 
-                                            function addLegend() {
-                                              if (!leafMap) return;
-                                              const lg = L.control({
-                                                position: 'bottomleft'
-                                              });
-                                              lg.onAdd = function() {
-                                                const div = L.DomUtil.create('div', 'uhi-legend');
-                                                div.innerHTML = `
-																																																																				<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#00f0ff;margin-bottom:6px">UHI (&deg;C)</div>
-      ${[['rgba(255,50,0,.82)','+3.5+'],['rgba(255,136,0,.82)','+1.5 a +3.5'],['rgba(255,238,0,.82)','0 a +1.5'],['rgba(0,255,100,.82)','Efecto frio']]
-        .map(([c,l])=>`
-																																																																				<div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:9px">
-																																																																					<span style="width:11px;height:11px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0"></span>${l}
-																																																																				</div>`).join('')}
+  HEAT_ZONES.forEach(([lat, lon, dens, name]) => {
+    const uhi = (parseFloat(physBase.delta_UHI) * dens).toFixed(1);
+    const t_surface = T + parseFloat(uhi);
+    const alpha = PH.ALBEDO.vegetation - dens * (PH.ALBEDO.vegetation - PH.ALBEDO.asphalt);
+
+    L.circleMarker([lat, lon], {
+      radius: 16, color: 'transparent', fillColor: 'transparent',
+      fillOpacity: 0, weight: 0, interactive: true
+    }).addTo(uHiLayer).bindPopup(`
+      <b style="color:#00f0ff">${name}</b><br>
+      UHI (PhysicsCore): <b>${uhi > 0 ? '+' : ''}${uhi}&deg;C</b><br>
+      T sup. estimada: <b>${t_surface.toFixed(1)}&deg;C</b><br>
+      Albedo interp.: ${alpha.toFixed(3)} | R_neta: ${Math.round(physBase.R_net)} W/m&sup2;<br>
+      Densidad urbana: ${Math.round(dens * 100)}% ${densidadCargada ? '(real, OpenStreetMap)' : '(estimación provisional)'}<br>
+      <span style="font-size:9px;color:rgba(0,200,200,.7)">Stefan-Boltzmann + Brutsaert (1975)</span>
+    `);
+  });
+}
+
+function addLandmarks() {
+  if (!leafMap || !landmarkLayer) return;
+  landmarkLayer.clearLayers();
+  
+  const T = ATMOS.T || 25;
+  const RH = ATMOS.RH || 50;
+  const P = ATMOS.P || 1013;
+  const ws = ATMOS.ws || 5;
+  const S_in = ATMOS.S_in || 0;
+
+  const physBase = physCore.compute(T, RH, P, ws, S_in, 'urban');
+
+  LANDMARKS.forEach(pt => {
+    const uhi = parseFloat((physBase.delta_UHI * pt.d).toFixed(1));
+    const t_surface = T + uhi;
+    const col = uhi < 0 ? '#00ff88' : uhi < 2 ? '#ffee00' : uhi < 3.5 ? '#ff8800' : '#ff3300';
     
-																																																																				<div style="font-size:8px;color:rgba(0,240,255,.34);margin-top:5px">Stefan-Boltzmann + Brutsaert (1975)</div>`;
-                                                return div;
-                                              };
-                                              lg.addTo(leafMap);
-                                            }
+    const icon = L.divIcon({
+      html: \`<div style="width:9px;height:9px;border-radius:50%;background:\${col};box-shadow:0 0 8px \${col};border:1px solid rgba(255,255,255,.32)"></div>\`,
+      className: '', iconSize: [9, 9], iconAnchor: [4, 4]
+    });
+
+    L.marker([pt.lat, pt.lon], { icon }).addTo(landmarkLayer).bindPopup(
+      \`<b style="color:#00f0ff">\${pt.name}</b><br>
+      UHI: <b>\${uhi > 0 ? '+' : ''}\${uhi}&deg;C</b> | T sup: <b>\${t_surface.toFixed(1)}&deg;C</b><br>
+      Densidad: \${Math.round(pt.d * 100)}% \${pt.real ? '(real, OpenStreetMap)' : '(estimación provisional)'}\`
+    );
+  });
+  
+  L.circleMarker([CFG.lat, CFG.lon], {
+    radius: 8, color: '#00f0ff', fillColor: '#00f0ff', fillOpacity: .75, weight: 2
+  }).addTo(landmarkLayer).bindPopup(\`<b style="color:#00f0ff">\${CFG.city}</b>\`);
+}
+
+function addLegend() {
+  if (!leafMap) return;
+  const lg = L.control({
+    position: 'bottomleft'
+  });
+  lg.onAdd = function() {
+    const div = L.DomUtil.create('div', 'uhi-legend');
+    div.innerHTML = \`
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#00f0ff;margin-bottom:6px">UHI (&deg;C)</div>
+      \${[['rgba(255,50,0,.82)','+3.5+'],['rgba(255,136,0,.82)','+1.5 a +3.5'],['rgba(255,238,0,.82)','0 a +1.5'],['rgba(0,255,100,.82)','Efecto frio']]
+        .map(([c,l])=>\`
+          <div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:9px">
+            <span style="width:11px;height:11px;border-radius:50%;background:\${c};display:inline-block;flex-shrink:0"></span>\${l}
+          </div>\`).join('')}
+      <div style="font-size:8px;color:rgba(0,240,255,.34);margin-top:5px">Stefan-Boltzmann + Brutsaert (1975)</div>\`;
+    return div;
+  };
+  lg.addTo(leafMap);
+}
+
                                             /* ================================================================================================
                                                MODULE: REAL QUANTUM ENGINE — 4 dedicated dashboard sections (Q1-Q4)
                                                Genuine complex-amplitude state-vector simulator (H / RY / RZ / CNOT + Born-rule measurement),
