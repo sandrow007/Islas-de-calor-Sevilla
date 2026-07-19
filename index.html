@@ -1339,8 +1339,13 @@
               <span class="cbdg">MAP</span>
               <h2 data-i18n="mapTitle">MAPA DE ISLAS DE CALOR &middot; SEVILLA</h2>
             </div>
-            <div id="lmap"></div>
-            <div class="ci">OSM &middot; CartoDB Dark &middot; Voyager &middot; ESRI &middot; Topo &middot; UHI: Stefan-Boltzmann + Brutsaert (1975)</div>
+            <div id="lmap"><div class="ci" data-i18n="mapLoading">Inicializando mapa...</div></div>
+            <div class="ci" id="map-credits">OSM &middot; CartoDB Dark &middot; Voyager &middot; ESRI &middot; Topo &middot; UHI: Stefan-Boltzmann + Brutsaert (1975)</div>
+            <div class="ci" style="margin-top: 8px; font-size: 0.9em;">
+              <a href="https://www.youtube.com/watch?v=ruExRH0H5Qc&t=3s" target="_blank" style="color: var(--qc); text-decoration: none;" data-i18n="ytLink">
+                &#x25B6; Ver demo del motor en YouTube
+              </a>
+            </div>
           </section>
         </div>
         <div class="tab-panel" id="tabpanel-clima">
@@ -1750,6 +1755,8 @@
             qRunning: 'Ejecutando circuito real...',
             qciExplainSci: 'Cada qubit codifica una variable fisica real (temperatura, humedad, viento, radiacion) como un angulo de rotacion. Una cadena de puertas CNOT los entrelaza para capturar correlaciones entre variables.',
             qciExplainCit: 'Es un numero de 0 a 100 que resume, de un vistazo, lo exigente que es el clima ahora mismo combinando calor, sol y humedad, cuanto mas alto, mas precaucion conviene tener.',
+            mapLoading: 'Inicializando mapa...',
+            ytLink: '&#x25B6; Ver demo del motor en YouTube',
           }
         },
         en: {
@@ -1821,6 +1828,8 @@
             qRunning: 'Running real circuit...',
             qciExplainSci: 'Each qubit encodes a real physical variable (temperature, humidity, wind, radiation) as a rotation angle. A chain of CNOT gates entangles them to capture correlations between variables.',
             qciExplainCit: 'A number from 0 to 100 that sums up, at a glance, how demanding the weather is right now, the higher it is, the more caution is worth taking.',
+            mapLoading: 'Initializing map...',
+            ytLink: '&#x25B6; Watch engine demo on YouTube',
           }
         },
         ca: {
@@ -1892,6 +1901,8 @@
             qRunning: 'Executant circuit real...',
             qciExplainSci: 'Cada qubit codifica una variable fisica real com un angle de rotacio, entrellacats amb portes CNOT.',
             qciExplainCit: 'Un numero de 0 a 100 que resumeix com d\u2019exigent es el clima ara mateix.',
+            mapLoading: 'Inicialitzant mapa...',
+            ytLink: '&#x25B6; Veure demo del motor a YouTube',
           }
         },
         gl: {
@@ -1963,6 +1974,8 @@
             qRunning: 'Executando circuito real...',
             qciExplainSci: 'Cada qubit codifica unha variable fisica real como un angulo de rotacion, entrelazados con portas CNOT.',
             qciExplainCit: 'Un numero de 0 a 100 que resume, dunha soa ollada, o esixente que e o clima agora mesmo.',
+            mapLoading: 'Inicializando mapa...',
+            ytLink: '&#x25B6; Ver demo do motor en YouTube',
           }
         },
         eu: {
@@ -2034,6 +2047,8 @@
             qRunning: 'Zirkuitu erreala exekutatzen...',
             qciExplainSci: 'Qubit bakoitzak benetako aldagai fisiko bat kodetzen du biraketa angelu gisa.',
             qciExplainCit: '0tik 100era doan zenbaki bat, orain eguraldia zenbateraino exijentea den laburbiltzen duena.',
+            mapLoading: 'Mapa hasieratzen...',
+            ytLink: '&#x25B6; Ikusi motorraren demoa YouTuben',
           }
         },
         va: {
@@ -2105,6 +2120,8 @@
             qRunning: 'Executant circuit real...',
             qciExplainSci: 'Cada qubit codifica una variable fisica real com un angle de rotacio.',
             qciExplainCit: 'Un numero de 0 a 100 que resumeix com d\u2019exigent es el clima ara mateix.',
+            mapLoading: 'Inicialitzant mapa...',
+            ytLink: '&#x25B6; Vore demo del motor en YouTube',
           }
         },
         oc: {
@@ -2176,6 +2193,8 @@
             qRunning: 'Executant circuit reau...',
             qciExplainSci: 'Cada qubit codifique ua variabla fisica reau coma un angle de rotacion.',
             qciExplainCit: 'Un numero de 0 a 100 que resumis com d\u2019exigent ei eth clima ara meteish.',
+            mapLoading: 'Inicializant carta...',
+            ytLink: '&#x25B6; Veir demo deth motor en YouTube',
           }
         },
       };
@@ -4570,7 +4589,7 @@ const layerTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
                                                 collapsed: false
                                               }).addTo(leafMap);
                                               (async () => {
-                                                const capEl = document.querySelector('#cmap .ci');
+                                                const capEl = document.getElementById('map-credits');
                                                 if (capEl) capEl.textContent = 'Calculando densidad urbana real desde OpenStreetMap...';
                                                 const [r1, r2] = await Promise.all([
                                                   actualizarDensidadesReales(HEAT_ZONES, 2),
@@ -4704,6 +4723,11 @@ async function actualizarDensidadesRealesObjetos(lista) {
 		
 function addHeatIslands() {
   if (!uHiLayer) return;
+  // MEJORA: No dibujar la capa si todavía no se han cargado los datos reales de la API.
+  // Esto evita que se muestre brevemente el mapa con el valor por defecto de 25°C.
+  if (ATMOS.src === 'init') {
+    return;
+  }
   const T = ATMOS.T || 25;
   const RH = ATMOS.RH || 50;
   const P = ATMOS.P || 1013;
