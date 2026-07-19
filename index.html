@@ -4777,25 +4777,6 @@ function addLegend() {
   };
   lg.addTo(leafMap);
 }
-function addLegend() {
-  if (!leafMap) return;
-  const lg = L.control({
-    position: 'bottomleft'
-  });
-  lg.onAdd = function() {
-    const div = L.DomUtil.create('div', 'uhi-legend');
-    div.innerHTML = \`
-      <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#00f0ff;margin-bottom:6px">UHI (&deg;C)</div>
-      \${[['rgba(255,50,0,.82)','+3.5+'],['rgba(255,136,0,.82)','+1.5 a +3.5'],['rgba(255,238,0,.82)','0 a +1.5'],['rgba(0,255,100,.82)','Efecto frio']]
-        .map(([c,l])=>\`
-          <div style="display:flex;align-items:center;gap:6px;margin:3px 0;font-size:9px">
-            <span style="width:11px;height:11px;border-radius:50%;background:\${c};display:inline-block;flex-shrink:0"></span>\${l}
-          </div>\`).join('')}
-      <div style="font-size:8px;color:rgba(0,240,255,.34);margin-top:5px">Stefan-Boltzmann + Brutsaert (1975)</div>\`;
-    return div;
-  };
-  lg.addTo(leafMap);
-}
 
                                             /* ================================================================================================
                                                MODULE: REAL QUANTUM ENGINE — 4 dedicated dashboard sections (Q1-Q4)
