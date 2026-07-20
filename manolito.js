@@ -1,5 +1,5 @@
 /**
- * MANOLITO ENGINE v5.6 (Canvas fix & Random Colors)
+ * MANOLITO ENGINE v5.7 (Canvas fix & Random Colors + Intro wait fix)
  */
 (function () {
   'use strict';
@@ -21,13 +21,18 @@
     _esperarFinDeIntro(callback) {
       const intro = document.getElementById('pi');
       if (!intro) { callback(); return; }
-      const oculta = () => getComputedStyle(intro).display === 'none' || intro.offsetParent === null;
+      // FIX: solo comprobar display, no offsetParent (que es null en position:fixed)
+      const oculta = () => getComputedStyle(intro).display === 'none';
       if (oculta()) { callback(); return; }
       const obs = new MutationObserver(() => {
         if (oculta()) { obs.disconnect(); callback(); }
       });
       obs.observe(intro, { attributes: true, attributeFilter: ['style', 'class'] });
-      setTimeout(() => { obs.disconnect(); if (!document.getElementById('manolito-host')) callback(); }, 25000);
+      // Fallback: 15s
+      setTimeout(() => {
+        obs.disconnect();
+        if (!document.getElementById('manolito-host')) callback();
+      }, 15000);
     }
 
     _loadMemory() {
@@ -37,7 +42,7 @@
 
     _saveMemory() {
       try { localStorage.setItem('manolito_v5_ctx', JSON.stringify(this.memory)); }
-      catch (e) { /* localStorage lleno o bloqueado: seguimos solo en RAM */ }
+      catch (e) { }
     }
 
     async _cleanWebText(html) {
@@ -86,8 +91,6 @@
       return true;
     }
 
-    // Llama a tu propio Worker (/api/manolito), que reenvia a OpenRouter con la
-    // key guardada en secreto en el servidor. El navegador nunca ve la key.
     async _viaPost(messages, msTimeout) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), msTimeout);
@@ -113,8 +116,6 @@
       try {
         return await this._viaPost(messages, 15000);
       } catch (e1) {
-        // Un unico reintento: si el Worker o OpenRouter fallan por un pico puntual,
-        // la segunda vez suele entrar bien.
         return await this._viaPost(messages, 15000);
       }
     }
@@ -189,10 +190,10 @@
 
       const host = document.createElement('div');
       host.id = 'manolito-host';
-      host.style.cssText = 'all:initial;position:fixed;bottom:86px;right:20px;z-index:2147483647;';
+      // FIX: quitar all:initial, usar propiedades especificas
+      host.style.cssText = 'position:fixed;bottom:86px;right:20px;z-index:2147483647;display:block;margin:0;padding:0;border:none;background:transparent;';
       document.body.appendChild(host);
 
-      // Calculamos la paleta base aleatoria de reinicio aquí pa inyectarla
       const h = this._colorInicioAleatorio();
       const color1 = `hsl(${h}, 100%, 50%)`;
       const color2 = `hsl(${(h + 120) % 360}, 100%, 50%)`;
@@ -400,8 +401,6 @@
       let particulas = [], activo = true;
       canvas.__detener = () => { activo = false; };
 
-      // ARREGLO DEL BUG DEL CANVAS: En vez de un tamaño fijo inicial,
-      // obligamos a reevaluar su tamaño dinámico en vivo.
       const ajustarTamano = () => {
         const w = canvas.parentElement.offsetWidth || 360;
         const h = canvas.parentElement.offsetHeight || 300;
@@ -424,7 +423,7 @@
 
       const loop = () => {
         if (!activo) return;
-        ajustarTamano(); // <-- La clave del arreglo: comprueba si el panel se ha abierto o cambiado de tamaño en cada ciclo
+        ajustarTamano();
         ctx.fillStyle = 'rgba(6,8,20,0.14)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         particulas.forEach(p => {
