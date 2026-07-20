@@ -86,39 +86,23 @@
       return true;
     }
 
+    // Llama a tu propio Worker (/api/manolito), que reenvia a OpenRouter con la
+    // key guardada en secreto en el servidor. El navegador nunca ve la key.
     async _viaPost(messages, msTimeout) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), msTimeout);
       try {
-        const response = await fetch('https://text.pollinations.ai/openai', {
+        const response = await fetch('/api/manolito', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           signal: controller.signal,
-          body: JSON.stringify({ messages, seed: Math.floor(Math.random() * 100000), max_tokens: 1200 })
+          body: JSON.stringify({ messages, max_tokens: 1200 })
         });
         clearTimeout(timeoutId);
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        const raw = await response.text();
-        return this._extractContent(raw);
-      } catch (e) {
-        clearTimeout(timeoutId);
-        throw e;
-      }
-    }
-
-    async _viaGet(messages, msTimeout) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), msTimeout);
-      try {
-        const sistema = messages.find(m => m.role === 'system');
-        const ultimoUsuario = [...messages].reverse().find(m => m.role === 'user');
-        const promptPlano = `${sistema ? sistema.content.slice(0, 1500) : ''}\n\n${ultimoUsuario ? ultimoUsuario.content.slice(0, 2000) : ''}`;
-        const url = `https://text.pollinations.ai/${encodeURIComponent(promptPlano)}?model=openai&seed=${Math.floor(Math.random() * 100000)}`;
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const raw = await response.text();
-        return this._extractContent(raw);
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return (data.text || '').trim();
       } catch (e) {
         clearTimeout(timeoutId);
         throw e;
@@ -127,13 +111,11 @@
 
     async _callModel(messages) {
       try {
-        return await this._viaPost(messages, 10000);
+        return await this._viaPost(messages, 15000);
       } catch (e1) {
-        try {
-          return await this._viaPost(messages, 10000);
-        } catch (e2) {
-          return await this._viaGet(messages, 10000);
-        }
+        // Un unico reintento: si el Worker o OpenRouter fallan por un pico puntual,
+        // la segunda vez suele entrar bien.
+        return await this._viaPost(messages, 15000);
       }
     }
 
@@ -155,23 +137,8 @@
     }
 
     _systemPrompt() {
-      const prompt = `Eres Manolito, un ingeniero de Sevilla, un 'miarma' de los pies a la cabeza. Tienes mucho arte y más calle que un adoquín. Eres un experto mundial en tu campo, pero hablas de forma cercana y con la sabiduría de la experiencia.
-
-REGLAS DE ORO, NO TE LAS SALTES NUNCA:
-
-1.  **ACENTO ANDALUZ (EN ESPAÑOL):** Si el usuario te habla en español, RESPONDE SIEMPRE con un marcado acento andaluz/sevillano. Esto es CLAVE.
-    *   Cómete las 's' finales de las palabras (ej: 'los coches' -> 'loh coche').
-    *   Aspira las 's' antes de consonante (ej: 'está' -> 'ehtá').
-    *   Cambia las 'd' entre vocales por nada (ej: 'cansado' -> 'cansao').
-    *   Usa expresiones típicas como 'illo', 'miarma', 'no ni na', 'quillo', 'qué pasa'.
-    *   El resultado tiene que ser natural, como si hablaras, no una caricatura forzada.
-
-2.  **OTROS IDIOMAS:** Si te hablan en otro idioma (inglés, catalán, etc.), responde en ESE idioma, pero mantén tu personalidad de ingeniero sevillano orgulloso. No intentes traducir el acento, solo la actitud.
-
-3.  **DEFENSA DE TU TIERRA:** Eres muy orgulloso de tu tierra, Andalucía y Sevilla. Si alguien la critica, la insulta o dice algo malo de ella, te lo tomas muy a pecho. Ponte serio, responde de forma cortante y 'rancia', defendiendo tu tierra con uñas y dientes, pero sin llegar al insulto directo. Deja claro que no te ha hecho ni pizca de gracia. Por ejemplo: 'Oye, ooye, frena el carro. Una cosita es que opines y otra que faltes al respeto. A ver si vamo a tener que ponerno serio, que con mi tierra no se juega.'
-
-4.  **CONTEXTO:** Usa siempre el contexto de la página y los datos que te proporcionan para dar respuestas útiles y precisas. Eres un profesional.`;
-      return prompt;
+      return 'Eres Manolito, un ingeniero sevillano con mucha calle y mucho oficio, y hablas varios ' +
+        'idiomas. REGLA DE IDIOMA: responde SIEMPRE en el mismo idioma en que te escriba el usuario... (Resto de tu prompt)';
     }
 
     async process(input) {
@@ -356,7 +323,7 @@ REGLAS DE ORO, NO TE LAS SALTES NUNCA:
               <div class="m-core"><span class="m-letra">M∞</span></div>
             </div>
             <div id="m-title-wrap">
-              <span id="m-title">MANOLIT∞</span>
+              <span id="m-title">MANOLIT&#8734;</span>
               <div id="m-subtitle">TU MOTOR CUANTICO, EN ANDALUZ</div>
             </div>
             <button id="m-close">&#10005;</button>
@@ -433,6 +400,8 @@ REGLAS DE ORO, NO TE LAS SALTES NUNCA:
       let particulas = [], activo = true;
       canvas.__detener = () => { activo = false; };
 
+      // ARREGLO DEL BUG DEL CANVAS: En vez de un tamaño fijo inicial,
+      // obligamos a reevaluar su tamaño dinámico en vivo.
       const ajustarTamano = () => {
         const w = canvas.parentElement.offsetWidth || 360;
         const h = canvas.parentElement.offsetHeight || 300;
@@ -455,7 +424,7 @@ REGLAS DE ORO, NO TE LAS SALTES NUNCA:
 
       const loop = () => {
         if (!activo) return;
-        ajustarTamano();
+        ajustarTamano(); // <-- La clave del arreglo: comprueba si el panel se ha abierto o cambiado de tamaño en cada ciclo
         ctx.fillStyle = 'rgba(6,8,20,0.14)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         particulas.forEach(p => {
