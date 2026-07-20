@@ -12,5 +12,11 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
+    export default {
+  async fetch(request, env, ctx) {
+    return new Response("Hello from manolito-infinito!");
+  },
+};
+
   ]
 }
