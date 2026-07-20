@@ -42,43 +42,26 @@
       <p class="meta">Última actualización: Julio 2026</p>
 
       <h2>1. Uso de almacenamiento local</h2>
-      <p>Actualmente Manolit∞ no instala cookies publicitarias ni de analítica intrusiva. Utiliza el almacenamiento nativo del navegador (<code>localStorage</code>) únicamente para recordar la decisión de consentimiento. Las simulaciones cuántico-climáticas se procesan en la sesión volátil del navegador y no se guardan en bases de datos propias.</p>
+      <p>Actualmente Manolit∞ no instala cookies publicitarias ni de analítica intrusiva.</p>
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Clave o estado</th><th>Tecnología</th><th>Finalidad</th><th>Duración</th><th>Tipo</th></tr></thead>
+          <thead><tr><th>Clave o estado</th><th>Finalidad</th></tr></thead>
           <tbody>
-            <tr><td><code>cookies_status</code></td><td>localStorage</td><td>Recordar si el usuario aceptó o rechazó el almacenamiento técnico.</td><td>Hasta su purga manual desde el navegador o botón de control.</td><td>Técnica</td></tr>
-            <tr><td>Estado cuántico de sesión</td><td>Memoria de ejecución</td><td>Mantener los parámetros y resultados de la simulación mientras la pestaña permanezca activa.</td><td>Finaliza al recargar o cerrar la sesión.</td><td>Técnica y funcional</td></tr>
-            <tr><td>Caché HTTP</td><td>Caché de red</td><td>Reducir transferencias repetidas y optimizar el consumo de ancho de banda.</td><td>Variable según cabeceras del servidor.</td><td>Técnica</td></tr>
+            <tr><td><code>cookies_status</code></td><td>Recordar consentimiento.</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h2>2. Integración de Servicios Externos (APIs)</h2>
-      <p>Para dotar a la aplicación de datos y capacidades lógicas de Inteligencia Artificial, la arquitectura del software ejecuta llamadas en tiempo real a las siguientes infraestructuras externas. <strong>El uso de estas APIs no implica la inyección de cookies de rastreo en su dispositivo</strong>, pero requiere la transmisión técnica de datos de red (como su IP) para resolver las peticiones HTTP:</p>
-      <ul>
-        <li><strong>API de AEMET (Agencia Estatal de Meteorología):</strong> Utilizada exclusivamente para la obtención asíncrona de variables meteorológicas, temperatura e índices térmicos locales en formato crudo (JSON).</li>
-        <li><strong>API de OpenRouter:</strong> Infraestructura centralizada que provee acceso a modelos de lenguaje avanzado (LLMs). Gestiona la interpretación lógica del chat. Las peticiones se procesan de manera anonimizada a través de nuestros proxies de servidor (Cloudflare Workers) y son volátiles.</li>
-      </ul>
-
-      <h2>3. Aceptar o rechazar</h2>
-      <p>El sistema de consentimiento inicial le permite aceptar o rechazar. Su elección se almacena localmente para evitar interrupciones en la navegación. Rechazar esta política no bloquea el uso de la simulación climática ni desactiva las peticiones necesarias hacia AEMET u OpenRouter, simplemente restringe el almacenamiento no esencial.</p>
-
-      <h2>4. Cambiar la elección</h2>
+      <h2>2. Cambiar la elección</h2>
       <div class="controls">
-        <p>Puede purgar la variable guardada en su dispositivo. El aviso de consentimiento volverá a desplegarse cuando retorne a la interfaz principal.</p>
+        <p>Puede purgar la preferencia guardada.</p>
         <button id="reset-cookie-choice" type="button">RESTABLECER ELECCIÓN</button>
         <span id="cookie-reset-status" role="status" aria-live="polite"></span>
       </div>
-
-      <h2>5. Configuración del navegador</h2>
-      <p>Usted puede bloquear de forma proactiva la escritura de variables locales o cookies desde los ajustes de seguridad de su propio navegador web. Tenga en consideración que aplicar un bloqueo estricto forzará la reaparición del aviso legal en cada recarga, al no existir permisos de lectura para verificar su estado.</p>
     </main>
     <footer>
       <a href="aviso-legal.html">Aviso legal</a> 
-      <span style="color: var(--line);">|</span>
-      <a href="privacidad.html">Privacidad</a>
       <span style="color: var(--line);">|</span>
       <a href="https://manolitoinfinito.space" target="_blank" rel="noopener noreferrer" style="font-weight: 600; color: #a3aec4;">Proyecto Manolit∞ Space</a>
       <span style="color: var(--line);">|</span>
@@ -90,11 +73,10 @@
         try {
           localStorage.removeItem('cookies_status');
           status.style.color = 'var(--accent)';
-          status.textContent = '> [OK] Variable local purgada con éxito. Estado restablecido.';
-          setTimeout(() => { status.textContent = ''; }, 4000);
+          status.textContent = '> [OK] Variable local purgada con éxito.';
         } catch (error) {
           status.style.color = '#ff4a4a';
-          status.textContent = '> [ERROR] Las políticas del sandbox del navegador bloquean la manipulación del almacenamiento.';
+          status.textContent = '> [ERROR] Bloqueo de almacenamiento.';
         }
       });
     </script>
