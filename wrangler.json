@@ -11,12 +11,28 @@
     "binding": "ASSETS"
   },
   "compatibility_flags": [
+    "nodejs_compat"{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "manolito-infinito",
+  "compatibility_date": "2026-07-16",
+  "main": "worker.js",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS"
+  },
+  "compatibility_flags": [
     "nodejs_compat"
     export default {
   async fetch(request, env, ctx) {
     return new Response("Hello from manolito-infinito!");
   },
 };
+
+  ]
+}
 
   ]
 }
