@@ -1643,7 +1643,7 @@
         lon: -5.9962,
         city: 'Sevilla',
         altitude: 7,
-        AEMET_KEY: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYW5kcm8uYTAwN0BnbWFpbC5jb20iLCJqdGkiOiJmMTFkMDRiNy1lODY4LTQzZDMtYmUwOS00Njg2MzgzZjBmYTciLCJleHAiOjE3OTMxMzkzNTgsImlzcyI6IkFFTUVUIiwiaWF0IjoxNzg0NDk5MzU4LCJ1c2VySWQiOiJmMTFkMDRiNy1lODY4LTQzZDMtYmUwOS00Njg2MzgzZjBmYTciLCJyb2xlIjoiIn0.PFB8mDZyAdsbYW0dzBi87VCHJpHlUDTHOQZApd5UUFQ",
+        AEMET_KEY: "TU_API_KEY",
         AEMET_MUN: '41091',
         mapZoom: 12,
         wxInterval: 300000,
@@ -4132,7 +4132,7 @@ function updatePhysicsPanel(ph) {
         ATMOS.src = 'Open-Meteo + NASA POWER (cruzado)';
         ATMOS.npData = npData;
         updateAllDisplays(omData.hourly, ATMOS.src);
-        if (CFG.AEMET_KEY !== "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzYW5kcm8uYTAwN0BnbWFpbC5jb20iLCJqdGkiOiJmMTFkMDRiNy1lODY4LTQzZDMtYmUwOS00Njg2MzgzZjBmYTciLCJleHAiOjE3OTMxMzkzNTgsImlzcyI6IkFFTUVUIiwiaWF0IjoxNzg0NDk5MzU4LCJ1c2VySWQiOiJmMTFkMDRiNy1lODY4LTQzZDMtYmUwOS00Njg2MzgzZjBmYTciLCJyb2xlIjoiIn0.PFB8mDZyAdsbYW0dzBi87VCHJpHlUDTHOQZApd5UUFQ") fetch(`https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/horaria/${CFG.AEMET_MUN}?api_key=${CFG.AEMET_KEY}`).then(r => r.json()).then(m => {
+        if (CFG.AEMET_KEY !== "TU_API_KEY") fetch(`https://opendata.aemet.es/opendata/api/prediccion/especifica/municipio/horaria/${CFG.AEMET_MUN}?api_key=${CFG.AEMET_KEY}`).then(r => r.json()).then(m => {
           if (m.datos) console.info('[AEMET]', m.datos);
         }).catch(e => console.warn('[AEMET CORS]', e.message));
         setTimeout(() => loadAll().catch(() => {}), CFG.wxInterval);
