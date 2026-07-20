@@ -142,18 +142,7 @@
   const ICONO_GIRALDA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v3"/><path d="M12 3c4 1 6 4 6 8s-3 7-6 7-6-3-6-7 2-7 6-8Z"/><path d="M12 8c2 .6 3 2 3 4s-1.4 3.4-3 3.4S9 13.6 9 12s1-3.4 3-4Z"/></svg>`;
 
   function showSplash() {
-    if (document.getElementById('mwl-splash')) return;
-    injectStyles();
-
-    const saved = getChoice();
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.skipWelcome) {
-          enterMode(parsed.mode);
-          return;
-        }
-      } catch (e) {}
+// La intro siempre se muestra, sin auto-skip
     }
 
     const splash = document.createElement('div');
