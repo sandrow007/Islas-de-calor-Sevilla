@@ -3,101 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Aviso Legal - Manolito Weather App">
+    <meta name="description" content="Aviso Legal y Condiciones de Uso - Manolito Weather App y Arquitectura AI">
     <title>Aviso Legal | Manolito-infinito</title>
     <style>
+        :root {
+            --bg-main: #0a0c1f;
+            --text-main: #e8f0ff;
+            --text-muted: #d0daf0;
+            --text-dim: rgba(180, 210, 255, 0.6);
+            --accent-cyan: #00f0ff;
+            --border-cyan: rgba(0, 240, 255, 0.2);
+            --bg-glass: rgba(10, 12, 31, 0.85);
+            --shadow-glass: 0 20px 60px rgba(0,0,0,0.5);
+            --transition-speed: 0.3s;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            background: #0a0c1f;
-            color: #e8f0ff;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            font-size: 0.9rem;
-            line-height: 1.7;
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.8;
             min-height: 100vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
         }
+
         .nav-legal {
-            padding: 16px 20px;
-            background: rgba(10, 12, 31, 0.85);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 18px 24px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-cyan);
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
         }
+
         .nav-legal a {
-            color: #00f0ff;
+            color: var(--accent-cyan);
             text-decoration: none;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 600;
             letter-spacing: 0.5px;
-            transition: color 0.2s;
+            transition: color var(--transition-speed) ease, transform var(--transition-speed) ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
+
         .nav-legal a:hover {
-            color: #fff;
+            color: #ffffff;
+            transform: translateX(-4px);
         }
+
         .container-legal {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 30px 25px;
-            background: rgba(10, 12, 31, 0.8);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            border-radius: 14px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
+            width: 100%;
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 40px;
+            background: rgba(10, 12, 31, 0.6);
+            border: 1px solid var(--border-cyan);
+            border-radius: 16px;
+            box-shadow: var(--shadow-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             flex: 1;
         }
+
         h1 {
-            font-size: 1.4rem;
-            color: #00f0ff;
+            font-size: 1.6rem;
+            color: var(--accent-cyan);
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
+
         .fecha-act {
-            color: rgba(180, 210, 255, 0.6);
-            font-size: 0.75rem;
-            margin-bottom: 28px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-bottom: 35px;
             font-style: italic;
+            border-bottom: 1px solid rgba(180, 210, 255, 0.1);
+            padding-bottom: 15px;
         }
+
         h2 {
-            font-size: 1rem;
-            color: #00f0ff;
-            margin: 28px 0 12px;
-            padding-bottom: 6px;
-            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            font-size: 1.1rem;
+            color: var(--accent-cyan);
+            margin: 35px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-cyan);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
+
         p, li {
-            margin-bottom: 12px;
-            color: #d0daf0;
+            margin-bottom: 14px;
+            color: var(--text-muted);
         }
+
         ul {
-            padding-left: 20px;
-            margin-bottom: 20px;
+            padding-left: 24px;
+            margin-bottom: 24px;
         }
+
+        li::marker {
+            color: var(--accent-cyan);
+        }
+
         a {
-            color: #00f0ff;
+            color: var(--accent-cyan);
             text-decoration: none;
+            transition: text-shadow var(--transition-speed) ease;
         }
+
         a:hover {
             text-decoration: underline;
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
         }
+
         strong {
-            color: #fff;
+            color: #ffffff;
+            font-weight: 600;
         }
+
         footer {
             text-align: center;
-            padding: 20px;
-            color: rgba(180, 210, 255, 0.4);
-            font-size: 0.7rem;
+            padding: 24px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
             border-top: 1px solid rgba(0, 240, 255, 0.1);
+            background: var(--bg-main);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container-legal {
+                margin: 20px;
+                padding: 25px;
+                width: calc(100% - 40px);
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            h2 {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -105,8 +171,10 @@
 
     <header>
         <nav class="nav-legal">
-            <!-- Volver directo a la web principal, sin historial ni bucle de cookies -->
-            <a href="https://manolitoinfinito.space">&larr; Volver</a>
+            <!-- Enrutamiento directo al dominio raíz especificado, cortando historiales internos -->
+            <a href="https://islasdecalortsevilla.com" rel="noopener noreferrer">
+                <span>&larr;</span> Volver a Islas de Calor Sevilla
+            </a>
         </nav>
     </header>
 
@@ -115,45 +183,54 @@
         <p class="fecha-act"><em>Última actualización: Julio 2026</em></p>
 
         <section>
-            <h2>1. Información General</h2>
-            <p>En cumplimiento con la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa que este sitio web y la aplicación "Manolito" son titularidad de <strong>@Sandrow</strong>, con correo electrónico de contacto <strong><a href="mailto:sandro.a007@gmail.com">sandro.a007@gmail.com</a></strong>.</p>
+            <h2>1. Información General e Identidad</h2>
+            <p>En estricto cumplimiento con la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE), se informa que la infraestructura web, interfaces y la aplicación algorítmica "Manolito" son de titularidad exclusiva de <strong>@Sandrow</strong>. El canal de comunicación oficial y contacto técnico se establece a través del correo electrónico <strong><a href="mailto:sandro.a007@gmail.com">sandro.a007@gmail.com</a></strong>.</p>
         </section>
 
         <section>
-            <h2>2. Naturaleza del Servicio y Procesamiento Cuántico</h2>
-            <p>Manolito es una aplicación web que consulta modelos meteorológicos apoyados en integraciones de computación cuántica alojada en la nube (APIs de terceros). Debido al estado actual de las infraestructuras cuánticas comerciales, el servicio de predicción se proporciona "tal cual" (<em>as is</em>).</p>
-            <p>El usuario comprende que la disponibilidad de los cálculos avanzados puede verse interrumpida por la saturación de los nodos cuánticos, tiempos en cola, o el mantenimiento de los propios servidores externos, afectando el renderizado de los datos en la interfaz.</p>
-        </section>
-
-        <section>
-            <h2>3. Sobre el Chat de Manolito (IA)</h2>
-            <p>El chat integrado en la plataforma Manolito es una herramienta de asistencia basada en tecnología de Inteligencia Artificial. Con el objetivo de garantizar la privacidad y la agilidad del sistema, informamos de los siguientes puntos clave:</p>
+            <h2>2. Arquitectura de Doble API y Procesamiento de Datos</h2>
+            <p>La presente aplicación opera funcionalmente mediante una arquitectura de integración dual basada en <strong>dos APIs (Interfaces de Programación de Aplicaciones)</strong> independientes y externas:</p>
             <ul>
-                <li><strong>Procesamiento en Tiempo Real:</strong> La IA de Manolito opera bajo un modelo de procesamiento volátil. Esto significa que la sesión de chat no almacena historiales, perfiles de usuario ni conversaciones en servidores persistentes a largo plazo.</li>
-                <li><strong>Privacidad por Diseño:</strong> Al ser un sistema de "cero contacto" con bases de datos externas de usuario, la información que compartas durante la interacción se procesa únicamente durante la sesión activa en tu navegador. Una vez que cierras la pestaña o recargas la página, la memoria de la interacción se libera automáticamente.</li>
-                <li><strong>Naturaleza de la Creación:</strong> Este chat es una interfaz de consulta experimental diseñada para interpretar variables climáticas y técnicas del proyecto. No constituye una entidad con personalidad jurídica, ni realiza perfiles comerciales de los usuarios que interactúan con ella.</li>
+                <li><strong>API Meteorológica:</strong> Encargada de la extracción asíncrona de datos climatológicos, variables atmosféricas e índices térmicos en tiempo real.</li>
+                <li><strong>API de Inteligencia Artificial:</strong> Motor de procesamiento de lenguaje natural y computación avanzada que da soporte analítico al chat integrado en la plataforma.</li>
+            </ul>
+            <p>Debido a la dependencia de estas infraestructuras de terceros (nodos cuánticos y servidores externos en la nube), el servicio global se proporciona bajo la premisa <em>"tal cual" (as is)</em>. El usuario acepta explícitamente que la disponibilidad simultánea de ambas APIs puede verse comprometida por saturación de red, límites de cuota (rate-limiting), latencias en cola o mantenimientos técnicos ajenos al titular de este sitio web, provocando la interrupción temporal del flujo de datos en la interfaz.</p>
+        </section>
+
+        <section>
+            <h2>3. Condiciones Operativas del Chat de Manolito (IA)</h2>
+            <p>El módulo conversacional integrado es operado de forma dinámica por la segunda API del sistema. Para asegurar un uso responsable y garantizar la privacidad, se estipulan las siguientes condiciones técnicas:</p>
+            <ul>
+                <li><strong>Ausencia de Persistencia:</strong> El modelo opera bajo un flujo de memoria estrictamente volátil. El sistema no guarda registros en bases de datos, no crea perfiles de usuario, ni almacena el historial de las interacciones una vez finalizada la sesión (cierre de pestaña o recarga del DOM).</li>
+                <li><strong>Procesamiento Externo:</strong> Las consultas enviadas al chat son canalizadas de forma anonimizada a través de la API de IA correspondiente. Al no existir bases de datos propias, se garantiza un paradigma de "privacidad por diseño" y cero contacto con información personal identificable.</li>
+                <li><strong>Limitación de Fiabilidad (Alucinaciones):</strong> La IA es una interfaz probabilística diseñada para interpretar datos climáticos del proyecto. Las respuestas generadas no constituyen asesoramiento profesional, científico o vinculante. El modelo puede incurrir en errores de interpretación o generar respuestas inexactas inherentes a la tecnología LLM actual.</li>
             </ul>
         </section>
 
         <section>
-            <h2>4. Exención de Responsabilidad Meteorológica</h2>
-            <p>Los datos arrojados por el motor algorítmico de Manolito tienen un propósito estrictamente analítico, experimental e informativo. <strong>BAJO NINGÚN CONCEPTO</strong> las predicciones de esta aplicación deben ser utilizadas para:</p>
+            <h2>4. Exención Absoluta de Responsabilidad</h2>
+            <p>El renderizado de los datos meteorológicos y las respuestas emitidas por la API de IA tienen un fin puramente analítico, divulgativo y de simulación experimental. <strong>QUEDA TERMINANTEMENTE PROHIBIDO</strong> basarse en la información de "Manolito" para:</p>
             <ul>
-                <li>Toma de decisiones que involucren la seguridad o integridad física de personas y animales.</li>
-                <li>Gestión de infraestructuras críticas, operaciones agrícolas comerciales o protección de instalaciones exteriores (como el despliegue de paneles solares u otra circuitería expuesta a la intemperie).</li>
-                <li>Navegación marítima, aérea o terrestre de ninguna índole.</li>
+                <li>La toma de decisiones que comprometan la seguridad, la salud o la integridad física de personas, animales o bienes inmuebles.</li>
+                <li>La planificación, despliegue o gestión de infraestructuras críticas, sistemas energéticos descentralizados (ej. inversores híbridos o redes de paneles solares) u operaciones agrícolas.</li>
+                <li>Cualquier tipo de navegación marítima, control aéreo, logística de transporte terrestre o gestión de emergencias civiles.</li>
             </ul>
-            <p>El titular del sitio web se exime de cualquier responsabilidad por daños materiales, económicos o personales derivados directa o indirectamente del uso de la información climática proporcionada por este software.</p>
+            <p>El titular del software declina cualquier responsabilidad civil, penal o administrativa ante fallos de cálculo de las APIs externas, interrupciones del servicio o daños directos, indirectos y lucro cesante que pudieran derivarse de la aplicación práctica de los datos aquí visualizados.</p>
         </section>
 
         <section>
-            <h2>5. Legislación Aplicable y Jurisdicción</h2>
-            <p>Para la resolución de cualquier controversia relacionada con el presente sitio web o el funcionamiento de sus algoritmos, será de aplicación la normativa española vigente. Las partes se someten expresamente a los juzgados y tribunales de Sevilla, renunciando a cualquier otro fuero que pudiera corresponderles.</p>
+            <h2>5. Política de Enlaces y Redirecciones</h2>
+            <p>Este sitio web contiene enlaces que redirigen a plataformas o dominios externos (tales como <em>islasdecalortsevilla.com</em>). El titular de "Manolito" no asume responsabilidad alguna sobre el contenido, políticas de privacidad o disponibilidad técnica de dichos sitios web enlazados, recayendo la responsabilidad de su uso exclusivamente en el usuario que accede a ellos.</p>
+        </section>
+
+        <section>
+            <h2>6. Legislación Aplicable y Jurisdicción Competente</h2>
+            <p>Para la resolución de cualquier litigio, discrepancia técnica o controversia derivada de la interpretación o ejecución de este Aviso Legal y del uso de las APIs integradas, será de aplicación estricta la legislación española vigente. Las partes involucradas se someten, con renuncia expresa a cualquier otro fuero, a la jurisdicción de los Juzgados y Tribunales de la ciudad de <strong>Sevilla (España)</strong>.</p>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2026 Manolito Weather App. Todos los derechos reservados.</p>
+        <p>&copy; 2026 Manolito Weather & AI Systems. Todos los derechos reservados bajo la jurisdicción pertinente.</p>
     </footer>
 
 </body>
