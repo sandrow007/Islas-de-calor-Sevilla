@@ -165,7 +165,7 @@
         <section>
             <h2>1. Naturaleza de la Arquitectura y Ausencia de PII</h2>
             <p>El motor climático <strong>Manolito Infinito</strong> está diseñado bajo una arquitectura de "cliente pesado" (client-side rendering) y operabilidad sin estado (stateless). Esto significa que la aplicación no requiere, no solicita y no procesa Información de Identificación Personal (PII por sus siglas en inglés) bajo ninguna circunstancia. No existen bases de datos de usuarios, no hay sistemas de autenticación, ni se generan tokens de sesión vinculados a identidades.</p>
-            <p>El alojamiento estático de la aplicación se despliega sobre la infraestructura de Netlify. Las peticiones de red iniciales para cargar el HTML/CSS/JS exponen la dirección IP del usuario a los nodos perimetrales (CDN) por la propia naturaleza del protocolo TCP/IP. Sin embargo, no retenemos acceso a los logs de acceso sin procesar ni los cruzamos con perfiles analíticos.</p>
+            <p>El alojamiento estático de la aplicación se despliega sobre la infraestructura de Cloudflare Las peticiones de red iniciales para cargar el HTML/CSS/JS exponen la dirección IP del usuario a los nodos perimetrales (CDN) por la propia naturaleza del protocolo TCP/IP. Sin embargo, no retenemos acceso a los logs de acceso sin procesar ni los cruzamos con perfiles analíticos.</p>
         </section>
 
         <section>
