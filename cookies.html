@@ -4,62 +4,207 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#03050f">
-    <title>Política de Cookies · manolit∞</title>
+    <meta name="description" content="Política de Cookies y Almacenamiento Local de Manolit∞. Transparencia técnica sobre el uso de AEMET y OpenRouter sin telemetría.">
+    <title>Política de Cookies y Datos · manolit∞</title>
     <style>
-      :root { color-scheme: dark; --bg:#03050f; --panel:#0a0c1f; --text:#e8f0ff; --muted:#a3aec4; --accent:#00ffc8; --line:#29304a; }
+      :root { 
+        color-scheme: dark; 
+        --bg: #03050f; 
+        --panel: #0a0c1f; 
+        --text: #e8f0ff; 
+        --muted: #a3aec4; 
+        --accent: #00ffc8; 
+        --warn: #ff4a4a;
+        --line: #29304a; 
+      }
       * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; color: var(--text); background: radial-gradient(circle at 85% 5%, #172247 0, transparent 30%), var(--bg); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; line-height: 1.7; }
-      header, main, footer { width: min(920px, calc(100% - 36px)); margin-inline: auto; }
-      header { padding: 42px 0 24px; border-bottom: 1px solid var(--line); }
-      .brand { color: var(--accent); text-decoration: none; font-weight: 700; letter-spacing: .08em; transition: opacity 0.2s; }
+      body { 
+        margin: 0; 
+        min-height: 100vh; 
+        color: var(--text); 
+        background: radial-gradient(circle at 85% 5%, #172247 0, transparent 30%), var(--bg); 
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; 
+        line-height: 1.7; 
+      }
+      header, main, footer { 
+        width: min(920px, calc(100% - 36px)); 
+        margin-inline: auto; 
+      }
+      header { 
+        padding: 42px 0 24px; 
+        border-bottom: 1px solid var(--line); 
+      }
+      .brand { 
+        color: var(--accent); 
+        text-decoration: none; 
+        font-weight: 700; 
+        letter-spacing: .08em; 
+        transition: opacity 0.2s; 
+      }
       .brand:hover { opacity: 0.8; }
-      h1 { margin: 42px 0 8px; font-size: clamp(2rem, 7vw, 4.3rem); line-height: 1; }
-      h2 { margin-top: 38px; color: var(--accent); font-size: 1rem; text-transform: uppercase; letter-spacing: .08em; }
+      h1 { 
+        margin: 42px 0 8px; 
+        font-size: clamp(1.8rem, 6vw, 3.5rem); 
+        line-height: 1.1; 
+      }
+      h2 { 
+        margin-top: 45px; 
+        color: var(--accent); 
+        font-size: 1.1rem; 
+        text-transform: uppercase; 
+        letter-spacing: .08em; 
+        border-bottom: 1px dashed var(--line);
+        padding-bottom: 8px;
+      }
       p, li { color: var(--muted); }
+      ul { padding-left: 20px; }
+      li { margin-bottom: 8px; }
       a { color: var(--accent); transition: text-shadow 0.2s; }
       a:hover { text-shadow: 0 0 8px rgba(0, 255, 200, 0.4); }
-      .meta { font-size: .78rem; color: #77839d; }
-      .table-wrap { margin: 28px 0; overflow-x: auto; border: 1px solid var(--line); }
-      table { width: 100%; min-width: 720px; border-collapse: collapse; background: rgba(10,12,31,.78); font-size: .82rem; }
-      th, td { padding: 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-      th { color: var(--accent); text-transform: uppercase; letter-spacing: .06em; }
+      .meta { font-size: .78rem; color: #77839d; margin-bottom: 40px; display: block; }
+      
+      .table-wrap { 
+        margin: 28px 0; 
+        overflow-x: auto; 
+        border: 1px solid var(--line); 
+      }
+      table { 
+        width: 100%; 
+        min-width: 720px; 
+        border-collapse: collapse; 
+        background: rgba(10,12,31,.78); 
+        font-size: .85rem; 
+      }
+      th, td { 
+        padding: 16px; 
+        border-bottom: 1px solid var(--line); 
+        text-align: left; 
+        vertical-align: top; 
+      }
+      th { 
+        color: var(--accent); 
+        text-transform: uppercase; 
+        letter-spacing: .06em; 
+        background: rgba(0, 255, 200, 0.05);
+      }
       td { color: var(--muted); }
-      code { color: var(--text); }
-      .controls { padding: 20px; border: 1px solid var(--line); background: rgba(10,12,31,.78); }
-      button { padding: 10px 14px; color: #03050f; border: 0; background: var(--accent); cursor: pointer; font: 700 .78rem inherit; transition: opacity 0.2s; }
+      code { 
+        color: var(--text); 
+        background: rgba(255,255,255,0.05);
+        padding: 2px 6px;
+        border-radius: 3px;
+      }
+      
+      .controls { 
+        padding: 25px; 
+        border: 1px solid var(--line); 
+        background: rgba(10,12,31,.78); 
+        margin-top: 20px;
+      }
+      button { 
+        padding: 12px 18px; 
+        color: #03050f; 
+        border: 0; 
+        background: var(--accent); 
+        cursor: pointer; 
+        font: 700 .85rem inherit; 
+        transition: transform 0.1s, opacity 0.2s; 
+      }
+      button:active { transform: scale(0.98); }
       button:hover { opacity: 0.9; }
-      #cookie-reset-status { display: block; min-height: 1.5em; margin-top: 12px; font-weight: bold; }
-      footer { margin-top: 54px; padding: 24px 0 38px; border-top: 1px solid var(--line); color: #77839d; font-size: .78rem; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; }
+      #cookie-reset-status { 
+        display: block; 
+        min-height: 1.5em; 
+        margin-top: 15px; 
+        font-weight: bold; 
+      }
+      
+      footer { 
+        margin-top: 60px; 
+        padding: 24px 0 38px; 
+        border-top: 1px solid var(--line); 
+        color: #77839d; 
+        font-size: .8rem; 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 15px; 
+        align-items: center; 
+      }
       strong { color: #fff; }
     </style>
   </head>
   <body>
     <header>
-      <a class="brand" href="https://islasdecalortsevilla.com" rel="noopener noreferrer">&larr; VOLVER A ISLAS DE CALOR SEVILLA</a>
+      <nav>
+        <a class="brand" href="https://islasdecalortsevilla.com" rel="noopener noreferrer">&larr; VOLVER A ISLAS DE CALOR SEVILLA</a>
+      </nav>
     </header>
+    
     <main>
-      <h1>Política de Cookies</h1>
-      <p class="meta">Última actualización: Julio 2026</p>
+      <h1>Almacenamiento Local y APIs</h1>
+      <span class="meta">Última actualización: Julio 2026 | Arquitectura libre de rastreo</span>
 
-      <h2>1. Uso de almacenamiento local</h2>
-      <p>Actualmente Manolit∞ no instala cookies publicitarias ni de analítica intrusiva.</p>
+      <section>
+        <h2>1. Ausencia de cookies intrusivas</h2>
+        <p>Manolit∞ opera bajo un principio de privacidad absoluta. <strong>No utilizamos cookies publicitarias, píxeles de seguimiento ni herramientas de analítica de terceros</strong>. Toda la persistencia de datos en tu navegador se realiza mediante Web Storage API (<code>localStorage</code> y <code>sessionStorage</code>) con fines estrictamente técnicos y de rendimiento.</p>
+      </section>
 
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Clave o estado</th><th>Finalidad</th></tr></thead>
-          <tbody>
-            <tr><td><code>cookies_status</code></td><td>Recordar consentimiento.</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <section>
+        <h2>2. Integraciones de APIs Externas</h2>
+        <p>El motor climático requiere conexión constante con infraestructuras externas para la ingesta de datos meteorológicos y el procesamiento de inteligencia artificial. Estas conexiones no envían tu identidad ni dirección IP con fines de perfilado:</p>
+        <ul>
+            <li><strong>AEMET (Agencia Estatal de Meteorología):</strong> Extraemos datos oficiales y alertas. Las respuestas se almacenan en la caché local de tu navegador para evitar saturar los servidores gubernamentales (rate-limiting) al recargar la página.</li>
+            <li><strong>OpenRouter API:</strong> El cerebro de Manolit∞. Procesamos los datos climáticos a través de modelos de lenguaje avanzados. Solo se envía el vector de datos meteorológicos; no se transmite telemetría personal. Guardamos el historial de la sesión localmente para que la IA mantenga el contexto de la lectura sin requerir bases de datos en la nube.</li>
+        </ul>
+      </section>
 
-      <h2>2. Cambiar la elección</h2>
-      <div class="controls">
-        <p>Puede purgar la preferencia guardada.</p>
-        <button id="reset-cookie-choice" type="button">RESTABLECER ELECCIÓN</button>
-        <span id="cookie-reset-status" role="status" aria-live="polite"></span>
-      </div>
+      <section>
+        <h2>3. Mapa de almacenamiento técnico</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+                <tr>
+                    <th>Clave de almacenamiento</th>
+                    <th>Tipo</th>
+                    <th>Finalidad técnica</th>
+                </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>cookies_status</code></td>
+                <td>localStorage</td>
+                <td>Recordar tu elección sobre el aviso legal para no mostrarlo continuamente.</td>
+              </tr>
+              <tr>
+                <td><code>aemet_cache_data</code></td>
+                <td>sessionStorage</td>
+                <td>Almacenamiento temporal (TTL: 15-30 min) de las lecturas térmicas para optimizar la carga de los mapas y no abusar de la API pública.</td>
+              </tr>
+              <tr>
+                <td><code>openrouter_context</code></td>
+                <td>localStorage</td>
+                <td>Persistencia del estado de la IA. Guarda las últimas deducciones del motor para encadenar las respuestas sin consultar al servidor remoto desde cero.</td>
+              </tr>
+              <tr>
+                <td><code>manolito_coords</code></td>
+                <td>localStorage</td>
+                <td>Última ubicación consultada (ej. Sevilla) para centrar el dashboard automáticamente sin volver a pedir permisos de GPS.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>4. Destrucción de datos locales</h2>
+        <p>Puedes forzar la eliminación de todas las variables de estado, cachés de AEMET y contextos de OpenRouter guardados en tu máquina. Esto reiniciará el motor por completo en tu próxima visita.</p>
+        <div class="controls">
+          <button id="reset-cookie-choice" type="button">PURGAR ALMACENAMIENTO LOCAL</button>
+          <span id="cookie-reset-status" role="status" aria-live="polite"></span>
+        </div>
+      </section>
     </main>
+
     <footer>
       <a href="aviso-legal.html">Aviso legal</a> 
       <span style="color: var(--line);">|</span>
@@ -67,16 +212,31 @@
       <span style="color: var(--line);">|</span>
       <span>© 2026 @Sandrow</span>
     </footer>
+
     <script>
       document.getElementById('reset-cookie-choice').addEventListener('click', () => {
         const status = document.getElementById('cookie-reset-status');
         try {
-          localStorage.removeItem('cookies_status');
+          // Destrucción selectiva de las claves técnicas documentadas
+          const keysToRemove = ['cookies_status', 'aemet_cache_data', 'openrouter_context', 'manolito_coords'];
+          
+          keysToRemove.forEach(key => {
+              localStorage.removeItem(key);
+              sessionStorage.removeItem(key);
+          });
+
           status.style.color = 'var(--accent)';
-          status.textContent = '> [OK] Variable local purgada con éxito.';
+          status.textContent = '> [OK] Caché de AEMET, contexto de IA y preferencias purgadas con éxito.';
+          
+          // Efecto visual sutil de confirmación
+          setTimeout(() => {
+              status.textContent = '';
+          }, 4500);
+
         } catch (error) {
-          status.style.color = '#ff4a4a';
-          status.textContent = '> [ERROR] Bloqueo de almacenamiento.';
+          status.style.color = 'var(--warn)';
+          status.textContent = '> [FATAL ERROR] Excepción de seguridad al acceder a Storage API.';
+          console.error("Storage clearance failed:", error);
         }
       });
     </script>
