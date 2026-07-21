@@ -210,4 +210,4 @@
     setInterval(() => cargarRiesgoArrastreISS(document.getElementById('extra-iss-drag-body')), 300000);
     setInterval(() => cargarVisibilidadAurora(document.getElementById('extra-aurora-body')), 300000);
   });
-})();
+
