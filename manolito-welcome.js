@@ -10,6 +10,29 @@
 
   const STORAGE_KEY = 'manolito_welcome_choice_v1';
 
+  const translations = {
+    es: {
+      subtitle: 'Laboratorio de ideas climáticas',
+      honest_note: 'El clima real viene de <strong>Open-Meteo</strong> y <strong>NASA POWER</strong>.<br>El motor de predicción simbólica <em>Giralda</em> es experimental y puede dar resultados inesperados. ¿Cómo quieres empezar?',
+      direct_title: 'Entrada Directa',
+      direct_desc: 'Pronóstico estándar con datos reales',
+      giralda_title: 'Giralda',
+      giralda_desc: 'Modo experimental con predicción simbólica',
+      skip: 'Saltar &#8594;',
+      remember: 'No volver a preguntar'
+    },
+    en: {
+      subtitle: 'Climate Ideas Laboratory',
+      honest_note: 'Real weather data comes from <strong>Open-Meteo</strong> and <strong>NASA POWER</strong>.<br>The <em>Giralda</em> symbolic prediction engine is experimental and may produce unexpected results. How do you want to start?',
+      direct_title: 'Direct Entry',
+      direct_desc: 'Standard forecast with real data',
+      giralda_title: 'Giralda',
+      giralda_desc: 'Experimental mode with symbolic prediction',
+      skip: 'Skip &#8594;',
+      remember: 'Do not ask again'
+    }
+  };
+
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
     else document.addEventListener('DOMContentLoaded', fn);
@@ -134,6 +157,16 @@
   const ICONO_DIRECTA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20v-6"/><circle cx="12" cy="10" r="3"/><path d="M7 7a7 7 0 0 1 10 0"/><path d="M4 4a11 11 0 0 1 16 0"/></svg>`;
   const ICONO_GIRALDA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v3"/><path d="M12 3c4 1 6 4 6 8s-3 7-6 7-6-3-6-7 2-7 6-8Z"/><path d="M12 8c2 .6 3 2 3 4s-1.4 3.4-3 3.4S9 13.6 9 12s1-3.4 3-4Z"/></svg>`;
 
+  function getLang() {
+    const lang = navigator.language || navigator.userLanguage || 'es';
+    return lang.split('-')[0];
+  }
+
+  function getTexts() {
+    const lang = getLang();
+    return translations[lang] || translations.es;
+  }
+
   function showSplash() {
     if (document.getElementById('mwl-splash')) return;
     injectStyles();
@@ -149,36 +182,37 @@
       } catch (e) {}
     }
 
+    const T = getTexts();
+
     const splash = document.createElement('div');
     splash.id = 'mwl-splash';
     splash.innerHTML = `
       <div class="mwl-wrap">
         <div class="mwl-logo">Manolit&#8734;</div>
-        <div class="mwl-sub">Laboratorio de ideas climáticas</div>
+        <div class="mwl-sub">${T.subtitle}</div>
         <div class="mwl-honest">
-          El clima real viene de <strong>Open-Meteo</strong> y <strong>NASA POWER</strong>.<br>
-          El motor de predicción simbólica <em>Giralda</em> es experimental y puede dar resultados inesperados. ¿Cómo quieres empezar?
+          ${T.honest_note}
         </div>
         <div class="mwl-btns">
           <div class="mwl-btn" data-mode="direct">
             <span class="mwl-ico">${ICONO_DIRECTA}</span>
             <span>
-              <div class="mwl-lbl">Entrada Directa</div>
-              <div class="mwl-desc">Pronóstico estándar con datos reales</div>
+              <div class="mwl-lbl">${T.direct_title}</div>
+              <div class="mwl-desc">${T.direct_desc}</div>
             </span>
           </div>
           <div class="mwl-btn mwl-giralda" data-mode="giralda">
             <span class="mwl-ico">${ICONO_GIRALDA}</span>
             <span>
-              <div class="mwl-lbl">Giralda</div>
-              <div class="mwl-desc">Modo experimental con predicción simbólica</div>
+              <div class="mwl-lbl">${T.giralda_title}</div>
+              <div class="mwl-desc">${T.giralda_desc}</div>
             </span>
           </div>
         </div>
-        <button class="mwl-skip">Saltar &#8594;</button>
+        <button class="mwl-skip">${T.skip}</button>
         <div class="mwl-remember">
           <input type="checkbox" id="mwl-remember-check" />
-          <label for="mwl-remember-check">No volver a preguntar</label>
+          <label for="mwl-remember-check">${T.remember}</label>
         </div>
       </div>
     `;

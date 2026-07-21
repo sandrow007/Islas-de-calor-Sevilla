@@ -16,14 +16,71 @@
   'use strict';
 
   const CIUDAD = { lat: 37.3826, lon: -5.9962 };       // Centro Sevilla (mismo que el motor principal)
-  const AEROPUERTO = { lat: 37.4180, lon: -5.8931, nombre: 'Aeropuerto San Pablo' };
+  const AEROPUERTO = { lat: 37.4180, lon: -5.8931 };
+
+  const translations = {
+    es: {
+      loading: 'Cargando datos reales...',
+      card1_badge: 'AERO',
+      card1_title: 'ESTACIÓN DE REFERENCIA · AEROPUERTO',
+      card2_badge: 'A15',
+      card2_title: 'ALERTA TEMPRANA · MODELO 15 MIN',
+      card3_badge: 'SOL',
+      card3_title: 'CURVA DE RADIACIÓN SOLAR · HOY',
+      airport_comp_city: 'CENTRO SEVILLA',
+      airport_comp_airport_name: 'AEROPUERTO SAN PABLO',
+      airport_comp_diff: 'DIFERENCIA',
+      airport_comp_wind: 'VIENTO AEROP.',
+      airport_comp_footer: 'Comparación real entre el centro urbano y la estación del aeropuerto (superficie más despejada, sin efecto isla de calor). Diferencias grandes suelen indicar más calor urbano acumulado en el centro.',
+      airport_comp_error: 'No se pudo cargar el aeropuerto ahora mismo.',
+      warning_wind_change: 'MAYOR CAMBIO VIENTO (6H)',
+      warning_time: 'HORA APROX.',
+      warning_humidity_change: 'MAYOR CAMBIO HUMEDAD (6H)',
+      warning_resolution: 'Resolución: cada 15 minutos, próximas 6 horas',
+      warning_footer: 'Basado en el modelo real de 15 minutos de Open-Meteo. Cambios grandes y rápidos de viento o humedad suelen anticipar la entrada de un frente, tormenta o cambio brusco de sensación térmica.',
+      warning_error: 'Modelo de 15 minutos no disponible ahora mismo.',
+      solar_footer: 'Radiación solar de hoy (0h–24h), calculada con la posición astronómica real del sol sobre Sevilla. La línea vertical marca la hora actual.'
+    },
+    en: {
+      loading: 'Loading real data...',
+      card1_badge: 'AERO',
+      card1_title: 'REFERENCE STATION · AIRPORT',
+      card2_badge: 'A15',
+      card2_title: 'EARLY WARNING · 15 MIN MODEL',
+      card3_badge: 'SUN',
+      card3_title: 'SOLAR RADIATION CURVE · TODAY',
+      airport_comp_city: 'SEVILLE CENTER',
+      airport_comp_airport_name: 'SAN PABLO AIRPORT',
+      airport_comp_diff: 'DIFFERENCE',
+      airport_comp_wind: 'AIRPORT WIND',
+      airport_comp_footer: 'Real comparison between the urban center and the airport station (clearer surface, no heat island effect). Large differences usually indicate more accumulated urban heat in the center.',
+      airport_comp_error: 'Could not load airport data right now.',
+      warning_wind_change: 'MAX WIND CHANGE (6H)',
+      warning_time: 'APPROX. TIME',
+      warning_humidity_change: 'MAX HUMIDITY CHANGE (6H)',
+      warning_resolution: 'Resolution: every 15 minutes, next 6 hours',
+      warning_footer: 'Based on the real 15-minute model from Open-Meteo. Large and rapid changes in wind or humidity often anticipate the arrival of a front, storm, or a sudden change in thermal sensation.',
+      warning_error: '15-minute model not available right now.',
+      solar_footer: "Today's solar radiation (0h–24h), calculated using the real astronomical position of the sun over Seville. The vertical line marks the current time."
+    }
+  };
 
   function ready(fn) {
     if (document.readyState !== 'loading') fn();
     else document.addEventListener('DOMContentLoaded', fn);
   }
 
-  function crearCard(id, badge, titulo) {
+  function getLang() {
+    const lang = navigator.language || navigator.userLanguage || 'es';
+    return lang.split('-')[0];
+  }
+
+  function getTexts() {
+    const lang = getLang();
+    return translations[lang] || translations.es;
+  }
+
+  function crearCard(id, badge, titulo, T) {
     const section = document.createElement('section');
     section.className = 'card cw';
     section.id = id;
@@ -34,7 +91,7 @@
         <div class="ldw"><span class="ld"></span><span>Open-Meteo</span></div>
       </div>
       <div class="extras-body" id="${id}-body">
-        <div class="ci">Cargando datos reales...</div>
+        <div class="ci">${T.loading}</div>
       </div>
     `;
     return section;
@@ -48,7 +105,7 @@
   // ---------------------------------------------------------------
   // 1) ESTACIÓN DE REFERENCIA: AEROPUERTO SAN PABLO vs CENTRO SEVILLA
   // ---------------------------------------------------------------
-  async function cargarComparacionAeropuerto(bodyEl) {
+  async function cargarComparacionAeropuerto(bodyEl, T) {
     try {
       const urlCiudad = `https://api.open-meteo.com/v1/forecast?latitude=${CIUDAD.lat}&longitude=${CIUDAD.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`;
       const urlAero = `https://api.open-meteo.com/v1/forecast?latitude=${AEROPUERTO.lat}&longitude=${AEROPUERTO.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m`;
@@ -59,22 +116,22 @@
 
       bodyEl.innerHTML = `
         <div class="dgr">
-          <div class="di"><div class="dl">CENTRO SEVILLA</div><div class="dv">${dCiudad.temperature_2m.toFixed(1)}<span class="du">°C</span></div></div>
-          <div class="di"><div class="dl">${AEROPUERTO.nombre.toUpperCase()}</div><div class="dv">${dAero.temperature_2m.toFixed(1)}<span class="du">°C</span></div></div>
-          <div class="di"><div class="dl">DIFERENCIA</div><div class="dv">${diff > 0 ? '+' : ''}${diff}<span class="du">°C</span></div></div>
-          <div class="di"><div class="dl">VIENTO AEROP.</div><div class="dv">${dAero.wind_speed_10m.toFixed(0)}<span class="du">km/h</span></div></div>
+          <div class="di"><div class="dl">${T.airport_comp_city}</div><div class="dv">${dCiudad.temperature_2m.toFixed(1)}<span class="du">°C</span></div></div>
+          <div class="di"><div class="dl">${T.airport_comp_airport_name.toUpperCase()}</div><div class="dv">${dAero.temperature_2m.toFixed(1)}<span class="du">°C</span></div></div>
+          <div class="di"><div class="dl">${T.airport_comp_diff}</div><div class="dv">${diff > 0 ? '+' : ''}${diff}<span class="du">°C</span></div></div>
+          <div class="di"><div class="dl">${T.airport_comp_wind}</div><div class="dv">${dAero.wind_speed_10m.toFixed(0)}<span class="du">km/h</span></div></div>
         </div>
-        <div class="ci">Comparación real entre el centro urbano y la estación del aeropuerto (superficie más despejada, sin efecto isla de calor). Diferencias grandes suelen indicar más calor urbano acumulado en el centro.</div>
+        <div class="ci">${T.airport_comp_footer}</div>
       `;
     } catch (e) {
-      bodyEl.innerHTML = `<div class="ci">No se pudo cargar el aeropuerto ahora mismo.</div>`;
+      bodyEl.innerHTML = `<div class="ci">${T.airport_comp_error}</div>`;
     }
   }
 
   // ---------------------------------------------------------------
   // 2) ALERTA TEMPRANA: modelo de 15 minutos (minutely_15 real de Open-Meteo)
   // ---------------------------------------------------------------
-  async function cargarAlertaTemprana(bodyEl) {
+  async function cargarAlertaTemprana(bodyEl, T) {
     try {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${CIUDAD.lat}&longitude=${CIUDAD.lon}&minutely_15=wind_speed_10m,relative_humidity_2m&forecast_days=1&timezone=auto`;
       const res = await fetch(url);
@@ -101,16 +158,16 @@
 
       bodyEl.innerHTML = `
         <div class="dgr">
-          <div class="di"><div class="dl">MAYOR CAMBIO VIENTO (6H)</div><div class="dv">${maxSaltoViento.toFixed(1)}<span class="du">km/h</span></div></div>
-          <div class="di"><div class="dl">HORA APROX.</div><div class="dv" style="font-size:1rem">${fmt(horaSaltoViento)}</div></div>
-          <div class="di"><div class="dl">MAYOR CAMBIO HUMEDAD (6H)</div><div class="dv">${maxSaltoHum.toFixed(0)}<span class="du">%</span></div></div>
-          <div class="di"><div class="dl">HORA APROX.</div><div class="dv" style="font-size:1rem">${fmt(horaSaltoHum)}</div></div>
+          <div class="di"><div class="dl">${T.warning_wind_change}</div><div class="dv">${maxSaltoViento.toFixed(1)}<span class="du">km/h</span></div></div>
+          <div class="di"><div class="dl">${T.warning_time}</div><div class="dv" style="font-size:1rem">${fmt(horaSaltoViento)}</div></div>
+          <div class="di"><div class="dl">${T.warning_humidity_change}</div><div class="dv">${maxSaltoHum.toFixed(0)}<span class="du">%</span></div></div>
+          <div class="di"><div class="dl">${T.warning_time}</div><div class="dv" style="font-size:1rem">${fmt(horaSaltoHum)}</div></div>
         </div>
-        <div class="dqb ${nivel}" style="margin-top:8px;display:inline-block">Resolución: cada 15 minutos, próximas 6 horas</div>
-        <div class="ci">Basado en el modelo real de 15 minutos de Open-Meteo. Cambios grandes y rápidos de viento o humedad suelen anticipar la entrada de un frente, tormenta o cambio brusco de sensación térmica.</div>
+        <div class="dqb ${nivel}" style="margin-top:8px;display:inline-block">${T.warning_resolution}</div>
+        <div class="ci">${T.warning_footer}</div>
       `;
     } catch (e) {
-      bodyEl.innerHTML = `<div class="ci">Modelo de 15 minutos no disponible ahora mismo.</div>`;
+      bodyEl.innerHTML = `<div class="ci">${T.warning_error}</div>`;
     }
   }
 
@@ -168,26 +225,28 @@
     ctx.setLineDash([]);
   }
 
-  function cargarCurvaRadiacion(bodyEl) {
+  function cargarCurvaRadiacion(bodyEl, T) {
     bodyEl.innerHTML = `<canvas id="canvas-radiacion-dia" style="width:100%;height:130px;display:block"></canvas>
-      <div class="ci">Radiación solar de hoy (0h–24h), calculada con la posición astronómica real del sol sobre Sevilla. La línea vertical marca la hora actual.</div>`;
+      <div class="ci">${T.solar_footer}</div>`;
     dibujarCurvaRadiacion(document.getElementById('canvas-radiacion-dia'));
   }
 
   // ---------------------------------------------------------------
   ready(() => {
-    const cAero = crearCard('extra-aeropuerto', 'AERO', 'ESTACIÓN DE REFERENCIA · AEROPUERTO');
-    const cAlerta = crearCard('extra-alerta', 'A15', 'ALERTA TEMPRANA · MODELO 15 MIN');
-    const cRad = crearCard('extra-radiacion', 'SOL', 'CURVA DE RADIACIÓN SOLAR · HOY');
+    const T = getTexts();
+
+    const cAero = crearCard('extra-aeropuerto', T.card1_badge, T.card1_title, T);
+    const cAlerta = crearCard('extra-alerta', T.card2_badge, T.card2_title, T);
+    const cRad = crearCard('extra-radiacion', T.card3_badge, T.card3_title, T);
 
     montarEnPestanaClima([cAero, cAlerta, cRad]);
 
-    cargarComparacionAeropuerto(document.getElementById('extra-aeropuerto-body'));
-    cargarAlertaTemprana(document.getElementById('extra-alerta-body'));
-    cargarCurvaRadiacion(document.getElementById('extra-radiacion-body'));
+    cargarComparacionAeropuerto(document.getElementById('extra-aeropuerto-body'), T);
+    cargarAlertaTemprana(document.getElementById('extra-alerta-body'), T);
+    cargarCurvaRadiacion(document.getElementById('extra-radiacion-body'), T);
 
     // refresco cada 5 minutos, igual que el resto del dashboard
-    setInterval(() => cargarComparacionAeropuerto(document.getElementById('extra-aeropuerto-body')), 300000);
-    setInterval(() => cargarAlertaTemprana(document.getElementById('extra-alerta-body')), 300000);
+    setInterval(() => cargarComparacionAeropuerto(document.getElementById('extra-aeropuerto-body'), T), 300000);
+    setInterval(() => cargarAlertaTemprana(document.getElementById('extra-alerta-body'), T), 300000);
   });
 })();
