@@ -35,14 +35,13 @@ Visión de Futuro: La lógica está construida bajo parámetros cuánticos puros
  Despliegue y Tecnología
 Stack: HTML5, CSS3 avanzado (animaciones de latido asíncronas), JavaScript (Three.js)
 .
-Infraestructura: Despliegue continuo (CD) mediante Netlify e integración con Git
+Infraestructura: Despliegue continuo (CD) mediante Cloudflare Pages e integración con Git
 .
-Robustez SPA: Incluye configuración de redirecciones universales (_redirects) para garantizar una navegación sin errores 404:
    Instalación y Uso
-Clona el repositorio.
-Asegúrate de que los archivos index.html, style.css, script.js y _redirects estén en la raíz
-.
-Despliega en Netlify conectando tu rama de GitHub.
+1. Clona el repositorio.
+2. Asegúrate de que los archivos (`index.html`, `style.css`, `manolito.js`, etc.) estén en la raíz.
+3. Conecta tu repositorio de GitHub a un proyecto de Cloudflare Pages.
+4. La configuración de compilación debe estar vacía, ya que es un sitio estático.
 📺 Demo
 Video de Arquitectura: Ver en YouTube [https://www.youtube.com/watch?v=ruExRH0H5Qc&t=3s]
  Licencia
