@@ -1,9 +1,7 @@
 /**
  * MANOLITO∞ — Flujo de bienvenida (v2, con integración real)
- * FALLO CORREGIDO: el botón "Entrada Directa" llamaba a window.initManolito, una función
- * que no existe en esta web, así que no hacía nada al pulsarlo. Ahora se conecta de verdad
- * con window.revealDash() (la función real del dashboard) para saltar la intro.
- * También se quitan los emojis de los botones (prohibidos en esta web) y se usan iconos SVG.
+ * Splash con dos opciones: "Entrada Directa" (salta la intro y va al
+ * dashboard) o "Giralda" (intro clasica, tocar 5 veces la Giralda).
  */
 (function () {
   'use strict';
@@ -27,7 +25,6 @@
     } catch (e) {}
   }
 
-  // ---- Aquí estaba el fallo: antes llamaba a una funcion inventada que no existia ----
   function entrarDirecto(reintentos) {
     if (typeof window.revealDash === 'function') {
       if (typeof window.__stopIntro === 'function') window.__stopIntro();
@@ -35,10 +32,9 @@
       return;
     }
     if (reintentos > 0) {
-      setTimeout(() => entrarDirecto(reintentos - 5), 200);
+      setTimeout(() => entrarDirecto(reintentos - 1), 200);
       return;
     }
-    // ultimo recurso, por si revealDash no llega a existir nunca en esta pagina
     const pi = document.getElementById('pi');
     const pd = document.getElementById('pd');
     if (pi) pi.style.display = 'none';
@@ -47,10 +43,8 @@
 
   function enterMode(mode) {
     if (mode === 'direct') {
-      entrarDirecto(15); // reintenta hasta ~3s por si este script carga antes que el resto
+      entrarDirecto(15);
     }
-    // En modo 'giralda' no hace falta nada: la intro ya esta debajo del splash y sigue
-    // su flujo normal (tocar la Giralda 5 veces), tal cual estaba pensada.
     document.dispatchEvent(new CustomEvent('manolito:mode', { detail: { mode } }));
   }
 
@@ -137,11 +131,22 @@
     document.head.appendChild(s);
   }
 
-  // Iconos SVG en vez de emojis (antena/señal para Directa, espiral para Giralda)
   const ICONO_DIRECTA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20v-6"/><circle cx="12" cy="10" r="3"/><path d="M7 7a7 7 0 0 1 10 0"/><path d="M4 4a11 11 0 0 1 16 0"/></svg>`;
   const ICONO_GIRALDA = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v3"/><path d="M12 3c4 1 6 4 6 8s-3 7-6 7-6-3-6-7 2-7 6-8Z"/><path d="M12 8c2 .6 3 2 3 4s-1.4 3.4-3 3.4S9 13.6 9 12s1-3.4 3-4Z"/></svg>`;
 
   function showSplash() {
+    if (document.getElementById('mwl-splash')) return;
+    injectStyles();
+
+    const saved = getChoice();
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.skipWelcome) {
+          enterMode(parsed.mode);
+          return;
+        }
+      } catch (e) {}
     }
 
     const splash = document.createElement('div');

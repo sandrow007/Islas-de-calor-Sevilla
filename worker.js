@@ -1,3 +1,5 @@
+
+
 /**
  * Worker de islasdecalorsevilla.com
  * - Sirve la web estática (assets) tal cual, sin tocar nada.
