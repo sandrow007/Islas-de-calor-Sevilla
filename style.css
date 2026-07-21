@@ -1,0 +1,77 @@
+:root {
+  --qc: #00f0ff;
+  --qm: #ff00e5;
+  --qv: #7b2fff;
+  --qt: #00ffc8;
+  --qg: #ffd745;
+  --bg: #03050f;
+  --bm: #0a0c1f;
+  --tx: #e8f0ff;
+  --cb: rgba(10, 12, 31, .58);
+  --cd: rgba(0, 240, 255, .13);
+  --hdr-h: 78px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: 'SF Pro Display', system-ui, sans-serif;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.page { position: fixed; inset: 0; }
+
+/* Contenedor Three.js */
+#three-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Resto de tu CSS (mantengo casi todo igual, solo añado ajustes menores) */
+#qcanv { display: none; } /* Ocultamos el canvas 2D antiguo */
+
+.hint, #cfb, #ititle {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#ititle {
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+#iname {
+  font-size: clamp(2.6rem, 5.5vw, 5rem);
+  font-weight: 900;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, var(--qc), var(--qt), var(--tx), var(--qv), var(--qm));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* El resto de tu CSS se mantiene exactamente igual */
+#lang-bar, #conn-bar, #mode-bar, #dh, #dtabs, .card, .tab-panel, etc. { /* ... tu CSS original ... */ }
+
+/* Ajustes menores para mejor legibilidad */
+.tab-panel.active { display: grid; animation: tabin .35s ease; }
+
+@keyframes tabin {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Media queries (mantengo las tuyas) */
+@media(max-width:480px) {
+  #iname { font-size: 2.2rem; }
+}

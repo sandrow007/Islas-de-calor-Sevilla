@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacidad y datos | Manolito</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0c1f;
+            color: #e8f0ff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            min-height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .nav-privacidad {
+            padding: 16px 20px;
+            background: rgba(10, 12, 31, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .nav-privacidad a {
+            color: #00f0ff;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        .nav-privacidad a:hover {
+            color: #fff;
+        }
+        .container-privacidad {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 30px 25px;
+            background: rgba(10, 12, 31, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            flex: 1;
+        }
+        h1 {
+            font-size: 1.4rem;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .fecha-act {
+            color: rgba(180, 210, 255, 0.6);
+            font-size: 0.75rem;
+            margin-bottom: 28px;
+            font-style: italic;
+        }
+        h2 {
+            font-size: 1rem;
+            color: #00f0ff;
+            margin: 28px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        p, li { margin-bottom: 12px; color: #d0daf0; }
+        ul { padding-left: 20px; margin-bottom: 20px; }
+        a { color: #00f0ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        strong { color: #fff; }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: rgba(180, 210, 255, 0.4);
+            font-size: 0.7rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="nav-privacidad">
+            <a href="Manolito.htm">&larr; Volver al Motor Climático</a>
+        </nav>
+    </header>
+
+    <main class="container-privacidad">
+        <h1>Privacidad y datos</h1>
+        <p class="fecha-act"><em>Última actualización: Julio 2026</em></p>
+
+        <section>
+            <h2>Qué recoge esta web por sí misma</h2>
+            <p>Ningún dato personal identificable. Si tu navegador concede permiso de ubicación, se usa solo para centrar el clima en tu zona; si no lo concedes, se usa Sevilla por defecto. No hay cuentas de usuario ni formularios que pidan datos personales.</p>
+        </section>
+
+        <section>
+            <h2>Servicios externos que esta web contacta</h2>
+            <p>Ninguno recibe tu identidad, solo la petición técnica habitual con tu IP (como al visitar cualquier web):</p>
+            <ul>
+                <li>Open-Meteo y NASA POWER — datos meteorológicos</li>
+                <li>NOAA SWPC — clima espacial (índice Kp, flujo solar F10.7)</li>
+                <li>wheretheiss.at — posición de la Estación Espacial Internacional</li>
+                <li>OpenStreetMap, CartoDB, Esri, OpenTopoMap — mapas base</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Lo que NO hacemos</h2>
+            <p>No usamos cookies de rastreo publicitario, no vendemos ni compartimos datos con terceros con fines comerciales, y no creamos perfiles de usuarios.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Manolito Weather App. Todos los derechos reservados.</p>
+    </footer>
+
+</body>
+</html>
