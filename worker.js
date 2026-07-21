@@ -103,4 +103,8 @@ async function handleManolito(request, env) {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
   }
+<<<<<<< Updated upstream
 }
+=======
+}
+>>>>>>> Stashed changes
