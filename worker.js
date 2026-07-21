@@ -1,23 +1,26 @@
 /**
  * Worker de islasdecalorsevilla.com
  * - Sirve la web estática (assets) tal cual, sin tocar nada.
- * - Además, expone /api/manolito: un proxy hacia OpenRouter que guarda la
- *   API key como secreto de servidor. El navegador nunca ve la key.
- *
- * Configura el secreto una sola vez (en tu terminal, dentro de la carpeta del proyecto):
- *   wrangler secret put OPENROUTER_API_KEY
- * (te pedirá que pegues la key de OpenRouter; se queda cifrada en Cloudflare, no en tu código)
+ * - Además, expone /api/manolito: un proxy hacia OpenRouter.
  */
 
-// "openrouter/free" es un router de OpenRouter que elige automáticamente
-// entre los modelos gratuitos disponibles en cada momento — coste 0.
-// Si prefieres fijar uno gratuito en concreto, cámbialo aquí (busca "(free)"
-// en https://openrouter.ai/models). Con el router no hace falta tocarlo nunca.
 const MODEL = 'openrouter/free';
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        }
+      });
+    }
 
     if (url.pathname === '/api/manolito') {
       return handleManolito(request, env);
@@ -67,7 +70,6 @@ async function handleManolito(request, env) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
-        // OpenRouter pide identificar el sitio que llama; no expone tu key, es solo informativo.
         'HTTP-Referer': 'https://islasdecalorsevilla.com',
         'X-Title': 'Manolito Infinito'
       },
