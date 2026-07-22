@@ -2,6 +2,15 @@
 <html lang="es">
     <head>
     <meta charset="UTF-8">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-87BLCFC5FR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-87BLCFC5FR');
+    </script>
     <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
@@ -1058,8 +1067,8 @@
       function renderCitizenCards(ph, qu) {
         if (!ph || !qu) return;
         const qci = qu.QCI_composite;
-        const T_surf = ph.T_surface.toFixed(1);
-        const T_air = ph.T_air.toFixed(1);
+        const T_surf = ph.T_surface;
+        const T_air = ph.T_air;
         const UHI = parseFloat(ph.delta_UHI);
         const S_in = ph.S_in;
         const RH = ph.RH;
@@ -1076,11 +1085,19 @@
           txt: t('riskLow'),
           sym: '+'
         };
-        const heatMsg = UHI > 3 ? `El asfalto urbano esta ${UHI.toFixed(1)}&deg;C mas caliente que los parques ahora mismo. Zonas de riesgo termico si caminas mucho por el centro.` : UHI > 1 ? `La ciudad registra ${UHI.toFixed(1)}&deg;C mas que las areas verdes. Si puedes, busca sombra o un parque cercano.` : `Temperatura bastante uniforme entre la ciudad y las zonas verdes ahora mismo. El arbolado urbano esta compensando el calor.`;
+        let heatMsg = UHI > 3 ? `El asfalto urbano esta ${UHI.toFixed(1)}&deg;C mas caliente que los parques ahora mismo. Zonas de riesgo termico si caminas mucho por el centro.` : UHI > 1 ? `La ciudad registra ${UHI.toFixed(1)}&deg;C mas que las areas verdes. Si puedes, busca sombra o un parque cercano.` : `Temperatura bastante uniforme entre la ciudad y las zonas verdes ahora mismo. El arbolado urbano esta compensando el calor.`;
+        if (UHI > 2.5) {
+          heatMsg += ' Esta diferencia obliga a un mayor uso de aire acondicionado en las zonas más densas y con menos vegetación, lo que se traduce en una factura de la luz más alta y agrava la desigualdad económica.';
+        }
         const sunMsg = S_in > 700 ? `Radiacion intensa: ${S_in.toFixed(0)} W/m&#xB2;. Protector solar factor 50+ y gorra son casi obligatorios si vas a estar fuera.` : S_in > 350 ? `Radiacion moderada: ${S_in.toFixed(0)} W/m&#xB2;. Conviene proteccion solar sobre todo entre las 12h y las 17h.` : S_in > 50 ? `Radiacion baja: ${S_in.toFixed(0)} W/m&#xB2;. Condiciones bastante confortables para pasear.` : `Sin radiacion solar directa ahora mismo — normal si es de noche o esta nublado.`;
         const hiT = (T_surf - T_air);
         const sensMsg = hiT > 8 ? `La superficie urbana esta ${hiT.toFixed(0)}&deg;C por encima del aire. Sensacion de "horno" al pisar asfalto o acera directamente.` : hiT > 4 ? `El suelo radiante suma unos ${hiT.toFixed(0)}&deg;C extra a la sensacion termica respecto a lo que marca el aire.` : `Temperatura superficial proxima a la del aire ahora mismo. Condiciones razonablemente confortables.`;
         const humMsg = RH > 75 ? `Humedad alta (${RH}%). Cuesta mas refrescarse porque el sudor se evapora peor.` : RH > 50 ? `Humedad moderada (${RH}%). Con hidratacion regular vas sobrado.` : `Humedad baja (${RH}%). El calor es "seco" — el sudor se evapora rapido pero pierdes agua sin notarlo tanto.`;
+        let heatExplain = t('cHeatExplain');
+        const isNight = S_in < 50;
+        if (isNight && hiT > 4) {
+          heatExplain += " Por la noche, este calor acumulado se libera lentamente como una 'piedra de horno', impidiendo el descanso y aumentando el estrés térmico, especialmente en niños y ancianos.";
+        }
         const cards = [{
           cls: risk.cls,
           sym: risk.sym,
@@ -1092,7 +1109,7 @@
           sym: '~',
           label: t('cHeat'),
           msg: heatMsg,
-          explain: t('cHeatExplain')
+          explain: heatExplain
         }, {
           cls: 'c-card',
           sym: '+',
