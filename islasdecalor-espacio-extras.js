@@ -83,9 +83,13 @@
       });
 
       const actual = valores[valores.length - 1] ?? 0;
-      const maximo = Math.max(...valores);
+      // proteger contra valores vacíos y formatear el máximo
+      const maximo = Math.max(0, ...valores);
       bodyEl.insertAdjacentHTML('beforeend', `
-        <div class="ci" style="margin-top:8px">Últimas ~24h · Kp actual: <strong style="color:var(--qc)">${actual.toFixed(1)}</strong> · máximo del periodo: <strong style="color:var(--qc)">${maximo.toFixed(1)}</strong> · escala 0 (tranquilo) a 9 (tormenta extrema G5)</div>
+        <div class="ci" style="margin-top:8px">
+          Últimas ~24h · Kp actual: <strong style="color:var(--qc)">${actual.toFixed(1)}</strong>
+          · máximo del periodo: <strong style="color:var(--qc)">${maximo.toFixed(1)}</strong>
+        </div>
       `);
     } catch (e) {
       bodyEl.innerHTML = `<div class="ci">No se pudo cargar la tendencia de Kp ahora mismo.</div>`;
@@ -114,7 +118,7 @@
       let nivel, clase, explicacion;
       if (f107 > 150 || kp > 6) {
         nivel = 'ALTO'; clase = 'dq-lo';
-        explicacion = 'Actividad solar alta: la atmósfera superior se expande más de lo normal y la ISS sufre más rozamiento del habitual, lo que obliga a corregir su órbita con más frecuencia.';
+        explicacion = 'Actividad solar alta: la atmósfera superior se expande más de lo normal y la ISS sufre más rozamiento del habitual, lo que obliga a corregir su órbita con más frecuenc[...]';
       } else if (f107 > 90 || kp > 4) {
         nivel = 'MODERADO'; clase = 'dq-md';
         explicacion = 'Actividad solar moderada: algo más de rozamiento del promedio, dentro de rango gestionable sin intervención urgente.';
@@ -129,7 +133,7 @@
           <div class="di"><div class="dl">INDICE KP</div><div class="dv">${kp.toFixed(1)}</div></div>
         </div>
         <div class="dqb ${clase}" style="margin-top:8px;display:inline-block">Rozamiento estimado en órbita de la ISS: ${nivel}</div>
-        <div class="ci">${explicacion} Es la única relación física real y documentada entre este panel y otra parte de la web (la pestaña del ISS). Es una estimación cualitativa por umbrales conocidos, no un cálculo orbital exacto de decaimiento.</div>
+        <div class="ci">${explicacion} Es la única relación física real y documentada entre este panel y otra parte de la web (la pestaña del ISS). Es una estimación cualitativa por umbrales[...] 
       `;
     } catch (e) {
       bodyEl.innerHTML = `<div class="ci">No se pudo calcular el riesgo de arrastre ahora mismo.</div>`;
@@ -162,7 +166,7 @@
           <div class="di"><div class="dl">LATITUD MÍN. AURORA</div><div class="dv">~${fila.lat.toFixed(0)}<span class="du">°N</span></div></div>
           <div class="di"><div class="dl">SEVILLA</div><div class="dv">${LATITUD_GEOGRAFICA_SEVILLA}<span class="du">°N</span></div></div>
         </div>
-        <div class="ci">Con este Kp, la aurora suele verse solo por encima de ~${fila.lat.toFixed(0)}°N (norte de Europa/Escandinavia). Sevilla está unos ${distancia}° más al sur, así que aunque hubiera una tormenta geomagnética severa (Kp 9), no sería visible aquí en condiciones normales. Es una tabla de referencia aproximada, no una predicción exacta punto por punto.</div>
+        <div class="ci">Con este Kp, la aurora suele verse solo por encima de ~${fila.lat.toFixed(0)}°N (norte de Europa/Escandinavia). Sevilla está unos ${distancia}° más al sur, así que au[...]</div>
       `;
     } catch (e) {
       bodyEl.innerHTML = `<div class="ci">No se pudo calcular la visibilidad de aurora ahora mismo.</div>`;
@@ -211,3 +215,4 @@
     setInterval(() => cargarVisibilidadAurora(document.getElementById('extra-aurora-body')), 300000);
   });
 
+})();
