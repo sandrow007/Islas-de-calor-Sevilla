@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-87BLCFC5FR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-87BLCFC5FR');
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- meta name="description" content="Política de privacidad de Manolito Infinito" -->
+    <title>Privacidad, Datos y Telemetría | Manolito Infinito</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            background-color: #0a0c1f;
+            color: #e8f0ff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .nav-top {
+            padding: 15px 25px;
+            background: rgba(10, 12, 31, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            /* box-shadow: 0 2px 10px rgba(0,0,0,0.5); */
+        }
+
+        .nav-top a {
+            color: #00f0ff;
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .nav-top a:hover {
+            color: #fff;
+        }
+
+        .legal-wrapper {
+            width: 100%;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 40px 45px;
+            background: rgba(12, 15, 36, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.12);
+            border-radius: 8px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .meta-info {
+            color: rgba(180, 210, 255, 0.5);
+            font-size: 0.8rem;
+            margin-bottom: 35px;
+            font-family: monospace;
+            border-bottom: 1px dotted rgba(180, 210, 255, 0.2);
+            padding-bottom: 10px;
+            display: block; /* redundante pero habitual */
+        }
+
+        h2 {
+            font-size: 1.15rem;
+            color: #00f0ff;
+            margin: 35px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 1rem;
+            color: #94b8ff;
+            margin: 20px 0 10px 0;
+            font-weight: 500;
+        }
+
+        p { 
+            margin-bottom: 16px; 
+            color: #c4d4f5; 
+            text-align: justify;
+        }
+
+        ul { 
+            padding-left: 25px; 
+            margin-bottom: 20px; 
+            color: #c4d4f5; 
+        }
+
+        li { 
+            margin-bottom: 10px; 
+        }
+
+        li strong {
+            color: #fff;
+        }
+
+        .code-block {
+            background: #050614;
+            padding: 12px 15px;
+            border-left: 3px solid #00f0ff;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #a3c2ff;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: rgba(180, 210, 255, 0.3);
+            font-size: 0.75rem;
+            border-top: 1px solid rgba(0, 240, 255, 0.08);
+            background: #080a1a;
+        }
+
+        /* Utilidades */
+        .highlight { color: #00f0ff; }
+        .alert { color: #ff4d4d; }
+        
+        @media (max-width: 600px) {
+            .legal-wrapper {
+                margin: 15px;
+                padding: 25px 20px;
+            }
+            h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav class="nav-top">
+            <a href="index.html">&larr; Volver al Motor Climático</a>
+        </nav>
+    </header>
+
+    <main class="legal-wrapper">
+        <h1>Manifiesto de Privacidad y Flujo de Datos</h1>
+        <span class="meta-info">Versión del documento: 2.1.0 | Compilación: Julio 2026 | Aplicabilidad: Global (RGPD Compliant)</span>
+
+        <section>
+            <h2>1. Naturaleza de la Arquitectura y Ausencia de PII</h2>
+            <p>El motor climático <strong>Manolito Infinito</strong> está diseñado bajo una arquitectura de "cliente pesado" (client-side rendering) y operabilidad sin estado (stateless). Esto significa que la aplicación no requiere, no solicita y no procesa Información de Identificación Personal (PII por sus siglas en inglés) bajo ninguna circunstancia. No existen bases de datos de usuarios, no hay sistemas de autenticación, ni se generan tokens de sesión vinculados a identidades.</p>
+            <p>El alojamiento estático de la aplicación se despliega sobre la infraestructura de Cloudflare Las peticiones de red iniciales para cargar el HTML/CSS/JS exponen la dirección IP del usuario a los nodos perimetrales (CDN) por la propia naturaleza del protocolo TCP/IP. Sin embargo, no retenemos acceso a los logs de acceso sin procesar ni los cruzamos con perfiles analíticos.</p>
+        </section>
+
+        <section>
+            <h2>2. Tratamiento de la Geolocalización</h2>
+            <p>La precisión térmica y cuántica del simulador depende de las coordenadas geográficas exactas. Para obtenerlas, invocamos la API nativa del navegador (<code>navigator.geolocation</code>). Este proceso se somete a las siguientes reglas estrictas:</p>
+            <ul>
+                <li><strong>Aprobación explícita:</strong> El navegador interceptará la petición y requerirá intervención humana. Si se deniega el permiso, el motor aplicará un <em>fallback</em> estricto forzando las coordenadas base (Latitud 37.3828, Longitud -5.9731) correspondientes a Sevilla.</li>
+                <li><strong>Efimeridad:</strong> Las coordenadas extraídas se mantienen en la memoria RAM del dispositivo durante el ciclo de vida del proceso de la pestaña. No se transmiten a ningún servidor propio, ya que el motor carece de backend propietario.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>3. Cargas útiles (Payloads) hacia Infraestructuras de Terceros</h2>
+            <p>Para renderizar los modelos predictivos y cartográficos, el cliente realiza peticiones HTTP/GET y POST asíncronas hacia APIs externas. Detallamos el flujo exacto de datos para cada endpoint:</p>
+            
+            <h3>3.1. AEMET (Agencia Estatal de Meteorología)</h3>
+            <p>Se realizan llamadas a la infraestructura abierta de AEMET OpenData. Los únicos parámetros transmitidos son los identificadores de la estación meteorológica más cercana calculada matemáticamente en el cliente o los códigos de municipio. AEMET recibe estas peticiones anónimas sin cabeceras de rastreo adjuntas.</p>
+
+            <h3>3.2. OpenRouter API (Motor de Inferencia de IA)</h3>
+            <p>Para la generación del análisis climático avanzado, el texto es procesado a través de modelos de lenguaje distribuidos por OpenRouter. El payload JSON enviado mediante peticiones POST contiene <strong>exclusivamente</strong> variables ambientales crudas (temperatura, presión, Kp, radiación). Ejemplo estructural del payload:</p>
+            <div class="code-block">
+// Payload aislado enviado al endpoint de OpenRouter
+{
+  "model": "auto",
+  "messages": [
+    {
+      "role": "system",
+      "content": "Eres Manolito, analiza estos datos..."
+    },
+    {
+      "role": "user",
+      "content": "Temp: 34ºC, Viento: 12km/h, Kp: 4"
+    }
+  ]
+}
+            </div>
+            <p>No se adjuntan huellas digitales del dispositivo ni direcciones IP del cliente final en el cuerpo de la petición. El modelo no tiene conciencia de quién solicita el análisis, únicamente procesa los vectores numéricos para devolver el string de texto.</p>
+
+            <h3>3.3. APIs Científicas y Espaciales</h3>
+            <ul>
+                <li><strong>Open-Meteo y NASA POWER:</strong> Se les envían las coordenadas (Lat/Lon) truncadas a decimales de seguridad para obtener matrices de radiación y datos horarios.</li>
+                <li><strong>NOAA SWPC:</strong> Consumo pasivo de archivos JSON/TXT estáticos para el flujo solar F10.7. No requiere envío de parámetros.</li>
+                <li><strong>wheretheiss.at:</strong> Endpoint REST consultado sin parámetros para obtener la telemetría de la ISS.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>4. Cartografía y Tiles Mapeados</h2>
+            <p>Los mapas base (OpenStreetMap, CartoDB, Esri, OpenTopoMap) funcionan mediante la descarga de teselas (tiles) rasterizadas en formato PNG/JPEG/WEBP. Al cargar estas imágenes, tu cliente contacta los servidores de estos proveedores directamente. La política de recolección en esa fase se rige por la infraestructura de cada proveedor cartográfico, limitándose al registro técnico temporal de la petición HTTP.</p>
+        </section>
+
+        <section>
+            <h2>5. Almacenamiento Local (Web Storage API)</h2>
+            <p>Para optimizar el rendimiento y evitar agotar las cuotas de las APIs públicas, utilizamos <code>localStorage</code> y <code>sessionStorage</code>. Esto nos permite guardar temporalmente en el disco duro de su dispositivo:</p>
+            <ul>
+                <li>Respuestas de la API oxidadas (caché) para no repetir llamadas idénticas en menos de 15 minutos.</li>
+                <li>Preferencias de la interfaz gráfica y selección de mapas base.</li>
+            </ul>
+            <p>Estos objetos de datos nunca abandonan su ordenador. Pueden ser purgados manualmente en cualquier instante utilizando la consola de desarrollo del navegador (F12 > Application > Storage) o vaciando los datos de navegación convencionales.</p>
+        </section>
+
+        <section>
+            <h2>6. Ausencia de Telemetría y Contratación Cero</h2>
+            <p>Este sistema se ha programado íntegramente con la premisa del respeto absoluto a la capa de usuario. No implementamos Google Analytics, Meta Pixels, ni herramientas de mapas de calor (ej. Hotjar). El código es auditable desde el cliente (Ctrl+U) evidenciando la carencia de bucles de rastreo.</p>
+            <p>Asimismo, el motor 100% gratuito no aloja muros de pago (paywalls), ni suscripciones premium ficticias. Las APIs consumidas operan en sus rangos gratuitos o de acceso libre gubernamental.</p>
+        </section>
+
+        <section>
+            <h2>7. Marco Regulatorio (RGPD)</h2>
+            <p>Bajo el Reglamento General de Protección de Datos (RGPD) europeo, al no ejercerse la recolección, almacenamiento ni perfilado de datos identificativos, los derechos de acceso, rectificación, portabilidad y olvido carecen de objeto material sobre el que aplicarse en nuestra infraestructura local. La soberanía de los datos generados recae de forma íntegra en la máquina del cliente.</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Manolito Infinito. Arquitectura pura sin telemetría. Sistemas operativos bajo control de sus propietarios.</p>
+        <!-- TODO: Revisar si AEMET cambia el limite de peticiones el mes que viene -->
+    </footer>
+
+</body>
+</html>
