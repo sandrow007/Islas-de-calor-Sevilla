@@ -48,92 +48,76 @@
   // ---------------------------------------------------------------
   // 1) TENDENCIA DEL INDICE KP (24H REALES)
   // ---------------------------------------------------------------
-  async function cargarTendenciaKp(bodyEl) {
-    try {
-      const res = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
-      const datos = await res.json();
-      // el feed trae valores cada minuto; tomamos 1 de cada ~60 para cubrir ~24h sin saturar
-      const ultimos = datos.slice(-1440);
-      const paso = Math.max(1, Math.floor(ultimos.length / 48));
-      const muestra = ultimos.filter((_, i) => i % paso === 0);
-      const valores = muestra.map(d => parseFloat(d.kp_index ?? d.Kp ?? d.kp ?? 0));
+  function actualizarTendenciaKp(bodyEl, datos) {
+    // el feed trae valores cada minuto; tomamos 1 de cada ~60 para cubrir ~24h sin saturar
+    const ultimos = datos.slice(-1440);
+    const paso = Math.max(1, Math.floor(ultimos.length / 48));
+    const muestra = ultimos.filter((_, i) => i % paso === 0);
+    const valores = muestra.map(d => parseFloat(d.kp_index ?? d.Kp ?? d.kp ?? 0));
 
-      const canvas = document.createElement('canvas');
-      canvas.style.cssText = 'width:100%;height:120px;display:block;margin-top:6px';
-      bodyEl.innerHTML = '';
-      bodyEl.appendChild(canvas);
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'width:100%;height:120px;display:block;margin-top:6px';
+    bodyEl.innerHTML = '';
+    bodyEl.appendChild(canvas);
 
-      const ctx = canvas.getContext('2d');
-      const W = canvas.width = canvas.offsetWidth || 320;
-      const H = canvas.height = 120;
-      ctx.clearRect(0, 0, W, H);
-      const max = 9; // escala Kp siempre de 0 a 9
-      // lineas guia G1-G4
-      [4, 5, 6, 7].forEach(k => {
-        const y = H - 8 - (k / max) * (H - 16);
-        ctx.strokeStyle = 'rgba(255,215,69,.12)';
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-      });
-      const barW = W / valores.length;
-      valores.forEach((v, i) => {
-        const h = (v / max) * (H - 16);
-        const color = v < 4 ? '#00ff88' : v < 5 ? '#ffee00' : v < 6 ? '#ff8800' : '#ff3300';
-        ctx.fillStyle = color;
-        ctx.fillRect(i * barW + 1, H - 8 - h, Math.max(1, barW - 2), h);
-      });
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = canvas.offsetWidth || 320;
+    const H = canvas.height = 120;
+    ctx.clearRect(0, 0, W, H);
+    const max = 9; // escala Kp siempre de 0 a 9
+    // lineas guia G1-G4
+    [4, 5, 6, 7].forEach(k => {
+      const y = H - 8 - (k / max) * (H - 16);
+      ctx.strokeStyle = 'rgba(255,215,69,.12)';
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    });
+    const barW = W / valores.length;
+    valores.forEach((v, i) => {
+      const h = (v / max) * (H - 16);
+      const color = v < 4 ? '#00ff88' : v < 5 ? '#ffee00' : v < 6 ? '#ff8800' : '#ff3300';
+      ctx.fillStyle = color;
+      ctx.fillRect(i * barW + 1, H - 8 - h, Math.max(1, barW - 2), h);
+    });
 
-      const actual = valores[valores.length - 1] ?? 0;
-      const maximo = Math.max(...valores);
-      bodyEl.insertAdjacentHTML('beforeend', `
-        <div class="ci" style="margin-top:8px">Últimas ~24h · Kp actual: <strong style="color:var(--qc)">${actual.toFixed(1)}</strong> · máximo del periodo: <strong style="color:var(--qc)">${maximo.toFixed(1)}</strong> · escala 0 (tranquilo) a 9 (tormenta extrema G5)</div>
-      `);
-    } catch (e) {
-      bodyEl.innerHTML = `<div class="ci">No se pudo cargar la tendencia de Kp ahora mismo.</div>`;
-    }
+    const actual = valores[valores.length - 1] ?? 0;
+    const maximo = Math.max(...valores);
+    bodyEl.insertAdjacentHTML('beforeend', `
+      <div class="ci" style="margin-top:8px">Últimas ~24h · Kp actual: <strong style="color:var(--qc)">${actual.toFixed(1)}</strong> · máximo del periodo: <strong style="color:var(--qc)">${maximo.toFixed(1)}</strong> · escala 0 (tranquilo) a 9 (tormenta extrema G5)</div>
+    `);
   }
 
   // ---------------------------------------------------------------
   // 2) RIESGO DE ARRASTRE ATMOSFÉRICO PARA LA ISS (estimación cualitativa honesta)
   // ---------------------------------------------------------------
-  async function cargarRiesgoArrastreISS(bodyEl) {
-    try {
-      const [rKp, rF107] = await Promise.all([
-        fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'),
-        fetch('https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json')
-      ]);
-      const kd = await rKp.json();
-      const fd = await rF107.json();
-      const kp = parseFloat(kd[kd.length - 1]?.kp_index ?? kd[kd.length - 1]?.Kp ?? 0);
-      const f107 = parseFloat(fd[fd.length - 1]?.f10_7obs ?? 0);
+  function actualizarRiesgoArrastreISS(bodyEl, kd, fd) {
+    const kp = parseFloat(kd[kd.length - 1]?.kp_index ?? kd[kd.length - 1]?.Kp ?? 0);
+    const f107 = parseFloat(fd[fd.length - 1]?.f10_7obs ?? 0);
 
-      // Umbrales de referencia usados habitualmente en meteorologia espacial (NOAA/NASA):
-      // F10.7 < 90 flujo solar bajo, 90-150 moderado, >150 alto.
-      // Kp < 4 tranquilo, 4-6 tormenta moderada, >6 tormenta fuerte.
-      // A mayor flujo solar y mayor Kp, la termosfera se calienta y se expande, aumentando
-      // la densidad a la altura de la ISS (~400 km) y por tanto el rozamiento (drag) que sufre.
-      let nivel, clase, explicacion;
-      if (f107 > 150 || kp > 6) {
-        nivel = 'ALTO'; clase = 'dq-lo';
-        explicacion = 'Actividad solar alta: la atmósfera superior se expande más de lo normal y la ISS sufre más rozamiento del habitual, lo que obliga a corregir su órbita con más frecuencia.';
-      } else if (f107 > 90 || kp > 4) {
-        nivel = 'MODERADO'; clase = 'dq-md';
-        explicacion = 'Actividad solar moderada: algo más de rozamiento del promedio, dentro de rango gestionable sin intervención urgente.';
-      } else {
-        nivel = 'BAJO'; clase = 'dq-hi';
-        explicacion = 'Actividad solar tranquila: la atmósfera a la altura de la ISS está en condiciones normales de densidad y rozamiento.';
-      }
-
-      bodyEl.innerHTML = `
-        <div class="dgr">
-          <div class="di"><div class="dl">FLUJO F10.7</div><div class="dv">${f107.toFixed(0)}<span class="du">sfu</span></div></div>
-          <div class="di"><div class="dl">INDICE KP</div><div class="dv">${kp.toFixed(1)}</div></div>
-        </div>
-        <div class="dqb ${clase}" style="margin-top:8px;display:inline-block">Rozamiento estimado en órbita de la ISS: ${nivel}</div>
-        <div class="ci">${explicacion} Es la única relación física real y documentada entre este panel y otra parte de la web (la pestaña del ISS). Es una estimación cualitativa por umbrales conocidos, no un cálculo orbital exacto de decaimiento.</div>
-      `;
-    } catch (e) {
-      bodyEl.innerHTML = `<div class="ci">No se pudo calcular el riesgo de arrastre ahora mismo.</div>`;
+    // Umbrales de referencia usados habitualmente en meteorologia espacial (NOAA/NASA):
+    // F10.7 < 90 flujo solar bajo, 90-150 moderado, >150 alto.
+    // Kp < 4 tranquilo, 4-6 tormenta moderada, >6 tormenta fuerte.
+    // A mayor flujo solar y mayor Kp, la termosfera se calienta y se expande, aumentando
+    // la densidad a la altura de la ISS (~400 km) y por tanto el rozamiento (drag) que sufre.
+    let nivel, clase, explicacion;
+    if (f107 > 150 || kp > 6) {
+      nivel = 'ALTO'; clase = 'dq-lo';
+      explicacion = 'Actividad solar alta: la atmósfera superior se expande más de lo normal y la ISS sufre más rozamiento del habitual, lo que obliga a corregir su órbita con más frecuencia.';
+    } else if (f107 > 90 || kp > 4) {
+      nivel = 'MODERADO'; clase = 'dq-md';
+      explicacion = 'Actividad solar moderada: algo más de rozamiento del promedio, dentro de rango gestionable sin intervención urgente.';
+    } else {
+      nivel = 'BAJO'; clase = 'dq-hi';
+      explicacion = 'Actividad solar tranquila: la atmósfera a la altura de la ISS está en condiciones normales de densidad y rozamiento.';
     }
+
+    bodyEl.innerHTML = `
+      <div class="dgr">
+        <div class="di"><div class="dl">FLUJO F10.7</div><div class="dv">${f107.toFixed(0)}<span class="du">sfu</span></div></div>
+        <div class="di"><div class="dl">INDICE KP</div><div class="dv">${kp.toFixed(1)}</div></div>
+      </div>
+      <div class="dqb ${clase}" style="margin-top:8px;display:inline-block">Rozamiento estimado en órbita de la ISS: ${nivel}</div>
+      <div class="ci">${explicacion} Es la única relación física real y documentada entre este panel y otra parte de la web (la pestaña del ISS). Es una estimación cualitativa por umbrales conocidos, no un cálculo orbital exacto de decaimiento.</div>
+    `;
   }
 
   // ---------------------------------------------------------------
@@ -148,25 +132,19 @@
   ];
   const LATITUD_GEOGRAFICA_SEVILLA = 37.4;
 
-  async function cargarVisibilidadAurora(bodyEl) {
-    try {
-      const res = await fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json');
-      const datos = await res.json();
-      const kp = Math.round(parseFloat(datos[datos.length - 1]?.kp_index ?? datos[datos.length - 1]?.Kp ?? 0));
-      const fila = TABLA_AURORA[Math.min(9, Math.max(0, kp))];
-      const distancia = (fila.lat - LATITUD_GEOGRAFICA_SEVILLA).toFixed(0);
+  function actualizarVisibilidadAurora(bodyEl, datos) {
+    const kp = Math.round(parseFloat(datos[datos.length - 1]?.kp_index ?? datos[datos.length - 1]?.Kp ?? 0));
+    const fila = TABLA_AURORA[Math.min(9, Math.max(0, kp))];
+    const distancia = (fila.lat - LATITUD_GEOGRAFICA_SEVILLA).toFixed(0);
 
-      bodyEl.innerHTML = `
-        <div class="dgr">
-          <div class="di"><div class="dl">KP ACTUAL</div><div class="dv">${kp}</div></div>
-          <div class="di"><div class="dl">LATITUD MÍN. AURORA</div><div class="dv">~${fila.lat.toFixed(0)}<span class="du">°N</span></div></div>
-          <div class="di"><div class="dl">SEVILLA</div><div class="dv">${LATITUD_GEOGRAFICA_SEVILLA}<span class="du">°N</span></div></div>
-        </div>
-        <div class="ci">Con este Kp, la aurora suele verse solo por encima de ~${fila.lat.toFixed(0)}°N (norte de Europa/Escandinavia). Sevilla está unos ${distancia}° más al sur, así que aunque hubiera una tormenta geomagnética severa (Kp 9), no sería visible aquí en condiciones normales. Es una tabla de referencia aproximada, no una predicción exacta punto por punto.</div>
-      `;
-    } catch (e) {
-      bodyEl.innerHTML = `<div class="ci">No se pudo calcular la visibilidad de aurora ahora mismo.</div>`;
-    }
+    bodyEl.innerHTML = `
+      <div class="dgr">
+        <div class="di"><div class="dl">KP ACTUAL</div><div class="dv">${kp}</div></div>
+        <div class="di"><div class="dl">LATITUD MÍN. AURORA</div><div class="dv">~${fila.lat.toFixed(0)}<span class="du">°N</span></div></div>
+        <div class="di"><div class="dl">SEVILLA</div><div class="dv">${LATITUD_GEOGRAFICA_SEVILLA}<span class="du">°N</span></div></div>
+      </div>
+      <div class="ci">Con este Kp, la aurora suele verse solo por encima de ~${fila.lat.toFixed(0)}°N (norte de Europa/Escandinavia). Sevilla está unos ${distancia}° más al sur, así que aunque hubiera una tormenta geomagnética severa (Kp 9), no sería visible aquí en condiciones normales. Es una tabla de referencia aproximada, no una predicción exacta punto por punto.</div>
+    `;
   }
 
   // ---------------------------------------------------------------
@@ -194,20 +172,57 @@
   }
 
   // ---------------------------------------------------------------
-  ready(() => {
-    const cKp = crearCard('extra-kp-trend', 'KP24', 'TENDENCIA DEL ÍNDICE KP · 24H');
-    const cIss = crearCard('extra-iss-drag', 'ISS', 'RIESGO DE ARRASTRE ATMOSFÉRICO · ISS');
-    const cAurora = crearCard('extra-aurora', 'AUR', 'VISIBILIDAD DE AURORA');
-    const cHonestidad = crearPanelHonestidad();
+  // LÓGICA DE CARGA Y ACTUALIZACIÓN CENTRALIZADA
+  // ---------------------------------------------------------------
+  async function actualizarDatosClimaEspacial() {
+    const kpBody = document.getElementById('extra-kp-trend-body');
+    const issBody = document.getElementById('extra-iss-drag-body');
+    const auroraBody = document.getElementById('extra-aurora-body');
 
-    montarEnPestanaEspacio([cKp, cIss, cAurora, cHonestidad]);
+    try {
+      const [kpRes, f107Res] = await Promise.all([
+        fetch('https://services.swpc.noaa.gov/json/planetary_k_index_1m.json'),
+        fetch('https://services.swpc.noaa.gov/json/solar-cycle/observed-solar-cycle-indices.json')
+      ]);
 
-    cargarTendenciaKp(document.getElementById('extra-kp-trend-body'));
-    cargarRiesgoArrastreISS(document.getElementById('extra-iss-drag-body'));
-    cargarVisibilidadAurora(document.getElementById('extra-aurora-body'));
+      if (!kpRes.ok || !f107Res.ok) {
+        throw new Error(`Network response was not ok. Status: Kp=${kpRes.status}, F10.7=${f107Res.status}`);
+      }
 
-    setInterval(() => cargarTendenciaKp(document.getElementById('extra-kp-trend-body')), 300000);
-    setInterval(() => cargarRiesgoArrastreISS(document.getElementById('extra-iss-drag-body')), 300000);
-    setInterval(() => cargarVisibilidadAurora(document.getElementById('extra-aurora-body')), 300000);
-  });
+      const [kpData, f107Data] = await Promise.all([
+        kpRes.json(),
+        f107Res.json()
+      ]);
 
+      // Llamar a las funciones de actualización con los datos ya cargados
+      actualizarTendenciaKp(kpBody, kpData);
+      actualizarRiesgoArrastreISS(issBody, kpData, f107Data);
+      actualizarVisibilidadAurora(auroraBody, kpData);
+
+    } catch (e) {
+      console.error('Error al actualizar datos de clima espacial:', e);
+      const errorMsg = `<div class="ci">No se pudieron cargar los datos de clima espacial ahora mismo.</div>`;
+      if (kpBody) kpBody.innerHTML = errorMsg;
+      if (issBody) issBody.innerHTML = errorMsg;
+      if (auroraBody) auroraBody.innerHTML = errorMsg;
+    }
+  }
+
+ // ---------------------------------------------------------------
+ready(() => {
+  const cKp = crearCard('extra-kp-trend', 'KP24', 'TENDENCIA DEL ÍNDICE KP · 24H');
+  const cIss = crearCard('extra-iss-drag', 'ISS', 'RIESGO DE ARRASTRE ATMOSFÉRICO · ISS');
+  const cAurora = crearCard('extra-aurora', 'AUR', 'VISIBILIDAD DE AURORA');
+  const cHonestidad = crearPanelHonestidad();
+
+  montarEnPestanaEspacio([cKp, cIss, cAurora, cHonestidad]);
+
+  cargarTendenciaKp(document.getElementById('extra-kp-trend-body'));
+  cargarRiesgoArrastreISS(document.getElementById('extra-iss-drag-body'));
+  cargarVisibilidadAurora(document.getElementById('extra-aurora-body'));
+
+  setInterval(() => cargarTendenciaKp(document.getElementById('extra-kp-trend-body')), 300000);
+  setInterval(() => cargarRiesgoArrastreISS(document.getElementById('extra-iss-drag-body')), 300000);
+  setInterval(() => cargarVisibilidadAurora(document.getElementById('extra-aurora-body')), 300000);
+});
+})();
