@@ -3,6 +3,9 @@ main = "src/index.js"
 compatibility_date = "2024-07-21"
 compatibility_flags = ["nodejs_compat"]
 
+[ai]
+binding = "AI"
+
 [assets]
 directory = "."
 binding = "ASSETS"
