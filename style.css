@@ -36,7 +36,7 @@ body {
    =========================================================== */
 #lang-bar {
   position: fixed;
-  top: 10px;
+  top: 1px;
   right: 14px;
   z-index: 2000;
   display: flex;
@@ -106,7 +106,7 @@ body {
 
 #mode-bar {
   position: fixed;
-  top: 10px;
+  top: 1px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2000;
