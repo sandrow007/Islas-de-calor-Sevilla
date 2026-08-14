@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Manolit∞ | Identidad en superposición</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --qc: #00f0ff; --qm: #ff00e5; --qv: #7b2fff; --qt: #00ffc8; --qg: #ffd745;
+    --bg: #03050f;
+    --tx: #e8f0ff;
+    --tx-muted: #9ba1b0;
+    --card-bg: rgba(20, 22, 35, 0.45);
+    --card-border: rgba(255, 255, 255, 0.08);
+    
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --disp: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    
+    --radius-lg: 32px;
+    --radius-md: 20px;
+    --bezier: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  html { background: var(--bg); }
+  
+  body {
+    font-family: var(--disp);
+    background: 
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(123,47,255,0.35), transparent 60%),
+      radial-gradient(ellipse 700px 600px at 100% 10%, rgba(0,240,255,0.2), transparent 55%),
+      radial-gradient(circle at 50% 100%, rgba(255,0,229,0.15), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--tx);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: clamp(16px, 5vw, 40px);
+    padding-bottom: calc(clamp(16px, 5vw, 40px) + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--qt);
+    opacity: 0.9;
+    font-weight: 500;
+  }
+
+  header {
+    position: relative;
+    text-align: center;
+    padding: clamp(3rem, 10vw, 5rem) 1.5rem;
+    background: linear-gradient(180deg, rgba(20, 22, 35, 0.6) 0%, rgba(10, 12, 20, 0.4) 100%);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--card-border);
+    border-radius: 40px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .wordmark-wrap { position: relative; display: flex; justify-content: center; align-items: baseline; gap: 0.1em; margin-bottom: 0.5rem; }
+  
+  .wordmark {
+    font-weight: 700;
+    font-size: clamp(3rem, 12vw, 5.5rem);
+    letter-spacing: -0.04em;
+    background: linear-gradient(90deg, var(--qt), var(--qc), var(--qv), var(--qt));
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: flowGradient 6s linear infinite;
+    filter: drop-shadow(0 0 12px rgba(0, 240, 255, 0.35));
+  }
+  
+  .wordmark .infinity {
+    display: inline-block;
+    color: var(--qc);
+    -webkit-text-fill-color: var(--qc); 
+    animation: pulseGlow 3.5s ease-in-out infinite;
+  }
+  
+  @keyframes flowGradient {
+    0% { background-position: 0% center; }
+    100% { background-position: 300% center; }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { filter: drop-shadow(0 0 18px rgba(0,255,200,0.6)); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 6px rgba(0,240,255,0.2)); transform: scale(0.98); }
+  }
+
+  .subtitle {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--qc);
+    opacity: 0.8;
+    letter-spacing: 0.02em;
+  }
+
+  .lede {
+    font-size: 1.15rem;
+    color: var(--tx);
+    max-width: 600px;
+    margin: 1.5rem auto 0;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    opacity: 0.95;
+  }
+  .lede strong { color: var(--qt); font-weight: 600; }
+
+  .qdivider {
+    height: 1px;
+    width: 100%;
+    max-width: 250px;
+    margin: 0 auto 3rem;
+    background: linear-gradient(90deg, transparent, var(--qc), transparent);
+    opacity: 0.5;
+  }
+
+  .reveal-line {
+    text-align: center;
+    font-weight: 600;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    letter-spacing: -0.03em;
+    margin: 0 0 2rem;
+    background: linear-gradient(100deg, var(--qt), var(--qc));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  section.card {
+    position: relative;
+    background: var(--card-bg);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: clamp(2rem, 5vw, 3rem);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    transform: translateZ(0);
+  }
+
+  section.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), rgba(0, 240, 255, 0.08), transparent 45%);
+    opacity: 0;
+    transition: opacity 0.5s var(--bezier);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @media (hover: hover) {
+    section.card:hover::before { opacity: 1; }
+    section.card:hover { border-color: rgba(0, 240, 255, 0.15); }
+  }
+
+  section.card > .eyebrow, section.card > h2, section.card > p, section.card > div { position: relative; z-index: 2; }
+
+  h2 {
+    font-weight: 600;
+    font-size: clamp(1.4rem, 4vw, 1.7rem);
+    color: #fff;
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.02em;
+  }
+  
+  h2 .accent { color: var(--qc); }
+
+  p { margin-bottom: 1.2rem; font-size: 1.05rem; color: var(--tx); opacity: 0.9; }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--qt); font-weight: 600; }
+
+  .quote {
+    font-style: normal;
+    font-size: 1.1rem;
+    color: var(--tx);
+    border-left: 3px solid var(--qm);
+    padding: 0.5rem 0 0.5rem 1.2rem;
+    margin: 2rem 0;
+    border-radius: 0 8px 8px 0;
+    background: linear-gradient(90deg, rgba(255,0,229,0.08), transparent);
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  
+  .tile {
+    background: rgba(0, 240, 255, 0.03);
+    border: 1px solid rgba(0, 240, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+  }
+  .tile .eyebrow { margin-bottom: 0.8rem; display: block; color: var(--qm); }
+  .tile p { font-size: 0.95rem; margin-bottom: 0; color: var(--tx); }
+
+  .callout {
+    background: linear-gradient(135deg, rgba(255, 215, 69, 0.08), rgba(255, 0, 229, 0.04));
+    border: 1px solid rgba(255, 215, 69, 0.25);
+    border-radius: var(--radius-md);
+    padding: 1.8rem;
+    margin-top: 2rem;
+  }
+  .callout .eyebrow { color: var(--qg); margin-bottom: 0.8rem; display: block; }
+  .callout p { margin-bottom: 0; font-size: 1.05rem; }
+
+  .resolver { text-align: center; padding: 4rem 2rem; display: flex; flex-direction: column; align-items: center; }
+  
+  .resolver-name {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    min-height: 1.2em;
+    transition: color 0.15s ease-out;
+    margin: 1rem 0;
+  }
+  
+  .resolver-hint { font-family: var(--mono); font-size: 0.85rem; color: var(--tx-muted); letter-spacing: 0.02em; }
+  
+  .resolve-btn {
+    margin-top: 2rem;
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--qc);
+    border: 1px solid var(--qc);
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    padding: 16px 36px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.25s var(--bezier);
+    -webkit-appearance: none;
+    appearance: none; /* Corrección de compatibilidad para VS Code */
+    text-transform: uppercase;
+  }
+  
+  @media (hover: hover) {
+    .resolve-btn:hover {
+      background: rgba(0, 240, 255, 0.2);
+      box-shadow: 0 8px 24px rgba(0, 240, 255, 0.25);
+      transform: translateY(-1px);
+    }
+  }
+  
+  .resolve-btn:active {
+    transform: scale(0.96);
+    background: rgba(0, 240, 255, 0.3);
+  }
+
+  .sitenav { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin: 3rem 0 2rem; }
+  
+  .sitenav a {
+    color: var(--qt);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid rgba(0, 255, 200, 0.2);
+    background: rgba(0, 255, 200, 0.03);
+    padding: 10px 20px;
+    border-radius: 9999px;
+    transition: all 0.3s var(--bezier);
+  }
+  
+  @media (hover: hover) {
+    .sitenav a:hover { border-color: var(--qt); background: rgba(0, 255, 200, 0.1); }
+  }
+  
+  .sitenav a:active { transform: scale(0.96); }
+  .sitenav a.current { color: var(--bg); background: var(--qg); border-color: var(--qg); }
+
+  footer {
+    text-align: center;
+    padding: 1rem;
+    color: var(--tx-muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark, .wordmark .infinity, .resolve-btn, .sitenav a { transition: none; animation: none; transform: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div class="wordmark-wrap">
+        <h1 class="wordmark" id="wordmark">Manolit<span class="infinity">∞</span></h1>
+      </div>
+      <div class="subtitle">identidad · aire · bosque el mismo nombre, sin categoría fija</div>
+      <p class="lede">
+        En los buscadores aparece como <strong>«Manolito»</strong>, porque es lo que la gente teclea.
+        Pero ese no es el nombre completo. El nombre real está en <strong>superposición</strong>
+        no colapsa en una identidad fija hasta que alguien decide observarlo.
+      </p>
+    </header>
+
+    <div class="qdivider"></div>
+
+    <p class="reveal-line">Un nombre no necesita casilla.</p>
+
+    <section class="card">
+      <span class="eyebrow">01 · El nombre de búsqueda</span>
+      <h2>Por qué <span class="accent">«Manolito»</span> y no <span class="accent">«Manolit∞»</span></h2>
+      <p>
+        <strong>Manolitoaire.com</strong> existe para que el proyecto se encuentre. Nadie busca un símbolo;
+        la gente busca palabras que ya conoce. «Manolito» es la llave de entrada práctica, reconocible,
+        pensada para el buscador, no para definir nada.
+      </p>
+      <p>
+        Lo que hay detrás de esa puerta es distinto. Ahí es donde vive <strong>Manolit∞</strong>: el nombre
+        sin resolver, el que no ha colapsado todavía en «niño» o «niña», en «esto» o «aquello».
+      </p>
+    </section>
+
+    <section class="card">
+      <span class="eyebrow">02 · Manolito, explicado</span>
+      <h2>Qué es esto realmente, y por qué me importa</h2>
+      <p>
+        Manolito nació como un juego de palabras y se convirtió en algo más parecido a una postura.
+        La idea de fondo es simple: un nombre, igual que una persona, no debería tener que declarar
+        su categoría antes de que se le tome en serio. El <strong>∞</strong> no es un adorno — es la
+        forma más honesta que encontré de decir «esto no está terminado, y no pasa nada».
+      </p>
+      <p>
+        La <strong>Declaración Universal de los Derechos Humanos</strong> se firmó en 1948, en un mundo
+        sin internet, sin identidad digital, sin algoritmos decidiendo qué ves, qué trabajo te ofrecen
+        o qué precio te ponen. Treinta artículos pensados para un siglo que no imaginó nada de esto.
+        En 2026 seguimos citando la misma carta como si no hubiera pasado nada, cuando ya deberíamos
+        estar hablando de derechos digitales, de quién es dueño de tus datos, de si un algoritmo puede
+        decidir tu acceso a un préstamo o a un tratamiento médico. No es que esté mal es que lleva
+        casi ochenta años sin ponerse al día, y actualizarla no debería ser una opción: debería ser
+        urgente.
+      </p>
+      <p>
+        Y esa misma idea es la que me lleva al clima, que es de lo que hablan realmente
+        <strong>Manolitoaire</strong> (el aire) y <strong>Manolitoforestal</strong> (el bosque). No son
+        proyectos aparte — son la misma pregunta aplicada a otra cosa que tampoco debería depender de
+        una casilla ni de una cuota mensual: quién puede permitirse respirar bien, tener sombra, tener
+        árboles cerca.
+      </p>
+      <div class="callout">
+        <span class="eyebrow">Una opinión</span>
+        <p>
+          Me preocupa un futuro donde una aplicación te calcule cuánta sombra te queda en la calle y te
+          la cobre al mes, como si el calor extremo fuera un servicio premium en vez de una urgencia que
+          la ONU lleva años señalando. No hace falta imaginar mucho: basta con mirar el aire de tu propia
+          ciudad ahora mismo para ver hacia dónde vamos si esto se convierte en negocio antes que en
+          derecho.
+        </p>
+      </div>
+      <p style="margin-top: 1.5rem;">
+        No tengo una solución cerrada para nada de esto, y este sitio tampoco pretende dártela. Pero si
+        algo tienen en común Manolit∞, Manolitoaire y Manolitoforestal es que ninguno de los tres cree
+        que haga falta pedir permiso, ni papeleo, ni una casilla marcada, para que ''algo'' un nombre, el
+        aire, un árbol y te pertenezca un poco a ti también.
+      </p>
+    </section>
+
+    <section class="card">
+      <span class="eyebrow">03 · El símbolo ∞</span>
+      <h2>Una identidad sin estado definido</h2>
+      <p>
+        Igual que una partícula cuántica existe en superposición hasta que algo la mide,
+        <strong>Manolit∞</strong> no tiene género, cuerpo ni categoría asignada hasta que alguien
+        quien lo nombra, quien lo lee, quien lo usa decide cómo llamarlo.
+      </p>
+      <div class="quote">
+        «Manolito no es un nombre cerrado. Es un espacio sin categorías: Manolito, Manolit, Manolita,
+        Manolitu... la forma la eliges tú.»
+      </div>
+      <p>No es una identidad oculta ni una respuesta pendiente. Es una decisión que, deliberadamente, no se toma por ti.</p>
+    </section>
+
+    <section class="card">
+      <span class="eyebrow">04 · La pregunta que sobra</span>
+      <h2>¿Hombre o mujer? La pregunta no aplica</h2>
+      <div class="grid2">
+        <div class="tile">
+          <span class="eyebrow" style="color: var(--qm);">Por costumbre</span>
+          <p>«Manolito» suena a hombre y «Manolita» a mujer solo por asociación cultural — no porque un nombre necesite sexo para funcionar.</p>
+        </div>
+        <div class="tile">
+          <span class="eyebrow" style="color: var(--qv);">Por diseño</span>
+          <p>Internet no tiene cuerpo. Un dominio, un símbolo o un nombre no necesitan uno tampoco. Son conceptos, no personas a las que clasificar.</p>
+        </div>
+      </div>
+      <p style="margin-top:1.5rem;">Preguntar el género de un nombre es como preguntar su religión: un dato que no aporta nada a la conversación que realmente importa.</p>
+    </section>
+
+    <p class="reveal-line" style="margin-top: 4rem;">Esto es Manolit∞.</p>
+
+    <section class="card resolver">
+      <span class="eyebrow">05 · Multiverso</span>
+      <h2>Mismo nombre, en cada estado posible</h2>
+      <p style="max-width:540px; margin: 0 auto 1rem; text-align: center;">
+        Cada vez que observas, la función de onda colapsa en un estado y color distintos: alfabetos globales.
+      </p>
+      <div class="resolver-name" id="resolverName" style="color: var(--qg);">Manolit∞</div>
+      <div class="resolver-hint" id="resolverHint">estado: superposición</div>
+      <button class="resolve-btn" id="resolveBtn">Observar</button>
+    </section>
+
+    <nav class="sitenav">
+      <a href="https://Manolitoaire.com" target="_blank" rel="noopener" class="current">Manolitoaire.com</a>
+      <a href="https://Manolitoforestal.space" target="_blank" rel="noopener">Manolitoforestal.space</a>
+    </nav>
+
+    <footer>
+      Manolit∞ el nombre no tiene sexo, solo estados posibles.<br>
+      <span style="display:inline-block; margin-top: 8px; opacity: 0.5;">© 2026 Manolitoaire.com · Manolitoforestal.space</span>
+    </footer>
+  </div>
+
+<script>
+  document.querySelectorAll('section.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      card.style.setProperty('--mx', `${x}%`);
+      card.style.setProperty('--my', `${y}%`);
+    });
+  });
+
+  const estados = [
+    { text: "Manolito", color: "--qc" },
+    { text: "Manolita", color: "--qm" },
+    { text: "Manolit",  color: "--qt" },
+    { text: "მანოლიტ∞", color: "--qg" },
+    { text: "Մանոլիտ∞", color: "--qv" },
+    { text: "Μανολίτ∞", color: "--qc" },
+    { text: "مانوليت∞", color: "--qm" },
+    { text: "מנוליט∞",  color: "--qt" },
+    { text: "마놀리트∞", color: "--qg" },
+    { text: "マノリト∞", color: "--qv" },
+    { text: "马诺利特∞", color: "--qm" },
+    { text: "मानोलित∞", color: "--qc" },
+    { text: "มาโนลิต∞", color: "--qg" },
+    { text: "ᛗᚨᚾᛟᛚᛁᛏ∞", color: "--qm" },
+    { text: "01001101∞", color: "--qt" },
+    { text: "0x4D616E6F∞", color: "--qc" },
+    { text: "∞otilonaM", color: "--qg" },
+    { text: "M4N0L1T0∞", color: "--qv" },
+    { text: "M̷a̷n̷o̷l̷i̷t̷∞", color: "--qm" }
+  ];
+  
+  const resolverName = document.getElementById('resolverName');
+  const resolverHint = document.getElementById('resolverHint');
+  const root = document.documentElement;
+
+  document.getElementById('resolveBtn').addEventListener('click', () => {
+    resolverHint.textContent = 'estado: colapsando…';
+    let flickers = 0;
+    
+    const flicker = setInterval(() => {
+      const rnd = estados[Math.floor(Math.random() * estados.length)];
+      resolverName.textContent = rnd.text;
+      resolverName.style.color = getComputedStyle(root).getPropertyValue(rnd.color);
+      flickers++;
+      
+      if (flickers > 12) {
+        clearInterval(flicker);
+        const pick = estados[Math.floor(Math.random() * estados.length)];
+        resolverName.textContent = pick.text;
+        resolverName.style.color = getComputedStyle(root).getPropertyValue(pick.color);
+        resolverHint.textContent = 'estado: ' + pick.text;
+        
+        setTimeout(() => {
+          resolverHint.textContent = 'estado: superposición';
+          resolverName.textContent = 'Manolit∞';
+          resolverName.style.color = getComputedStyle(root).getPropertyValue('--qg');
+        }, 3200);
+      }
+    }, 60);
+  });
+</script>
+</body>
+</html>
