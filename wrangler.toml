@@ -1,5 +1,5 @@
 name = "manolito-infinito"
-main = "index.js"  # o "src/index.js"
+main = "src/index.js"
 compatibility_date = "2024-07-21"
 compatibility_flags = ["nodejs_compat"]
 
@@ -8,4 +8,11 @@ binding = "AI"
 
 [assets]
 binding = "ASSETS"
-directory = "./assets"  # o donde tengas los archivos estáticos
+directory = "."
+
+routes = [
+  { pattern = "islasdecalorsevilla.com", custom_domain = true },
+  { pattern = "www.islasdecalorsevilla.com", custom_domain = true },
+  { pattern = "islasdecalorsevilla.com/*", zone_name = "islasdecalorsevilla.com" },
+  { pattern = "*islasdecalorsevilla.com/*", zone_name = "islasdecalorsevilla.com" }
+]
