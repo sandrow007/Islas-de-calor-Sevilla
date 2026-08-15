@@ -66,6 +66,18 @@ function esRespuestaEvasiva(texto) {
   return t.endsWith('?') && t.length < 200;
 }
 
+function limitarContexto(messages, maxCharsPorMensaje = 1200, maxMensajes = 6) {
+  const sistemas = messages.filter(m => m.role === 'system');
+  const resto = messages.filter(m => m.role !== 'system');
+  const recientes = resto.slice(-maxMensajes).map(m => ({
+    ...m,
+    content: typeof m.content === 'string' && m.content.length > maxCharsPorMensaje
+      ? m.content.slice(0, maxCharsPorMensaje) + '...'
+      : m.content
+  }));
+  return [...sistemas, ...recientes];
+}
+
 function generarFallback(ultimaPregunta) {
   const q = (ultimaPregunta || '').toLowerCase();
   if (q.includes('hola') || q.includes('buenas') || q.includes('que tal')) {
@@ -114,13 +126,15 @@ async function handleManolito(request, env, corsHeaders) {
     });
   }
 
-  // Inyectar system prompt si no existe
+// Inyectar system prompt si no existe
   if (!messages.some(m => m.role === 'system')) {
     messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...messages];
   }
 
-  const maxTokens = body.max_tokens || 800;
+  // Recortar el contexto para que no reviente el limite de tokens de los motores
+  messages = limitarContexto(messages);
 
+  const maxTokens = Math.min(body.max_tokens || 500, 500);
   // === MOTOR 1: Cloudflare AI (binding AI) — PRIMERO ===
   if (env.AI) {
     try {
