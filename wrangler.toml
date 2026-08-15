@@ -10,9 +10,10 @@ binding = "AI"
 binding = "ASSETS"
 directory = "."
 
-routes = [
-  { pattern = "islasdecalorsevilla.com", custom_domain = true },
-  { pattern = "www.islasdecalorsevilla.com", custom_domain = true },
-  { pattern = "islasdecalorsevilla.com/*", zone_name = "islasdecalorsevilla.com" },
-  { pattern = "*islasdecalorsevilla.com/*", zone_name = "islasdecalorsevilla.com" }
-]
+[[routes]]
+pattern = "islasdecalorsevilla.com/*"
+zone_name = "islasdecalorsevilla.com"
+
+[[routes]]
+pattern = "*islasdecalorsevilla.com/*"
+zone_name = "islasdecalorsevilla.com"
