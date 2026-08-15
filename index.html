@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
     <head>
     <meta charset="UTF-8">
@@ -17,10 +17,10 @@
 
     <title>Manolit&#x221E; Motor Cuantico Climatico</title>
     <!--
-  MANOLIT∞ QUANTUM CLIMATE ENGINE v6.0 — refactored
-  Tasks: i18next real · Citizen/Scientist mode (real differentiation) · Giralda 3D+Solar · Lucy mercury · z-index fix
-  · REAL quantum state-vector engine (4 dashboard sections) · translucent cards · improved translations
-  Open Source: i18next MIT · Chart.js MIT · Leaflet BSD-2
+  MANOLITâˆž QUANTUM CLIMATE ENGINE v6.0 â€” refactored
+  Tasks: i18next real Â· Citizen/Scientist mode (real differentiation) Â· Giralda 3D+Solar Â· Lucy mercury Â· z-index fix
+  Â· REAL quantum state-vector engine (4 dashboard sections) Â· translucent cards Â· improved translations
+  Open Source: i18next MIT Â· Chart.js MIT Â· Leaflet BSD-2
 -->
     <script src="https://cdn.jsdelivr.net/npm/i18next@23.16.8/i18next.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -34,12 +34,15 @@
 	<script src="islasdecalor-origen.js"></script>
 	<script src="manolito-welcome.js"></script>
   <base target="_blank">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512x512.png">
+  <link rel="apple-touch-icon" href="/assets/icon-192x192.png">
 </head>
   <body>
     <!-- Banner de consentimiento de cookies -->
     <div id="cookie-banner" role="dialog" aria-live="polite" aria-label="Consentimiento de cookies" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #111; border-top: 1px solid #444; color: #fff; padding: 15px 20px; z-index: 9999; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; box-sizing: border-box; font-family: monospace;">
       <div style="flex: 1 1 420px; max-width: 900px;">
-        Usamos almacenamiento técnico estrictamente necesario para recordar tu elección de cookies y mantener el estado de sesión del motor. Consulta nuestra <a href='/cookies' style='color: #00ffcc;'>Política de Cookies</a>.
+        Usamos almacenamiento tÃ©cnico estrictamente necesario para recordar tu elecciÃ³n de cookies y mantener el estado de sesiÃ³n del motor. Consulta nuestra <a href='/cookies' style='color: #00ffcc;'>PolÃ­tica de Cookies</a>.
       </div>
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button id="accept-cookies" type="button" style="background: #00ffcc; color: #000; border: none; padding: 8px 16px; cursor: pointer; font-weight: bold;">ACEPTAR</button>
@@ -73,7 +76,7 @@
     <div class="page" id="pi">
       <canvas id="qcanv"></canvas>
       <div id="ititle">
-        <div id="iname">Manolit∞</span>
+        <div id="iname">Manolitâˆž</span>
         </div>
         <div id="isub" data-i18n="appSub">MOTOR CUANTICO CLIMATICO</div>
       </div>
@@ -87,7 +90,7 @@
       <header id="dh">
         <canvas id="lc" width="168" height="168"></canvas>
         <div class="ltb">
-          <div class="ln">Manolit∞ <span class="inf"></span>
+          <div class="ln">Manolitâˆž <span class="inf"></span>
           </div>
           <div class="ls" id="lsub" data-i18n="appSub">MOTOR CUANTICO CLIMATICO</div>
         </div>
@@ -104,7 +107,7 @@
           <span data-i18n="tabClima">CLIMA</span>
         </button>
         <button class="dtab" data-tab="fisica" onclick="switchDashTab('fisica',this)">
-          <span data-i18n="tabFisica">FISICA · QPU</span>
+          <span data-i18n="tabFisica">FISICA Â· QPU</span>
         </button>
         <button class="dtab" data-tab="cuantico" onclick="switchDashTab('cuantico',this)">
           <span data-i18n="tabCuantico">MOTOR CUANTICO</span>
@@ -413,12 +416,12 @@
         </div>
         <div style="margin-bottom: 10px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
 <a href="aviso-legal.html">Aviso Legal</a>
-<a href="privacidad.html">Política de Privacidad</a>
-<a href="cookies.html">Política de Cookies</a>
-<a href="manolito.html">Qué es Manolit∞</a>
+<a href="privacidad.html">PolÃ­tica de Privacidad</a>
+<a href="cookies.html">PolÃ­tica de Cookies</a>
+<a href="manolito.html">QuÃ© es Manolitâˆž</a>
         </div>
         <div>
-          &copy; 2026 @Sandrow Todos los derechos reservados. Motor Cuántico Climático.
+          &copy; 2026 @Sandrow Todos los derechos reservados. Motor CuÃ¡ntico ClimÃ¡tico.
         </div>
       </footer>
       <button id="gbt" data-i18n="gridBtn">MALLA</button>
@@ -473,26 +476,26 @@
         },
       };
       /* ================================================================
-         MODULE: i18n — i18next proper integration (expanded, richer translations)
+         MODULE: i18n â€” i18next proper integration (expanded, richer translations)
          ================================================================ */
       const I18N_RESOURCES = {
         es: {
           translation: {
             appSub: 'MOTOR CUANTICO CLIMATICO',
-            src: 'Fuentes: Open-Meteo · NASA POWER · NOAA SWPC',
+            src: 'Fuentes: Open-Meteo Â· NASA POWER Â· NOAA SWPC',
             hint: 'toca la Giralda 5 veces para acceder',
-            c1: '1/5 — malla cuantica responde',
-            c2: '2/5 — campo cuantico activo',
-            c3: '3/5 — resonancia almohade',
-            c4: '4/5 — protocolo QPU activo',
+            c1: '1/5 â€” malla cuantica responde',
+            c2: '2/5 â€” campo cuantico activo',
+            c3: '3/5 â€” resonancia almohade',
+            c4: '4/5 â€” protocolo QPU activo',
             c5: 'mercurio cuantico...',
             wTitle: 'CLIMA EN TIEMPO REAL',
             issTitle: 'ISS EN TIEMPO REAL',
-            mapTitle: 'ISLAS DE CALOR · SEVILLA',
-            swTitle: 'CLIMA ESPACIAL · NOAA',
-            qTitle: 'MOTOR CUANTICO · ANGLE FEATURE MAP',
+            mapTitle: 'ISLAS DE CALOR Â· SEVILLA',
+            swTitle: 'CLIMA ESPACIAL Â· NOAA',
+            qTitle: 'MOTOR CUANTICO Â· ANGLE FEATURE MAP',
             chartTitle: 'PREDICCION 48h',
-            physTitle: 'NUCLEO FISICO — Stefan-Boltzmann + Brutsaert',
+            physTitle: 'NUCLEO FISICO â€” Stefan-Boltzmann + Brutsaert',
             temp: 'TEMP',
             wind: 'VIENTO',
             hum: 'HUMEDAD',
@@ -516,9 +519,9 @@
             cHeat: 'Calor urbano en la calle',
             cSun: 'Radiacion solar',
             cHum: 'Sensacion higrotermica',
-            riskLow: 'BAJO — Puedes hacer vida normal en el exterior, aunque nunca esta de mas llevar agua encima.',
-            riskMed: 'MODERADO — Evita las horas centrales del dia (12:00-17:00) y busca sombra si vas a estar fuera un rato largo.',
-            riskHi: 'ALTO — Mejor quedarse en interiores o a la sombra ahora mismo; el sol directo puede sentar realmente mal.',
+            riskLow: 'BAJO â€” Puedes hacer vida normal en el exterior, aunque nunca esta de mas llevar agua encima.',
+            riskMed: 'MODERADO â€” Evita las horas centrales del dia (12:00-17:00) y busca sombra si vas a estar fuera un rato largo.',
+            riskHi: 'ALTO â€” Mejor quedarse en interiores o a la sombra ahora mismo; el sol directo puede sentar realmente mal.',
             cRiskExplain: 'Esto resume, en una sola palabra, si hoy toca tener cuidado con el calor o no. Lo calcula el motor cuantico combinando temperatura, sol y humedad.',
             cHeatExplain: 'El asfalto y los edificios del centro acumulan mucho mas calor que un parque. Esta es la diferencia real que notarias si caminases del uno al otro.',
             cSunExplain: 'Cuanto mas fuerte pega el sol ahora mismo, mas rapido te puedes quemar o deshidratar si estas al aire libre.',
@@ -552,7 +555,7 @@
         en: {
           translation: {
             appSub: 'QUANTUM CLIMATE ENGINE',
-            src: 'Sources: Open-Meteo · NASA POWER · NOAA SWPC',
+            src: 'Sources: Open-Meteo Â· NASA POWER Â· NOAA SWPC',
             hint: 'click the Giralda 5 times to enter',
             c1: '1/5 - quantum mesh responds',
             c2: '2/5 - quantum field active',
@@ -625,7 +628,7 @@
         ca: {
           translation: {
             appSub: 'MOTOR QUANTIC CLIMATIC',
-            src: 'Fonts: Open-Meteo · NASA POWER · NOAA SWPC',
+            src: 'Fonts: Open-Meteo Â· NASA POWER Â· NOAA SWPC',
             hint: 'toca la Giralda 5 vegades per entrar',
             c1: '1/5 - malla quantica respon',
             c2: '2/5 - camp quantic actiu',
@@ -698,7 +701,7 @@
         gl: {
           translation: {
             appSub: 'MOTOR CUANTICO CLIMATICO',
-            src: 'Fontes: Open-Meteo · NASA POWER · NOAA SWPC',
+            src: 'Fontes: Open-Meteo Â· NASA POWER Â· NOAA SWPC',
             hint: 'toca a Giralda 5 veces para entrar',
             c1: '1/5 - malla cuantica responde',
             c2: '2/5 - campo cuantico activo',
@@ -760,7 +763,7 @@
             q3Info: 'Distribucion real de resultados tras medir o rexistro cuantico pola regra de Born.',
             q4Title: 'CUANTICO VS CLASICO',
             q4Info: 'Comparacion entre o pronostico clasico de Open-Meteo e a ponderacion do circuito cuantico.',
-            qNoData: 'Aínda non hai datos de pronostico abondos para alimentar o circuito.',
+            qNoData: 'AÃ­nda non hai datos de pronostico abondos para alimentar o circuito.',
             qRunning: 'Executando circuito real...',
             qciExplainSci: 'Cada qubit codifica unha variable fisica real como un angulo de rotacion, entrelazados con portas CNOT.',
             qciExplainCit: 'Un numero de 0 a 100 que resume, dunha soa ollada, o esixente que e o clima agora mesmo.',
@@ -771,7 +774,7 @@
         eu: {
           translation: {
             appSub: 'MOTOR KUANTIKO KLIMATIKOA',
-            src: 'Iturriak: Open-Meteo · NASA POWER · NOAA SWPC',
+            src: 'Iturriak: Open-Meteo Â· NASA POWER Â· NOAA SWPC',
             hint: 'sakatu Giralda 5 aldiz sartzeko',
             c1: '1/5 - sare kuantikoa erantzuten',
             c2: '2/5 - eremu kuantikoa aktibo',
@@ -844,7 +847,7 @@
         va: {
           translation: {
             appSub: 'MOTOR QUANTIC CLIMATIC',
-            src: 'Fonts: Open-Meteo · NASA POWER · NOAA SWPC',
+            src: 'Fonts: Open-Meteo Â· NASA POWER Â· NOAA SWPC',
             hint: 'toca la Giralda 5 vegades per a entrar',
             c1: '1/5 - malla quantica respon',
             c2: '2/5 - camp quantic actiu',
@@ -917,11 +920,11 @@
         oc: {
           translation: {
             appSub: 'MOTOR QUANTIC CLIMATIC',
-            src: 'Fonts: Open-Meteo · NASA POWER · NOAA SWPC',
+            src: 'Fonts: Open-Meteo Â· NASA POWER Â· NOAA SWPC',
             hint: 'toca era Giralda 5 cops enta dintrar',
             c1: '1/5 - malhada quantica respond',
             c2: '2/5 - camp quantic actiu',
-            c3: '3/5 - ressonança almohade',
+            c3: '3/5 - ressonanÃ§a almohade',
             c4: '4/5 - protocole QPU actiu',
             c5: 'mercuri quantic...',
             wTitle: 'CLIMA EN TEMPS REAL',
@@ -954,29 +957,29 @@
             cHeat: 'Calor urbana en era carriera',
             cSun: 'Radiacion solara',
             cHum: 'Sensacion higrotermica',
-            riskLow: 'BAISH - Pos har vida normala en exterior, çò que non mancara jamès portar aiga.',
+            riskLow: 'BAISH - Pos har vida normala en exterior, Ã§Ã² que non mancara jamÃ¨s portar aiga.',
             riskMed: 'MODERAT - Evita es oras centralas dera jornada (12:00-17:00) e cerca ombra se demoraras fora bera pausa.',
-            riskHi: 'NAUT - Melhor demorar laguens o en ombra ara meteish; eth solelh dirècte pot her mau de vertat.',
-            cRiskExplain: 'Aço resumis, en un mot, se cau anar en compde damb era calor uei.',
+            riskHi: 'NAUT - Melhor demorar laguens o en ombra ara meteish; eth solelh dirÃ¨cte pot her mau de vertat.',
+            cRiskExplain: 'AÃ§o resumis, en un mot, se cau anar en compde damb era calor uei.',
             cHeatExplain: 'Eth asfalt e es edificis deth centre acumulen forca mes calor qu\u2019un parc.',
             cSunExplain: 'Com mes fort bat eth solelh ara meteish, mes viste te pos cremar o deshidratar en exterior.',
             cHumExplain: 'Quan eth sol ei forca mes caud que er aire e i a tanben umiditat, costa mes refrescar-se.',
             q1Title: 'MOTOR QUANTIC REAU - SIMULADOR D\u2019ESTAT',
             q1Badge: 'ESTAT QUANTIC REAU',
-            q1Explain: 'Aguest motor executa un circuit quantic REAU alimentat damb eth pronostic REAU d\u2019Open-Meteo entà Sevilla.',
-            q1ExplainCitizen: 'Manolit infinit utilise un petit "cervèth quantic" enta mesclar diuèrsi dias de pronostic reau.',
+            q1Explain: 'Aguest motor executa un circuit quantic REAU alimentat damb eth pronostic REAU d\u2019Open-Meteo entÃ  Sevilla.',
+            q1ExplainCitizen: 'Manolit infinit utilise un petit "cervÃ¨th quantic" enta mesclar diuÃ¨rsi dias de pronostic reau.',
             qHorizon: 'Orizont de prediccion',
             qQubits: 'Nombre de qubits',
             qShots: 'Mesuras (shots)',
             qRun: 'EXECUTAR SIMULACION QUANTICA',
             q2Title: 'PREDICCION QUANTICA',
             qPred: 'PREDICCION',
-            qConf: 'CONFIANÇA',
+            qConf: 'CONFIANÃ‡A',
             qNorm: 'NORMA ESTAT',
-            qEnt: 'ENTRELAÇAMENT',
+            qEnt: 'ENTRELAÃ‡AMENT',
             qGates: 'PORTAS',
             q3Title: 'HISTOGRAMA DE MESURA',
-            q3Info: 'Distribucion reau des resultats après mesurar eth registre quantic.',
+            q3Info: 'Distribucion reau des resultats aprÃ¨s mesurar eth registre quantic.',
             q4Title: 'QUANTIC VS CLASSIC',
             q4Info: 'Comparason entre eth pronostic classic d\u2019Open-Meteo e era ponderacion deth circuit quantic.',
             qNoData: 'Encara non i a pro dadas de pronostic enta alimentar eth circuit.',
@@ -988,7 +991,7 @@
           }
         },
       };
-      /* i18next init — properly used */
+      /* i18next init â€” properly used */
       const t = key => i18next.t(key);
 
       function applyI18n() {
@@ -1035,7 +1038,7 @@
         updateConnBar();
       });
       /* ================================================================
-         MODULE: Citizen/Scientist Mode — now with REAL differentiation
+         MODULE: Citizen/Scientist Mode â€” now with REAL differentiation
          ================================================================ */
       let sciMode = false;
       const modeTrack = document.getElementById('mode-track');
@@ -1069,10 +1072,10 @@
         } else {
           const ph = ATMOS.physics;
           const diff = (ph.T_surface - ph.T_air).toFixed(1);
-          el.textContent = `El suelo esta ${diff>0?'+':''}${diff}°C respecto al aire — ${ATMOS.src}`;
+          el.textContent = `El suelo esta ${diff>0?'+':''}${diff}Â°C respecto al aire â€” ${ATMOS.src}`;
         }
       }
-      /* Citizen-mode renderer — translates raw quantum + physics into rich human language */
+      /* Citizen-mode renderer â€” translates raw quantum + physics into rich human language */
       function renderCitizenCards(ph, qu) {
         if (!ph || !qu) return;
         const qci = qu.QCI_composite;
@@ -1096,16 +1099,16 @@
         };
         let heatMsg = UHI > 3 ? `El asfalto urbano esta ${UHI.toFixed(1)}&deg;C mas caliente que los parques ahora mismo. Zonas de riesgo termico si caminas mucho por el centro.` : UHI > 1 ? `La ciudad registra ${UHI.toFixed(1)}&deg;C mas que las areas verdes. Si puedes, busca sombra o un parque cercano.` : `Temperatura bastante uniforme entre la ciudad y las zonas verdes ahora mismo. El arbolado urbano esta compensando el calor.`;
         if (UHI > 2.5) {
-          heatMsg += ' Esta diferencia obliga a un mayor uso de aire acondicionado en las zonas más densas y con menos vegetación, lo que se traduce en una factura de la luz más alta y agrava la desigualdad económica.';
+          heatMsg += ' Esta diferencia obliga a un mayor uso de aire acondicionado en las zonas mÃ¡s densas y con menos vegetaciÃ³n, lo que se traduce en una factura de la luz mÃ¡s alta y agrava la desigualdad econÃ³mica.';
         }
-        const sunMsg = S_in > 700 ? `Radiacion intensa: ${S_in.toFixed(0)} W/m&#xB2;. Protector solar factor 50+ y gorra son casi obligatorios si vas a estar fuera.` : S_in > 350 ? `Radiacion moderada: ${S_in.toFixed(0)} W/m&#xB2;. Conviene proteccion solar sobre todo entre las 12h y las 17h.` : S_in > 50 ? `Radiacion baja: ${S_in.toFixed(0)} W/m&#xB2;. Condiciones bastante confortables para pasear.` : `Sin radiacion solar directa ahora mismo — normal si es de noche o esta nublado.`;
+        const sunMsg = S_in > 700 ? `Radiacion intensa: ${S_in.toFixed(0)} W/m&#xB2;. Protector solar factor 50+ y gorra son casi obligatorios si vas a estar fuera.` : S_in > 350 ? `Radiacion moderada: ${S_in.toFixed(0)} W/m&#xB2;. Conviene proteccion solar sobre todo entre las 12h y las 17h.` : S_in > 50 ? `Radiacion baja: ${S_in.toFixed(0)} W/m&#xB2;. Condiciones bastante confortables para pasear.` : `Sin radiacion solar directa ahora mismo â€” normal si es de noche o esta nublado.`;
         const hiT = (T_surf - T_air);
         const sensMsg = hiT > 8 ? `La superficie urbana esta ${hiT.toFixed(0)}&deg;C por encima del aire. Sensacion de "horno" al pisar asfalto o acera directamente.` : hiT > 4 ? `El suelo radiante suma unos ${hiT.toFixed(0)}&deg;C extra a la sensacion termica respecto a lo que marca el aire.` : `Temperatura superficial proxima a la del aire ahora mismo. Condiciones razonablemente confortables.`;
-        const humMsg = RH > 75 ? `Humedad alta (${RH}%). Cuesta mas refrescarse porque el sudor se evapora peor.` : RH > 50 ? `Humedad moderada (${RH}%). Con hidratacion regular vas sobrado.` : `Humedad baja (${RH}%). El calor es "seco" — el sudor se evapora rapido pero pierdes agua sin notarlo tanto.`;
+        const humMsg = RH > 75 ? `Humedad alta (${RH}%). Cuesta mas refrescarse porque el sudor se evapora peor.` : RH > 50 ? `Humedad moderada (${RH}%). Con hidratacion regular vas sobrado.` : `Humedad baja (${RH}%). El calor es "seco" â€” el sudor se evapora rapido pero pierdes agua sin notarlo tanto.`;
         let heatExplain = t('cHeatExplain');
         const isNight = S_in < 50;
         if (isNight && hiT > 4) {
-          heatExplain += " Por la noche, este calor acumulado se libera lentamente como una 'piedra de horno', impidiendo el descanso y aumentando el estrés térmico, especialmente en niños y ancianos.";
+          heatExplain += " Por la noche, este calor acumulado se libera lentamente como una 'piedra de horno', impidiendo el descanso y aumentando el estrÃ©s tÃ©rmico, especialmente en niÃ±os y ancianos.";
         }
         const cards = [{
           cls: risk.cls,
@@ -1215,8 +1218,8 @@
       }
       const physCore = new PhysicsCore();
       /* ================================================================
-         SECCION — QuantumEncoder (Angle Feature Map) — dashboard QPU card
-         Refs: Havlicek et al. Nature 567:209 (2019); Schuld & Killoran PRL 122:040504 (2020); Nielsen & Chuang (2010) §4.2
+         SECCION â€” QuantumEncoder (Angle Feature Map) â€” dashboard QPU card
+         Refs: Havlicek et al. Nature 567:209 (2019); Schuld & Killoran PRL 122:040504 (2020); Nielsen & Chuang (2010) Â§4.2
          ================================================================ */
       class QuantumEncoder {
         constructor() {
@@ -1344,7 +1347,7 @@
         dailyForecast: null
       };
       /* ================================================================
-         MODULE: GiraldaRenderer — Drawing + 3D rotation + Dissolution
+         MODULE: GiraldaRenderer â€” Drawing + 3D rotation + Dissolution
          ================================================================ */
       const GS3D = {
         rotY: 0,
@@ -1806,7 +1809,7 @@
         ctx.restore();
       }
       /* ================================================================
-         MODULE: IntroSystem — QuantumGrid, Particles, Cursor
+         MODULE: IntroSystem â€” QuantumGrid, Particles, Cursor
          ================================================================ */
       (function initIntro() {
         const canvas = document.getElementById('qcanv');
@@ -2233,7 +2236,7 @@
         };
       })();
       /* ================================================================
-         MODULE: MercuryTransition — Lucy-style liquid mercury
+         MODULE: MercuryTransition â€” Lucy-style liquid mercury
          ================================================================ */
       function startMercury(fromX, fromY) {
         window.__stopIntro && window.__stopIntro();
@@ -2444,20 +2447,20 @@
       function renderScientistView(ph, qu) {
         const featureLabels = ['T_sup ', 'T_aire', 'Hum % ', 'Viento', 'S_in  ', 'R_net '];
         const physVals = [ph.T_surface, ph.T_air, ph.RH, ph.ws, ph.S_in, ph.R_net];
-        let circuit = 'CIRCUITO QPU — Angle Feature Map  [i18next: ' + i18next.language + ']\n';
-        circuit += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+        let circuit = 'CIRCUITO QPU â€” Angle Feature Map  [i18next: ' + i18next.language + ']\n';
+        circuit += 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n';
         qu.features.forEach((f, i) => {
           const theta = qu.thetas[i].toFixed(4);
           const Ez = qu.E_final[i].toFixed(4);
           let cnots = '';
           for (let k = 0; k < 6; k++) {
-            cnots += k === i - 1 ? '─●─' : k === i ? '─⊕─' : '───';
+            cnots += k === i - 1 ? 'â”€â—â”€' : k === i ? 'â”€âŠ•â”€' : 'â”€â”€â”€';
           }
-          circuit += `|0> ─Ry(${theta})${cnots} 
+          circuit += `|0> â”€Ry(${theta})${cnots} 
 																																										<Z>=${Ez.padStart(7)} | ${featureLabels[i]}=${physVals[i].toFixed(1)}
 `;
         });
-        circuit += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
+        circuit += 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n';
         circuit += `QCI compuesto (qubit 6): ${qu.QCI_composite.toFixed(2)} / 100  |  Fuente: ${ATMOS.src}`;
         const pre = document.getElementById('qcircuit-pre');
         if (pre) pre.textContent = circuit;
@@ -2485,7 +2488,7 @@
         const qcib = document.getElementById('qcib');
         if (qcib) qcib.style.width = qu.QCI_composite.toFixed(0) + '%';
         const qcil = document.getElementById('qcil');
-        if (qcil) qcil.textContent = `${t('qciLabel')} — ${qu.QCI_composite.toFixed(1)} / 100`;
+        if (qcil) qcil.textContent = `${t('qciLabel')} â€” ${qu.QCI_composite.toFixed(1)} / 100`;
         if (radarChart) {
           radarChart.data.datasets[0].data = qu.QCI_individual;
           radarChart.update('none');
@@ -2652,7 +2655,7 @@ function updatePhysicsPanel(ph) {
         }
         al();
       }
-      /* Background particles — kept subtle/translucent so it never competes with the header logo */
+      /* Background particles â€” kept subtle/translucent so it never competes with the header logo */
       function initBg() {
         const cvs = document.getElementById('dbg'),
           ctx = cvs.getContext('2d');
@@ -3344,7 +3347,7 @@ let leafMap=null, uHiLayer=null, heatLayer = null, landmarkLayer = null, densida
                   zoom: CFG.mapZoom,
                   preferCanvas: true
                 });
-// ✅ CORREGIDO — reemplazar todo el bloque de capas en initMap()
+// âœ… CORREGIDO â€” reemplazar todo el bloque de capas en initMap()
 const layerOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   subdomains: 'abc', maxZoom: 19
@@ -3397,7 +3400,7 @@ const layerTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
                                                 updateMapUHI();
                                                 addLandmarks();
                                                 if (capEl) capEl.textContent =
-                                                  `OSM · CartoDB Dark · Voyager · ESRI · Topo · UHI: Stefan-Boltzmann + Brutsaert (1975) · Densidad real OSM: ${r1.ok}/${r1.total} zonas, ${r2.ok}/${r2.total} puntos de referencia`;
+                                                  `OSM Â· CartoDB Dark Â· Voyager Â· ESRI Â· Topo Â· UHI: Stefan-Boltzmann + Brutsaert (1975) Â· Densidad real OSM: ${r1.ok}/${r1.total} zonas, ${r2.ok}/${r2.total} puntos de referencia`;
                                               })();
                                             }
  
@@ -3408,8 +3411,8 @@ const layerTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
                                             }
 		/* ================================================================
    MODULE: Densidad urbana REAL desde OpenStreetMap (sustituye la
-   estimación manual). Cuenta la superficie real de edificios frente
-   al área total de un radio alrededor de cada punto.
+   estimaciÃ³n manual). Cuenta la superficie real de edificios frente
+   al Ã¡rea total de un radio alrededor de cada punto.
    ================================================================ */
 function bboxAlrededor(lat, lon, radioM) {
   const dLat = radioM / 111320;
@@ -3475,27 +3478,27 @@ const HEAT_ZONES = [
         [37.3825, -5.9962, 0.72, 'Torre del Oro (1220)'],
         [37.3772, -5.9869, 0.65, 'Plaza de Espana (1929)'],
         [37.3923, -5.9885, 0.92, 'Iglesia de Santa Catalina'],
-        [37.3985, -5.9888, 0.90, 'Iglesia de San Julián y Santa Marina'],
-        [37.3755, -5.9895, 0.10, 'Parque de María Luisa (Oasis Sur)'],
+        [37.3985, -5.9888, 0.90, 'Iglesia de San JuliÃ¡n y Santa Marina'],
+        [37.3755, -5.9895, 0.10, 'Parque de MarÃ­a Luisa (Oasis Sur)'],
         [37.4180, -5.8931, 0.85, 'Aeropuerto SVQ'],
         [37.3914372, -5.9687909, 0.50, 'Avenida del Greco'], 
         [37.3839, -5.9705, 0.88, 'Estadio R. Sanchez-Pizjuan'],
         [37.3800, -5.9910, 0.55, 'Universidad de Sevilla (Rectorado)'],
         [37.4180, -6.0050, 0.10, 'Parque del Alamillo (Oasis Norte)'],
         [37.386, -5.989, 0.92, 'Barrio de Santa Cruz'],
-        [37.3910, -5.9760, 0.85, 'Entorno Estación Santa Justa'],
+        [37.3910, -5.9760, 0.85, 'Entorno EstaciÃ³n Santa Justa'],
         [37.382, -6.000, 0.75, 'Barrio de Los Remedios'],
         [37.3639, -5.9859, 0.45, 'Campus Reina Mercedes'],
-        [37.3619, -5.9685, 0.45, 'Polígono Sur - Calle El Principito'], 
+        [37.3619, -5.9685, 0.45, 'PolÃ­gono Sur - Calle El Principito'], 
         [37.378, -5.945, 0.85, 'Cerro Amate'],
-        [37.398, -5.994, 0.40, 'Alameda de Hércules'],
+        [37.398, -5.994, 0.40, 'Alameda de HÃ©rcules'],
         [37.355, -6.005, 0.20, 'Aeropuerto de Tablada'],
         [37.380, -5.980, 0.88, 'Barrio de San Bernardo'],     
         [37.375, -5.970, 0.85, 'Barrio El Plantinar'],
         [37.393, -5.992, 0.92, 'Las Setas (Metropol Parasol)'],
-        [37.357, -5.982, 0.70, 'Estadio Benito Villamarín'],
+        [37.357, -5.982, 0.70, 'Estadio Benito VillamarÃ­n'],
         [37.380, -6.010, 0.78, 'Barrio de El Carmen (Triana)'],
-        [37.3840, -5.9650, 0.90, 'Nervión (Entorno Gran Plaza / Nervión Plaza)'],
+        [37.3840, -5.9650, 0.90, 'NerviÃ³n (Entorno Gran Plaza / NerviÃ³n Plaza)'],
         [37.395, -6.000, 0.93, 'Barrio de San Vicente'],
         [37.4140, -5.9610, 0.15, 'Parque de Miraflores (Oasis Noreste)'],
         [37.3542334, -5.9679372, 0.65, 'Real Club Pineda'], 
@@ -3508,96 +3511,96 @@ const HEAT_ZONES = [
         [37.4013544, -5.9522192, 0.75, 'Barrio de Santa Clara'],
         [37.381, -5.963, 0.15, 'Parque Cruz del Campo'],
         [37.4138250, -5.9172637, 0.65, 'Parque del Tamarguillo'], // ADAPTADO: Interior de la zona verde junto a Alcosa
-        [37.392, -5.955, 0.65, 'Polígono Industrial San Pablo'],
+        [37.392, -5.955, 0.65, 'PolÃ­gono Industrial San Pablo'],
         [37.3993994, -5.9712341, 0.90, 'Calle Tharsis'],
-        [37.3860237, -5.9096368, 0.55, 'Torreblanca (Plaza de las Lumbreras)'], // ADAPTADO: Centro neurálgico del barrio
-        [37.3932212, -5.9660615, 0.55, 'San Pablo (Avenida de la Soleá)'], // ADAPTADO: Junto al Polideportivo y Centro de Salud
+        [37.3860237, -5.9096368, 0.55, 'Torreblanca (Plaza de las Lumbreras)'], // ADAPTADO: Centro neurÃ¡lgico del barrio
+        [37.3932212, -5.9660615, 0.55, 'San Pablo (Avenida de la SoleÃ¡)'], // ADAPTADO: Junto al Polideportivo y Centro de Salud
         [37.3554628, -5.9403718, 0.75, 'Universidad Pablo de Olavide (UPO)'],
-        [37.3538830, -5.9750401, 0.91, 'Calle Jándula 4 ()'],
-        [37.3732690, -6.0057867, 0.40, 'Parque de los Príncipes'],
+        [37.3538830, -5.9750401, 0.91, 'Calle JÃ¡ndula 4 ()'],
+        [37.3732690, -6.0057867, 0.40, 'Parque de los PrÃ­ncipes'],
         [37.370, -5.980, 0.80, 'El Porvenir'],
         [37.3967740, -5.9783802, 0.40, 'Calle Arroyo'],
-        [37.385, -5.925, 0.92, 'Polígono Industrial La Negrilla'],
+        [37.385, -5.925, 0.92, 'PolÃ­gono Industrial La Negrilla'],
         [37.350, -5.988, 0.85, 'Los Bermejares'],
-        [37.4105, -5.9575, 0.98, 'Polígono Industrial Calonge'],
+        [37.4105, -5.9575, 0.98, 'PolÃ­gono Industrial Calonge'],
         [37.386, -5.979, 0.15, 'Jardines de la Buhaira'],
         [37.4138250, -5.9172637, 0.65, 'Parque del Tamarguillo'],
         [37.4037058, -5.9929368, 0.15, 'Jardines del Valle (Los Perdigones)'],
-        [37.385, -6.000, 0.05, 'Río Guadalquivir']
+        [37.385, -6.000, 0.05, 'RÃ­o Guadalquivir']
       ];
       const HEAT_ZONES_EXTRAS = [
-        [37.3756619, -6.0067329, 0.35, 'Jefatura superior de Policía '], 
+        [37.3756619, -6.0067329, 0.35, 'Jefatura superior de PolicÃ­a '], 
         [37.4134718, -5.9838783, 0.70, 'Ronda Urbana Norte'],
         [37.3845, -5.9525, 0.94, 'Los Pajaritos / Amate'],
         [37.3910914, -5.9365526, 0.75, 'Mercasevilla'],
         [37.3732368, -6.0104696, 0.45, 'Avenida de Blas Infante (Oeste)'], 
         [37.3741964, -6.0088305, 0.40, 'Glorieta de Carlos Cano'],
-        [37.3320, -5.9920, 0.88, 'Polígono Industrial Carretera de Su Eminencia'],
+        [37.3320, -5.9920, 0.88, 'PolÃ­gono Industrial Carretera de Su Eminencia'],
         [37.4020, -5.9750, 0.82, 'La Macarena (Zonas de Alta Densidad)'],
-        [37.3360, -5.9750, 0.80, 'Bellavista (Núcleo Urbano)'], 
+        [37.3360, -5.9750, 0.80, 'Bellavista (NÃºcleo Urbano)'], 
         [37.40165, -6.00144, 0.20, 'Jardines del Guadalquivir'],
-        [37.3850, -6.0020, 0.75, 'Paseo de Cristóbal Colón / Muelle de la Sal'],
+        [37.3850, -6.0020, 0.75, 'Paseo de CristÃ³bal ColÃ³n / Muelle de la Sal'],
         [37.3692, -5.9892, 0.70, 'Muelle de las Delicias (Acuario de Sevilla)'],
         [37.3712, -5.9861, 0.65, 'Jardines de las Delicias'],
         [37.3912220, -6.0103364, 0.78, 'Torre Sevilla (Centro Comercial y Rascacielos)'],
-        [37.4087, -6.0006, 0.82, 'Parque Temático Isla Mágica'],
+        [37.4087, -6.0006, 0.82, 'Parque TemÃ¡tico Isla MÃ¡gica'],
         [37.41337, -5.99064, 0.50, 'Puente del Alamillo'],
         [37.3897842, -6.0134203, 0.60, 'Rotonda Carlos III'],
         [37.42133, -5.99556, 0.45, 'Cortijo del Alamillo'], 
         [37.3333, -5.9235, 0.75, 'Calle Estocolmo'],
         [37.4102329, -5.9774106, 0.88, 'Avenida del Pueblo Palestino'],
-        [37.3780948, -6.0015713, 0.40, 'Av.República Argentina'],
+        [37.3780948, -6.0015713, 0.40, 'Av.RepÃºblica Argentina'],
         [37.3799955, -5.9977540, 0.40, 'Plaza de Cuba'],
         [37.4161130, -5.9746379, 0.40, 'Rotonda Ronda Urbana Norte / Av. Barzola'],
         [37.3912469, -5.9839761, 0.40, 'Recaredo / San Roque'],
         [37.3964267, -5.9126256, 0.45, 'Parque Municipal de Torreblanca'],
         [37.4006970, -5.9260271, 0.70, 'Sevilla Este (Avenida de las Ciencias)'],
         [37.4242748, -5.9659647, 0.45, 'Pino Montano - Acceso Ronda Urbana Norte'],
-        [37.3618571, -5.9810517, 0.60, 'Hospital / Estación Virgen del Rocío'], 
+        [37.3618571, -5.9810517, 0.60, 'Hospital / EstaciÃ³n Virgen del RocÃ­o'], 
         [37.3671589, -5.9664710, 0.50, 'Avenida de la Paz'],
         [37.4134580, -5.9710991, 0.45, 'Los Carteros'],
         [37.4252006, -5.9742621, 0.65, 'Parque Empresarial Torneo'], 
         [37.3700666, -6.0001470, 0.65, 'Real de la Feria (Los Remedios)'], 
         [37.4133654, -5.9969307, 0.45, 'Acceso Sevilla - Rotonda del Alamillo (Oeste)'],
         [37.4073279, -5.9826190, 0.40, 'El Cerezo / Macarena'],
-        [37.3461842, -5.9718223, 0.55, 'Hospital Doctor Muñoz Cariñanos'],
-        [37.3677676, -5.9504123, 0.40, 'Estación de Metro Cocheras'],
+        [37.3461842, -5.9718223, 0.55, 'Hospital Doctor MuÃ±oz CariÃ±anos'],
+        [37.3677676, -5.9504123, 0.40, 'EstaciÃ³n de Metro Cocheras'],
         [37.3827267, -5.9897875, 0.40, 'Jardines de Murillo'],
         [37.4051282, -5.9349675, 0.45, 'Glorieta Palacio de Congresos (FIBES)'],
-        [37.3758299, -5.9526764, 0.40, 'Estación de Metro Amate'],
+        [37.3758299, -5.9526764, 0.40, 'EstaciÃ³n de Metro Amate'],
         [37.3797812, -5.9208095, 0.45, 'Parque Hacienda San Antonio'],
-        [37.3469859, -5.9368687, 0.40, 'Estación de Metro Condequinto'],
-        [37.3987681, -5.9587936, 0.50, 'Polígono San Pablo (Barrios D y E)'],
+        [37.3469859, -5.9368687, 0.40, 'EstaciÃ³n de Metro Condequinto'],
+        [37.3987681, -5.9587936, 0.50, 'PolÃ­gono San Pablo (Barrios D y E)'],
         [37.3840509, -5.9378756, 0.70, 'Nudo SE-30 / A-92 (Enlace Este-Alcosa-Torreblanca)'],
-        [37.4053631, -5.9775849, 0.45, 'Pío XII (Avenida de Miraflores)'],
-        [37.4073228, -5.9684942, 0.45, 'IES Híspalis (Complejo Educativo)'],
-        [37.3936206, -5.9393761, 0.60, 'Polígono Industrial Store / Nudo SE-30'],
-        [37.3732298, -5.9312080, 0.50, 'Palmete (Calle San José de Palmete)'],
-        [37.4115697, -5.8845162, 0.85, 'Airbus San Pablo (Factoría)'],
-        [37.4075808, -5.9423020, 0.45, 'Urbanización Alhami (Sevilla Este)'],
+        [37.4053631, -5.9775849, 0.45, 'PÃ­o XII (Avenida de Miraflores)'],
+        [37.4073228, -5.9684942, 0.45, 'IES HÃ­spalis (Complejo Educativo)'],
+        [37.3936206, -5.9393761, 0.60, 'PolÃ­gono Industrial Store / Nudo SE-30'],
+        [37.3732298, -5.9312080, 0.50, 'Palmete (Calle San JosÃ© de Palmete)'],
+        [37.4115697, -5.8845162, 0.85, 'Airbus San Pablo (FactorÃ­a)'],
+        [37.4075808, -5.9423020, 0.45, 'UrbanizaciÃ³n Alhami (Sevilla Este)'],
       ];
       HEAT_ZONES.push(...HEAT_ZONES_EXTRAS);
       const LANDMARKS = [
         // LISTA COMPLETA SINCRONIZADA CON HEAT_ZONES PARA ASEGURAR VISIBILIDAD
         { lat: 37.3861, lon: -5.9925, name: 'Giralda & Catedral (s.XII-XVI)', d: 0.88, real: false },
-        { lat: 37.3732298, lon: -5.9312080, name: 'Palmete (Calle San José de Palmete)', d: 0.50, real: true },
-        { lat: 37.4115697, lon: -5.8845162, name: 'Airbus San Pablo (Factoría)', d: 0.85, real: true },
-        { lat: 37.4053631, lon: -5.9775849, name: 'Pío XII (Avenida de Miraflores)', d: 0.45, real: true },
-        { lat: 37.3936206, lon: -5.9393761, name: 'Polígono Industrial Store / Nudo SE-30', d: 0.60, real: true },
-        { lat: 37.4073228, lon: -5.9684942, name: 'IES Híspalis (Complejo Educativo)', d: 0.45, real: true },
+        { lat: 37.3732298, lon: -5.9312080, name: 'Palmete (Calle San JosÃ© de Palmete)', d: 0.50, real: true },
+        { lat: 37.4115697, lon: -5.8845162, name: 'Airbus San Pablo (FactorÃ­a)', d: 0.85, real: true },
+        { lat: 37.4053631, lon: -5.9775849, name: 'PÃ­o XII (Avenida de Miraflores)', d: 0.45, real: true },
+        { lat: 37.3936206, lon: -5.9393761, name: 'PolÃ­gono Industrial Store / Nudo SE-30', d: 0.60, real: true },
+        { lat: 37.4073228, lon: -5.9684942, name: 'IES HÃ­spalis (Complejo Educativo)', d: 0.45, real: true },
         { lat: 37.3860237, lon: -5.9096368, name: 'Torreblanca (Plaza de las Lumbreras)', d: 0.55, real: true },
-        { lat: 37.4075808, lon: -5.9423020, name: 'Urbanización Alhami (Sevilla Este)', d: 0.45, real: true },
+        { lat: 37.4075808, lon: -5.9423020, name: 'UrbanizaciÃ³n Alhami (Sevilla Este)', d: 0.45, real: true },
         { lat: 37.3840509, lon: -5.9378756, name: 'Nudo SE-30 / A-92 (Enlace Este-Alcosa-Torreblanca)', d: 0.70, real: true },
-        { lat: 37.3987681, lon: -5.9587936, name: 'Polígono San Pablo (Barrios D y E)', d: 0.50, real: true },
+        { lat: 37.3987681, lon: -5.9587936, name: 'PolÃ­gono San Pablo (Barrios D y E)', d: 0.50, real: true },
         { lat: 37.3797812, lon: -5.9208095, name: 'Parque Hacienda San Antonio', d: 0.45, real: true },
-        { lat: 37.3469859, lon: -5.9368687, name: 'Estación de Metro Condequinto', d: 0.40, real: true },
+        { lat: 37.3469859, lon: -5.9368687, name: 'EstaciÃ³n de Metro Condequinto', d: 0.40, real: true },
         { lat: 37.3827267, lon: -5.9897875, name: 'Jardines de Murillo', d: 0.40, real: true },
-        { lat: 37.3758299, lon: -5.9526764, name: 'Estación de Metro Amate', d: 0.40, real: true },
+        { lat: 37.3758299, lon: -5.9526764, name: 'EstaciÃ³n de Metro Amate', d: 0.40, real: true },
         { lat: 37.4051282, lon: -5.9349675, name: 'Glorieta Palacio de Congresos (FIBES)', d: 0.45, real: true },
-        { lat: 37.3677676, lon: -5.9504123, name: 'Estación de Metro Cocheras', d: 0.40, real: true },
+        { lat: 37.3677676, lon: -5.9504123, name: 'EstaciÃ³n de Metro Cocheras', d: 0.40, real: true },
         { lat: 37.4073279, lon: -5.9826190, name: 'El Cerezo / Macarena', d: 0.40, real: true },
         { lat: 37.3700666, lon: -6.0001470, name: 'Real de la Feria (Los Remedios)', d: 0.65, real: true },
-        { lat: 37.3461842, lon: -5.9718223, name: 'Hospital Doctor Muñoz Cariñanos', d: 0.55, real: true },
+        { lat: 37.3461842, lon: -5.9718223, name: 'Hospital Doctor MuÃ±oz CariÃ±anos', d: 0.55, real: true },
         { lat: 37.4133654, lon: -5.9969307, name: 'Acceso Sevilla - Rotonda del Alamillo (Oeste)', d: 0.45, real: true },
         { lat: 37.4161130, lon: -5.9746379, name: 'Rotonda Ronda Urbana Norte / Av. Barzola', d: 0.40, real: true },
         { lat: 37.4006970, lon: -5.9260271, name: 'Sevilla Este (Avenida de las Ciencias)', d: 0.70, real: true },
@@ -3605,41 +3608,41 @@ const HEAT_ZONES = [
         { lat: 37.4252006, lon: -5.9742621, name: 'Parque Empresarial Torneo', d: 0.65, real: true },
         { lat: 37.3912469, lon: -5.9839761, name: 'Recaredo / San Roque', d: 0.40, real: true },
         { lat: 37.3964267, lon: -5.9126256, name: 'Parque Municipal de Torreblanca', d: 0.45, real: true },
-        { lat: 37.3618571, lon: -5.9810517, name: 'Hospital / Estación Virgen del Rocío', d: 0.60, real: true },
+        { lat: 37.3618571, lon: -5.9810517, name: 'Hospital / EstaciÃ³n Virgen del RocÃ­o', d: 0.60, real: true },
         { lat: 37.3671589, lon: -5.9664710, name: 'Avenida de la Paz', d: 0.50, real: true },
         { lat: 37.4134580, lon: -5.9710991, name: 'Los Carteros', d: 0.45, real: true },
-        { lat: 37.3780948, lon: -6.0015713, name: 'Av.República Argentina', d: 0.40, real: true },
+        { lat: 37.3780948, lon: -6.0015713, name: 'Av.RepÃºblica Argentina', d: 0.40, real: true },
         { lat: 37.3825, lon: -5.9962, name: 'Torre del Oro (1220)', d: 0.72, real: false },
         { lat: 37.3910914, lon: -5.9365526, name: 'Mercasevilla', d: 0.75, real: true },
         { lat: 37.3542334, lon: -5.9679372, name: 'Real Club Pineda', d: 0.65, real: true },
-        { lat: 37.3932212, lon: -5.9660615, name: 'San Pablo (Avenida de la Soleá)', d: 0.55, real: true },
+        { lat: 37.3932212, lon: -5.9660615, name: 'San Pablo (Avenida de la SoleÃ¡)', d: 0.55, real: true },
         { lat: 37.3772, lon: -5.9869, name: 'Plaza de Espana (1929)', d: 0.65, real: false },
         { lat: 37.4242748, lon: -5.9659647, name: 'Pino Montano - Acceso Ronda Urbana Norte', d: 0.45, real: true },
         { lat: 37.3923, lon: -5.9885, name: 'Iglesia de Santa Catalina', d: 0.92, real: false },
-        { lat: 37.3985, lon: -5.9888, name: 'Iglesia de San Julián y Santa Marina', d: 0.90, real: false },
+        { lat: 37.3985, lon: -5.9888, name: 'Iglesia de San JuliÃ¡n y Santa Marina', d: 0.90, real: false },
         { lat: 37.3704196, lon: -5.9625640, name: 'Centro Deportivo Hytasa', d: 0.45, real: true },
-        { lat: 37.3755, lon: -5.9895, name: 'Parque de María Luisa (Oasis Sur)', d: 0.10, real: false },
+        { lat: 37.3755, lon: -5.9895, name: 'Parque de MarÃ­a Luisa (Oasis Sur)', d: 0.10, real: false },
         { lat: 37.3863717, lon: -6.0024607, name: 'Puente de Triana (Isabel II)', d: 0.50, real: true },
         { lat: 37.4180, lon: -5.8931, name: 'Aeropuerto SVQ', d: 0.85, real: false },
         { lat: 37.3839, lon: -5.9705, name: 'Estadio R. Sanchez-Pizjuan', d: 0.88, real: false },
         { lat: 37.3800, lon: -5.9910, name: 'Universidad de Sevilla (Rectorado)', d: 0.55, real: false },
         { lat: 37.418, lon: -6.005, name: 'Parque del Alamillo (Oasis Norte)', d: 0.10, real: false },
         { lat: 37.386, lon: -5.989, name: 'Barrio de Santa Cruz', d: 0.92, real: false },
-        { lat: 37.391, lon: -5.975, name: 'Estación de Santa Justa', d: 0.85, real: false },
+        { lat: 37.391, lon: -5.975, name: 'EstaciÃ³n de Santa Justa', d: 0.85, real: false },
         { lat: 37.382, lon: -6.000, name: 'Barrio de Los Remedios', d: 0.75, real: false },
         { lat: 37.3741964, lon: -6.0088305, name: 'Glorieta de Carlos Cano', d: 0.40, real: true },
         { lat: 37.3639, lon: -5.9859, name: 'Campus Reina Mercedes', d: 0.45, real: false },
-        { lat: 37.36198, lon: -5.9685, name: 'Polígono Sur - Calle El Principito', d: 0.45, real: true },
+        { lat: 37.36198, lon: -5.9685, name: 'PolÃ­gono Sur - Calle El Principito', d: 0.45, real: true },
         { lat: 37.378, lon: -5.945, name: 'Cerro Amate', d: 0.85, real: false },
         { lat: 37.3554628, lon: -5.9403718, name: 'Universidad Pablo de Olavide (UPO)', d: 0.75, real: true },
-        { lat: 37.398, lon: -5.994, name: 'Alameda de Hércules', d: 0.40, real: false },
+        { lat: 37.398, lon: -5.994, name: 'Alameda de HÃ©rcules', d: 0.40, real: false },
         { lat: 37.355, lon: -6.005, name: 'Aeropuerto de Tablada', d: 0.20, real: false },
         { lat: 37.380, lon: -5.980, name: 'Barrio de San Bernardo', d: 0.88, real: false },
         { lat: 37.375, lon: -5.970, name: 'Barrio El Plantinar', d: 0.85, real: false },
         { lat: 37.3914372, lon: -5.9687909, name: 'Avenida del Greco', d: 0.50, real: true },
         { lat: 37.393, lon: -5.992, name: 'Las Setas (Metropol Parasol)', d: 0.92, real: false },
-        { lat: 37.357, lon: -5.982, name: 'Estadio Benito Villamarín', d: 0.70, real: false },
-        { lat: 37.3840, lon: -5.9650, name: 'Nervión (Entorno Gran Plaza / Nervión Plaza)', d: 0.90, real: false }, 
+        { lat: 37.357, lon: -5.982, name: 'Estadio Benito VillamarÃ­n', d: 0.70, real: false },
+        { lat: 37.3840, lon: -5.9650, name: 'NerviÃ³n (Entorno Gran Plaza / NerviÃ³n Plaza)', d: 0.90, real: false }, 
         { lat: 37.380, lon: -6.010, name: 'Barrio de El Carmen (Triana)', d: 0.78, real: false },
         { lat: 37.395, lon: -6.000, name: 'Barrio de San Vicente', d: 0.93, real: false },
         { lat: 37.4140, lon: -5.9610, name: 'Parque de Miraflores (Oasis Noreste)', d: 0.15, real: false },
@@ -3651,29 +3654,29 @@ const HEAT_ZONES = [
         { lat: 37.40238, lon: -5.9702797, name: 'La Corza (Rafael Alberti)', d: 0.85, real: false },
         { lat: 37.4013544, lon: -5.9522192, name: 'Barrio de Santa Clara', d: 0.75, real: false },
         { lat: 37.381, lon: -5.963, name: 'Parque Cruz del Campo', d: 0.15, real: false },
-        { lat: 37.392, lon: -5.955, name: 'Polígono Industrial San Pablo', d: 0.65, real: false },
+        { lat: 37.392, lon: -5.955, name: 'PolÃ­gono Industrial San Pablo', d: 0.65, real: false },
         { lat: 37.3993994, lon: -5.9712341, name: 'Calle Tharsis', d: 0.90, real: false },
-        { lat: 37.353883, lon: -5.9750401, name: 'Calle Jándula 4 (Polígono Sur)', d: 0.91, real: false },
-        { lat: 37.3732690, lon: -6.0057867, name: 'Parque de los Príncipes', d: 0.40, real: true },
+        { lat: 37.353883, lon: -5.9750401, name: 'Calle JÃ¡ndula 4 (PolÃ­gono Sur)', d: 0.91, real: false },
+        { lat: 37.3732690, lon: -6.0057867, name: 'Parque de los PrÃ­ncipes', d: 0.40, real: true },
         { lat: 37.370, lon: -5.980, name: 'El Porvenir', d: 0.80, real: false },
-        { lat: 37.385, lon: -5.925, name: 'Polígono Industrial La Negrilla', d: 0.92, real: false },
+        { lat: 37.385, lon: -5.925, name: 'PolÃ­gono Industrial La Negrilla', d: 0.92, real: false },
         { lat: 37.350, lon: -5.988, name: 'Los Bermejares', d: 0.85, real: false },
         { lat: 37.386, lon: -5.979, name: 'Jardines de la Buhaira', d: 0.15, real: false },
         { lat: 37.4037058, lon: -5.9929368, name: 'Jardines del Valle (Los Perdigones)', d: 0.15, real: false },
-        { lat: 37.385, lon: -6.000, name: 'Río Guadalquivir', d: 0.05, real: false },
+        { lat: 37.385, lon: -6.000, name: 'RÃ­o Guadalquivir', d: 0.05, real: false },
         { lat: 37.3967740, lon: -5.9783802, name: 'Calle Arroyo', d: 0.40, real: true },
-        { lat: 37.3756619, lon: -6.0067329, name: 'Jefatura superior de Policía', d: 0.35, real: true },
+        { lat: 37.3756619, lon: -6.0067329, name: 'Jefatura superior de PolicÃ­a', d: 0.35, real: true },
         { lat: 37.4134718, lon: -5.9838783, name: 'Ronda Urbana Norte', d: 0.70, real: false },
         { lat: 37.3845, lon: -5.9525, name: 'Los Pajaritos / Amate', d: 0.94, real: false },
-        { lat: 37.3320, lon: -5.9920, name: 'Polígono Industrial Carretera de Su Eminencia', d: 0.88, real: false },
+        { lat: 37.3320, lon: -5.9920, name: 'PolÃ­gono Industrial Carretera de Su Eminencia', d: 0.88, real: false },
         { lat: 37.4020, lon: -5.9750, name: 'La Macarena (Zonas de Alta Densidad)', d: 0.82, real: false },
-        { lat: 37.3360, lon: -5.9750, name: 'Bellavista (Núcleo Urbano)', d: 0.80, real: false },
+        { lat: 37.3360, lon: -5.9750, name: 'Bellavista (NÃºcleo Urbano)', d: 0.80, real: false },
         { lat: 37.40165, lon: -6.00144, name: 'Jardines del Guadalquivir', d: 0.20, real: true },
-        { lat: 37.3850, lon: -6.0020, name: 'Paseo de Cristóbal Colón / Muelle de la Sal', d: 0.75, real: false },
+        { lat: 37.3850, lon: -6.0020, name: 'Paseo de CristÃ³bal ColÃ³n / Muelle de la Sal', d: 0.75, real: false },
         { lat: 37.3692, lon: -5.9892, name: 'Muelle de las Delicias (Acuario de Sevilla)', d: 0.70, real: false },
         { lat: 37.3712, lon: -5.9861, name: 'Jardines de las Delicias', d: 0.65, real: false },
         { lat: 37.3912220, lon: -6.0103364, name: 'Torre Sevilla (Centro Comercial y Rascacielos)', d: 0.78, real: false },
-        { lat: 37.4087, lon: -6.0006, name: 'Parque Temático Isla Mágica', d: 0.82, real: false },
+        { lat: 37.4087, lon: -6.0006, name: 'Parque TemÃ¡tico Isla MÃ¡gica', d: 0.82, real: false },
         { lat: 37.41337, lon: -5.99064, name: 'Puente del Alamillo', d: 0.50, real: false }, 
         { lat: 37.3897842, lon: -6.0134203, name: 'Rotonda Carlos III', d: 0.60, real: false }, 
         { lat: 37.42133, lon: -5.99556, name: 'Cortijo del Alamillo', d: 0.45, real: true },
@@ -3695,8 +3698,8 @@ async function actualizarDensidadesRealesObjetos(lista) {
 		
 function addHeatIslands() {
   if (!uHiLayer) return;
-  // MEJORA: No dibujar la capa si todavía no se han cargado los datos reales de la API.
-  // Esto evita que se muestre brevemente el mapa con el valor por defecto de 25°C.
+  // MEJORA: No dibujar la capa si todavÃ­a no se han cargado los datos reales de la API.
+  // Esto evita que se muestre brevemente el mapa con el valor por defecto de 25Â°C.
   if (ATMOS.src === 'init') {
     return;
   }
@@ -3730,7 +3733,7 @@ function addHeatIslands() {
         UHI (PhysicsCore): <b>${uhi > 0 ? '+' : ''}${uhi}&deg;C</b><br>
         T sup. estimada: <b>${t_surface.toFixed(1)}&deg;C</b><br>
         Albedo interp.: ${alpha.toFixed(3)} | R_neta: ${Math.round(physBase.R_net)} W/m&sup2;<br>
-        Densidad urbana: ${Math.round(dens * 100)}% ${densidadCargada ? '(real, OpenStreetMap)' : '(estimación provisional)'}<br>
+        Densidad urbana: ${Math.round(dens * 100)}% ${densidadCargada ? '(real, OpenStreetMap)' : '(estimaciÃ³n provisional)'}<br>
         <span style="font-size:9px;color:rgba(0,200,200,.7)">Stefan-Boltzmann + Brutsaert (1975)</span>
       `);
   });
@@ -3769,7 +3772,7 @@ function addLandmarks() {
          UHI: <b>${uhi > 0 ? '+' : ''}${uhi}&deg;C</b> |
          T sup: <b>${t_surface.toFixed(1)}&deg;C</b><br>
          Densidad: ${Math.round(pt.d * 100)}% 
-         ${pt.real ? '(real, OpenStreetMap)' : '(estimación provisional)'}`
+         ${pt.real ? '(real, OpenStreetMap)' : '(estimaciÃ³n provisional)'}`
       );
   });
 
@@ -3824,9 +3827,9 @@ function addLegend() {
   lg.addTo(leafMap);
 }
                                             /* ================================================================================================
-                                               MODULE: REAL QUANTUM ENGINE — 4 dedicated dashboard sections (Q1-Q4)
+                                               MODULE: REAL QUANTUM ENGINE â€” 4 dedicated dashboard sections (Q1-Q4)
                                                Genuine complex-amplitude state-vector simulator (H / RY / RZ / CNOT + Born-rule measurement),
-                                               fed with REAL Open-Meteo multi-day forecast data for Sevilla. Not quantum hardware — a correct,
+                                               fed with REAL Open-Meteo multi-day forecast data for Sevilla. Not quantum hardware â€” a correct,
                                                verifiable classical simulation of a small quantum circuit, running entirely in the browser.
                                                Citizen mode explains it in plain language; Scientist mode shows the raw circuit + metrics.
                                                ================================================================================================ */
@@ -4084,7 +4087,7 @@ function addLegend() {
                                               const data = await res.json();
                                               ATMOS.dailyForecast = data.daily;
                                               const src = document.getElementById('q-real-src');
-                                              if (src) src.textContent = 'Open-Meteo forecast (real) · ' + (data.daily.time ? data.daily.time.length : 0) + ' dias cargados';
+                                              if (src) src.textContent = 'Open-Meteo forecast (real) Â· ' + (data.daily.time ? data.daily.time.length : 0) + ' dias cargados';
                                               return data.daily;
                                             }
                                             let lastQuantumResult = null;
@@ -4149,18 +4152,18 @@ function addLegend() {
                                               }
 
                                               function renderQuantumResult(r) {
-                                                document.getElementById('q-prediction').textContent = fmtT(r.predictedTemp) + '°C';
+                                                document.getElementById('q-prediction').textContent = fmtT(r.predictedTemp) + 'Â°C';
                                                 document.getElementById('q-confidence').textContent = Math.round(r.confidence * 100) + '%';
                                                 document.getElementById('q-norm').textContent = (r.normBefore * 100).toFixed(3) + '%';
                                                 document.getElementById('q-entanglement').textContent = r.entropy.toFixed(3);
                                                 document.getElementById('q-gates').textContent = r.gateLog.length;
                                                 document.getElementById('qubit-display').innerHTML = r.encodings.map((e, i) =>
-                                                  `<div class="qubit active" title="${e.day}: ${fmtT(e.tmax)}°C">q${i}</div>`
+                                                  `<div class="qubit active" title="${e.day}: ${fmtT(e.tmax)}Â°C">q${i}</div>`
                                                 ).join('');
                                                 if (sciMode) {
-                                                  let circuitText = `<span style="color:#8892B0;">// ${r.shots.toLocaleString('es-ES')} shots — Born rule</span><br>`;
+                                                  let circuitText = `<span style="color:#8892B0;">// ${r.shots.toLocaleString('es-ES')} shots â€” Born rule</span><br>`;
                                                   r.encodings.forEach((e, i) => {
-                                                    circuitText += `q${i}: <span style="color:#00ffc8">RY(${e.theta.toFixed(2)})</span> &larr; ${e.day} (${fmtT(e.tmax)}°C)<br>`;
+                                                    circuitText += `q${i}: <span style="color:#00ffc8">RY(${e.theta.toFixed(2)})</span> &larr; ${e.day} (${fmtT(e.tmax)}Â°C)<br>`;
                                                   });
                                                   for (let i = 0; i < r.nQubits - 1; i++) {
                                                     circuitText += `q${i}-q${i + 1}: <span style="color:#7b2fff">CNOT</span><br>`;
@@ -4168,16 +4171,16 @@ function addLegend() {
                                                   circuitText += 'all: <span style="color:#ff00e5">RZ(&phi;_lluvia)</span> &rarr; <span style="color:#00f0ff">H</span><br>';
                                                   circuitText += '<span style="color:#8892B0;">// medicion final (regla de Born)</span>';
                                                   document.getElementById('quantum-circuit').innerHTML = circuitText;
-                                                          document.getElementById('q-methodology').textContent = `Circuito ejecutado sobre ${r.nQubits} qubits (${r.dayIdxs.length} dias reales de Open-Meteo, desde ${fmtDateShort(r.encodings[0].day)}). ` + `Referencia clasica para ese dia: ${fmtT(r.classicalForecast)}°C. Rango de medicion cuantica: ${fmtT(r.tMin)}°C - ${fmtT(r.tMax)}°C.`;
+                                                          document.getElementById('q-methodology').textContent = `Circuito ejecutado sobre ${r.nQubits} qubits (${r.dayIdxs.length} dias reales de Open-Meteo, desde ${fmtDateShort(r.encodings[0].day)}). ` + `Referencia clasica para ese dia: ${fmtT(r.classicalForecast)}Â°C. Rango de medicion cuantica: ${fmtT(r.tMin)}Â°C - ${fmtT(r.tMax)}Â°C.`;
                                                         } else {
                                                           document.getElementById('quantum-circuit').innerHTML = `Manolit&#8734; ha mezclado 
 																																																																								<b>${r.nQubits}</b> dias de pronostico real (desde ${fmtDateShort(r.encodings[0].day)}) usando su motor cuantico. ` + `Repitiendo la medicion 
 																																																																								<b>${r.shots.toLocaleString('es-ES')}</b> veces, la respuesta mas repetida da una temperatura estimada de 
-																																																																								<b>${fmtT(r.predictedTemp)}°C</b> ` + `para el ${fmtDateShort(r.classicalDate)}, con un 
-																																																																								<b>${Math.round(r.confidence*100)}%</b> de las mediciones de acuerdo entre si. ` + `El pronostico clasico de Open-Meteo para ese mismo dia es de ${fmtT(r.classicalForecast)}°C — el motor cuantico esta de acuerdo si ambos numeros estan cerca.`;
-                                                          document.getElementById('q-methodology').textContent = `Cuanto mas alta sea la confianza, mas de acuerdo estuvieron las ${r.shots.toLocaleString('es-ES')} mediciones entre si — como preguntar lo mismo muchas veces y ver cuanto coinciden las respuestas.`;
+																																																																								<b>${fmtT(r.predictedTemp)}Â°C</b> ` + `para el ${fmtDateShort(r.classicalDate)}, con un 
+																																																																								<b>${Math.round(r.confidence*100)}%</b> de las mediciones de acuerdo entre si. ` + `El pronostico clasico de Open-Meteo para ese mismo dia es de ${fmtT(r.classicalForecast)}Â°C â€” el motor cuantico esta de acuerdo si ambos numeros estan cerca.`;
+                                                          document.getElementById('q-methodology').textContent = `Cuanto mas alta sea la confianza, mas de acuerdo estuvieron las ${r.shots.toLocaleString('es-ES')} mediciones entre si â€” como preguntar lo mismo muchas veces y ver cuanto coinciden las respuestas.`;
                                                         }
-                                                        const weightLabels = r.weightCounts.map((_, w) => Math.round(r.tMin + (w / r.nQubits) * (r.tMax - r.tMin)) + '°C');
+                                                        const weightLabels = r.weightCounts.map((_, w) => Math.round(r.tMin + (w / r.nQubits) * (r.tMax - r.tMin)) + 'Â°C');
                                                         document.getElementById('prob-bars').innerHTML = r.weightCounts.map((c, w) => {
                                                           const pct = Math.round((c / r.shots) * 100);
                                                           const hue = w === r.bestWeight ? '#00ffc8' : '#00f0ff';
@@ -4297,7 +4300,7 @@ function addLegend() {
                                                       }
 
                                                       /* ================================================================
-                                                         CORRECCIÓN DE PESTAÑAS — AÑADIDA LA FUNCIÓN FALTANTE PARA QUE LOS CLICS FUNCIONEN
+                                                         CORRECCIÃ“N DE PESTAÃ‘AS â€” AÃ‘ADIDA LA FUNCIÃ“N FALTANTE PARA QUE LOS CLICS FUNCIONEN
                                                          ================================================================ */
                                                       function switchDashTab(tabId, btn) {
                                                         // Ocultar todos los paneles
@@ -4307,11 +4310,11 @@ function addLegend() {
                                                         // Mostrar el panel correspondiente
                                                         const panel = document.getElementById('tabpanel-' + tabId);
                                                         if (panel) panel.classList.add('active');
-                                                        // Activar el botón clicado
+                                                        // Activar el botÃ³n clicado
                                                         if (btn) btn.classList.add('active');
                                                       }
                                                       /* ================================================================
-                                                         INIT — i18next first, then app
+                                                         INIT â€” i18next first, then app
                                                          ================================================================ */
                                                       i18next.init({
                                                         lng: 'es',
@@ -4328,7 +4331,7 @@ function addLegend() {
                                                       });
 
                                                       /* ================================================================
-                                                         CONSENTIMIENTO DE COOKIES — implementación nativa
+                                                         CONSENTIMIENTO DE COOKIES â€” implementaciÃ³n nativa
                                                          ================================================================ */
                                                       document.addEventListener('DOMContentLoaded', () => {
                                                         const banner = document.getElementById('cookie-banner');
