@@ -17,7 +17,7 @@
 
     <title>Manolit&#x221E; Motor Cuantico Climatico</title>
     <!--
-  Manolit&#x221E QUANTUM CLIMATE ENGINE v6.0 â€” refactored
+  Manolit&#x221E QUANTUM CLIMATE ENGINE v6.0 ” refactored
   Tasks: i18next real · Citizen/Scientist mode (real differentiation) · Giralda 3D+Solar · Lucy mercury · z-index fix
   · REAL quantum state-vector engine (4 dashboard sections) · translucent cards · improved translations
   Open Source: i18next MIT · Chart.js MIT · Leaflet BSD-2
@@ -476,7 +476,7 @@
         },
       };
       /* ================================================================
-         MODULE: i18n â€” i18next proper integration (expanded, richer translations)
+         MODULE: i18n — i18next proper integration (expanded, richer translations)
          ================================================================ */
       const I18N_RESOURCES = {
         es: {
@@ -519,9 +519,9 @@
             cHeat: 'Calor urbano en la calle',
             cSun: 'Radiacion solar',
             cHum: 'Sensacion higrotermica',
-            riskLow: 'BAJO â€” Puedes hacer vida normal en el exterior, aunque nunca esta de mas llevar agua encima.',
-            riskMed: 'MODERADO â€” Evita las horas centrales del dia (12:00-17:00) y busca sombra si vas a estar fuera un rato largo.',
-            riskHi: 'ALTO â€” Mejor quedarse en interiores o a la sombra ahora mismo; el sol directo puede sentar realmente mal.',
+            riskLow: 'BAJO — Puedes hacer vida normal en el exterior, aunque nunca esta de mas llevar agua encima.',
+            riskMed: 'MODERADO — Evita las horas centrales del dia (12:00-17:00) y busca sombra si vas a estar fuera un rato largo.',
+            riskHi: 'ALTO — Mejor quedarse en interiores o a la sombra ahora mismo; el sol directo puede sentar realmente mal.',
             cRiskExplain: 'Esto resume, en una sola palabra, si hoy toca tener cuidado con el calor o no. Lo calcula el motor cuantico combinando temperatura, sol y humedad.',
             cHeatExplain: 'El asfalto y los edificios del centro acumulan mucho mas calor que un parque. Esta es la diferencia real que notarias si caminases del uno al otro.',
             cSunExplain: 'Cuanto mas fuerte pega el sol ahora mismo, mas rapido te puedes quemar o deshidratar si estas al aire libre.',
@@ -991,7 +991,7 @@
           }
         },
       };
-      /* i18next init â€” properly used */
+      /* i18next init — properly used */
       const t = key => i18next.t(key);
 
       function applyI18n() {
@@ -1038,7 +1038,7 @@
         updateConnBar();
       });
       /* ================================================================
-         MODULE: Citizen/Scientist Mode â€” now with REAL differentiation
+         MODULE: Citizen/Scientist Mode — now with REAL differentiation
          ================================================================ */
       let sciMode = false;
       const modeTrack = document.getElementById('mode-track');
@@ -1072,10 +1072,10 @@
         } else {
           const ph = ATMOS.physics;
           const diff = (ph.T_surface - ph.T_air).toFixed(1);
-          el.textContent = `El suelo esta ${diff>0?'+':''}${diff}Â°C respecto al aire â€” ${ATMOS.src}`;
+          el.textContent = `El suelo esta ${diff>0?'+':''}${diff}°C respecto al aire — ${ATMOS.src}`;
         }
       }
-      /* Citizen-mode renderer â€” translates raw quantum + physics into rich human language */
+      /* Citizen-mode renderer — translates raw quantum + physics into rich human language */
       function renderCitizenCards(ph, qu) {
         if (!ph || !qu) return;
         const qci = qu.QCI_composite;
@@ -1101,10 +1101,10 @@
         if (UHI > 2.5) {
           heatMsg += ' Esta diferencia obliga a un mayor uso de aire acondicionado en las zonas mÃ¡s densas y con menos vegetaciÃ³n, lo que se traduce en una factura de la luz mÃ¡s alta y agrava la desigualdad econÃ³mica.';
         }
-        const sunMsg = S_in > 700 ? `Radiacion intensa: ${S_in.toFixed(0)} W/m&#xB2;. Protector solar factor 50+ y gorra son casi obligatorios si vas a estar fuera.` : S_in > 350 ? `Radiacion moderada: ${S_in.toFixed(0)} W/m&#xB2;. Conviene proteccion solar sobre todo entre las 12h y las 17h.` : S_in > 50 ? `Radiacion baja: ${S_in.toFixed(0)} W/m&#xB2;. Condiciones bastante confortables para pasear.` : `Sin radiacion solar directa ahora mismo â€” normal si es de noche o esta nublado.`;
+        const sunMsg = S_in > 700 ? `Radiacion intensa: ${S_in.toFixed(0)} W/m&#xB2;. Protector solar factor 50+ y gorra son casi obligatorios si vas a estar fuera.` : S_in > 350 ? `Radiacion moderada: ${S_in.toFixed(0)} W/m&#xB2;. Conviene proteccion solar sobre todo entre las 12h y las 17h.` : S_in > 50 ? `Radiacion baja: ${S_in.toFixed(0)} W/m&#xB2;. Condiciones bastante confortables para pasear.` : `Sin radiacion solar directa ahora mismo — normal si es de noche o esta nublado.`;
         const hiT = (T_surf - T_air);
         const sensMsg = hiT > 8 ? `La superficie urbana esta ${hiT.toFixed(0)}&deg;C por encima del aire. Sensacion de "horno" al pisar asfalto o acera directamente.` : hiT > 4 ? `El suelo radiante suma unos ${hiT.toFixed(0)}&deg;C extra a la sensacion termica respecto a lo que marca el aire.` : `Temperatura superficial proxima a la del aire ahora mismo. Condiciones razonablemente confortables.`;
-        const humMsg = RH > 75 ? `Humedad alta (${RH}%). Cuesta mas refrescarse porque el sudor se evapora peor.` : RH > 50 ? `Humedad moderada (${RH}%). Con hidratacion regular vas sobrado.` : `Humedad baja (${RH}%). El calor es "seco" â€” el sudor se evapora rapido pero pierdes agua sin notarlo tanto.`;
+        const humMsg = RH > 75 ? `Humedad alta (${RH}%). Cuesta mas refrescarse porque el sudor se evapora peor.` : RH > 50 ? `Humedad moderada (${RH}%). Con hidratacion regular vas sobrado.` : `Humedad baja (${RH}%). El calor es "seco" — el sudor se evapora rapido pero pierdes agua sin notarlo tanto.`;
         let heatExplain = t('cHeatExplain');
         const isNight = S_in < 50;
         if (isNight && hiT > 4) {
@@ -1218,8 +1218,8 @@
       }
       const physCore = new PhysicsCore();
       /* ================================================================
-         SECCION â€” QuantumEncoder (Angle Feature Map) â€” dashboard QPU card
-         Refs: Havlicek et al. Nature 567:209 (2019); Schuld & Killoran PRL 122:040504 (2020); Nielsen & Chuang (2010) Â§4.2
+         SECCION — QuantumEncoder (Angle Feature Map) — dashboard QPU card
+         Refs: Havlicek et al. Nature 567:209 (2019); Schuld & Killoran PRL 122:040504 (2020); Nielsen & Chuang (2010) §4.2
          ================================================================ */
       class QuantumEncoder {
         constructor() {
@@ -1347,7 +1347,7 @@
         dailyForecast: null
       };
       /* ================================================================
-         MODULE: GiraldaRenderer â€” Drawing + 3D rotation + Dissolution
+         MODULE: GiraldaRenderer — Drawing + 3D rotation + Dissolution
          ================================================================ */
       const GS3D = {
         rotY: 0,
@@ -1809,7 +1809,7 @@
         ctx.restore();
       }
       /* ================================================================
-         MODULE: IntroSystem â€” QuantumGrid, Particles, Cursor
+         MODULE: IntroSystem — QuantumGrid, Particles, Cursor
          ================================================================ */
       (function initIntro() {
         const canvas = document.getElementById('qcanv');
@@ -2236,7 +2236,7 @@
         };
       })();
       /* ================================================================
-         MODULE: MercuryTransition â€” Lucy-style liquid mercury
+         MODULE: MercuryTransition Lucy-style liquid mercury
          ================================================================ */
       function startMercury(fromX, fromY) {
         window.__stopIntro && window.__stopIntro();
@@ -2447,16 +2447,16 @@
       function renderScientistView(ph, qu) {
         const featureLabels = ['T_sup ', 'T_aire', 'Hum % ', 'Viento', 'S_in  ', 'R_net '];
         const physVals = [ph.T_surface, ph.T_air, ph.RH, ph.ws, ph.S_in, ph.R_net];
-        let circuit = 'CIRCUITO QPU â€” Angle Feature Map  [i18next: ' + i18next.language + ']\n';
-        circuit += 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n';
+        let circuit = 'CIRCUITO QPU — Angle Feature Map  [i18next: ' + i18next.language + ']\n';
+        circuit += 'â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â” â”— â”— â”— â”— \n';
         qu.features.forEach((f, i) => {
           const theta = qu.thetas[i].toFixed(4);
           const Ez = qu.E_final[i].toFixed(4);
           let cnots = '';
           for (let k = 0; k < 6; k++) {
-            cnots += k === i - 1 ? 'â”€â—â”€' : k === i ? 'â”€âŠ•â”€' : 'â”€â”€â”€';
+            cnots += k === i - 1 ? '€—€' : k === i ? 'â”€âŠ•â”€' : 'â”€â”€â”€';
           }
-          circuit += `|0> â”€Ry(${theta})${cnots} 
+          circuit += `|0> €Ry(${theta})${cnots} 
 																																										<Z>=${Ez.padStart(7)} | ${featureLabels[i]}=${physVals[i].toFixed(1)}
 `;
         });
@@ -2488,7 +2488,7 @@
         const qcib = document.getElementById('qcib');
         if (qcib) qcib.style.width = qu.QCI_composite.toFixed(0) + '%';
         const qcil = document.getElementById('qcil');
-        if (qcil) qcil.textContent = `${t('qciLabel')} â€” ${qu.QCI_composite.toFixed(1)} / 100`;
+        if (qcil) qcil.textContent = `${t('qciLabel')} — ${qu.QCI_composite.toFixed(1)} / 100`;
         if (radarChart) {
           radarChart.data.datasets[0].data = qu.QCI_individual;
           radarChart.update('none');
@@ -2655,7 +2655,7 @@ function updatePhysicsPanel(ph) {
         }
         al();
       }
-      /* Background particles â€” kept subtle/translucent so it never competes with the header logo */
+      /* Background particles — kept subtle/translucent so it never competes with the header logo */
       function initBg() {
         const cvs = document.getElementById('dbg'),
           ctx = cvs.getContext('2d');
@@ -3347,7 +3347,7 @@ let leafMap=null, uHiLayer=null, heatLayer = null, landmarkLayer = null, densida
                   zoom: CFG.mapZoom,
                   preferCanvas: true
                 });
-// âœ… CORREGIDO â€” reemplazar todo el bloque de capas en initMap()
+//  CORREGIDO reemplazar todo el bloque de capas en initMap()
 const layerOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   subdomains: 'abc', maxZoom: 19
@@ -3699,7 +3699,7 @@ async function actualizarDensidadesRealesObjetos(lista) {
 function addHeatIslands() {
   if (!uHiLayer) return;
   // MEJORA: No dibujar la capa si todavÃ­a no se han cargado los datos reales de la API.
-  // Esto evita que se muestre brevemente el mapa con el valor por defecto de 25Â°C.
+  // Esto evita que se muestre brevemente el mapa con el valor por defecto de 25°C.
   if (ATMOS.src === 'init') {
     return;
   }
@@ -3827,9 +3827,9 @@ function addLegend() {
   lg.addTo(leafMap);
 }
                                             /* ================================================================================================
-                                               MODULE: REAL QUANTUM ENGINE â€” 4 dedicated dashboard sections (Q1-Q4)
+                                               MODULE: REAL QUANTUM ENGINE  4 dedicated dashboard sections (Q1-Q4)
                                                Genuine complex-amplitude state-vector simulator (H / RY / RZ / CNOT + Born-rule measurement),
-                                               fed with REAL Open-Meteo multi-day forecast data for Sevilla. Not quantum hardware â€” a correct,
+                                               fed with REAL Open-Meteo multi-day forecast data for Sevilla. Not quantum hardware  a correct,
                                                verifiable classical simulation of a small quantum circuit, running entirely in the browser.
                                                Citizen mode explains it in plain language; Scientist mode shows the raw circuit + metrics.
                                                ================================================================================================ */
@@ -4152,18 +4152,18 @@ function addLegend() {
                                               }
 
                                               function renderQuantumResult(r) {
-                                                document.getElementById('q-prediction').textContent = fmtT(r.predictedTemp) + 'Â°C';
+                                                document.getElementById('q-prediction').textContent = fmtT(r.predictedTemp) + '°C';
                                                 document.getElementById('q-confidence').textContent = Math.round(r.confidence * 100) + '%';
                                                 document.getElementById('q-norm').textContent = (r.normBefore * 100).toFixed(3) + '%';
                                                 document.getElementById('q-entanglement').textContent = r.entropy.toFixed(3);
                                                 document.getElementById('q-gates').textContent = r.gateLog.length;
                                                 document.getElementById('qubit-display').innerHTML = r.encodings.map((e, i) =>
-                                                  `<div class="qubit active" title="${e.day}: ${fmtT(e.tmax)}Â°C">q${i}</div>`
+                                                  `<div class="qubit active" title="${e.day}: ${fmtT(e.tmax)}°C">q${i}</div>`
                                                 ).join('');
                                                 if (sciMode) {
-                                                  let circuitText = `<span style="color:#8892B0;">// ${r.shots.toLocaleString('es-ES')} shots â€” Born rule</span><br>`;
+                                                  let circuitText = `<span style="color:#8892B0;">// ${r.shots.toLocaleString('es-ES')} shots — Born rule</span><br>`;
                                                   r.encodings.forEach((e, i) => {
-                                                    circuitText += `q${i}: <span style="color:#00ffc8">RY(${e.theta.toFixed(2)})</span> &larr; ${e.day} (${fmtT(e.tmax)}Â°C)<br>`;
+                                                    circuitText += `q${i}: <span style="color:#00ffc8">RY(${e.theta.toFixed(2)})</span> &larr; ${e.day} (${fmtT(e.tmax)}°C)<br>`;
                                                   });
                                                   for (let i = 0; i < r.nQubits - 1; i++) {
                                                     circuitText += `q${i}-q${i + 1}: <span style="color:#7b2fff">CNOT</span><br>`;
@@ -4171,16 +4171,16 @@ function addLegend() {
                                                   circuitText += 'all: <span style="color:#ff00e5">RZ(&phi;_lluvia)</span> &rarr; <span style="color:#00f0ff">H</span><br>';
                                                   circuitText += '<span style="color:#8892B0;">// medicion final (regla de Born)</span>';
                                                   document.getElementById('quantum-circuit').innerHTML = circuitText;
-                                                          document.getElementById('q-methodology').textContent = `Circuito ejecutado sobre ${r.nQubits} qubits (${r.dayIdxs.length} dias reales de Open-Meteo, desde ${fmtDateShort(r.encodings[0].day)}). ` + `Referencia clasica para ese dia: ${fmtT(r.classicalForecast)}Â°C. Rango de medicion cuantica: ${fmtT(r.tMin)}Â°C - ${fmtT(r.tMax)}Â°C.`;
+                                                          document.getElementById('q-methodology').textContent = `Circuito ejecutado sobre ${r.nQubits} qubits (${r.dayIdxs.length} dias reales de Open-Meteo, desde ${fmtDateShort(r.encodings[0].day)}). ` + `Referencia clasica para ese dia: ${fmtT(r.classicalForecast)}°C. Rango de medicion cuantica: ${fmtT(r.tMin)}°C - ${fmtT(r.tMax)}°C.`;
                                                         } else {
                                                           document.getElementById('quantum-circuit').innerHTML = `Manolit&#8734; ha mezclado 
 																																																																								<b>${r.nQubits}</b> dias de pronostico real (desde ${fmtDateShort(r.encodings[0].day)}) usando su motor cuantico. ` + `Repitiendo la medicion 
 																																																																								<b>${r.shots.toLocaleString('es-ES')}</b> veces, la respuesta mas repetida da una temperatura estimada de 
-																																																																								<b>${fmtT(r.predictedTemp)}Â°C</b> ` + `para el ${fmtDateShort(r.classicalDate)}, con un 
-																																																																								<b>${Math.round(r.confidence*100)}%</b> de las mediciones de acuerdo entre si. ` + `El pronostico clasico de Open-Meteo para ese mismo dia es de ${fmtT(r.classicalForecast)}Â°C â€” el motor cuantico esta de acuerdo si ambos numeros estan cerca.`;
-                                                          document.getElementById('q-methodology').textContent = `Cuanto mas alta sea la confianza, mas de acuerdo estuvieron las ${r.shots.toLocaleString('es-ES')} mediciones entre si â€” como preguntar lo mismo muchas veces y ver cuanto coinciden las respuestas.`;
+																																																																								<b>${fmtT(r.predictedTemp)}°C</b> ` + `para el ${fmtDateShort(r.classicalDate)}, con un 
+																																																																								<b>${Math.round(r.confidence*100)}%</b> de las mediciones de acuerdo entre si. ` + `El pronostico clasico de Open-Meteo para ese mismo dia es de ${fmtT(r.classicalForecast)}°C — el motor cuantico esta de acuerdo si ambos numeros estan cerca.`;
+                                                          document.getElementById('q-methodology').textContent = `Cuanto mas alta sea la confianza, mas de acuerdo estuvieron las ${r.shots.toLocaleString('es-ES')} mediciones entre si — como preguntar lo mismo muchas veces y ver cuanto coinciden las respuestas.`;
                                                         }
-                                                        const weightLabels = r.weightCounts.map((_, w) => Math.round(r.tMin + (w / r.nQubits) * (r.tMax - r.tMin)) + 'Â°C');
+                                                        const weightLabels = r.weightCounts.map((_, w) => Math.round(r.tMin + (w / r.nQubits) * (r.tMax - r.tMin)) + '°C');
                                                         document.getElementById('prob-bars').innerHTML = r.weightCounts.map((c, w) => {
                                                           const pct = Math.round((c / r.shots) * 100);
                                                           const hue = w === r.bestWeight ? '#00ffc8' : '#00f0ff';
@@ -4300,7 +4300,7 @@ function addLegend() {
                                                       }
 
                                                       /* ================================================================
-                                                         CORRECCIÃ“N DE PESTAÃ‘AS â€” AÃ‘ADIDA LA FUNCIÃ“N FALTANTE PARA QUE LOS CLICS FUNCIONEN
+                                                         CORRECCIÓN DE PESTAÑA AÑADIDOS LA FUNCIÓN FALTANTE PARA QUE LOS CLICS FUNCIONEN
                                                          ================================================================ */
                                                       function switchDashTab(tabId, btn) {
                                                         // Ocultar todos los paneles
@@ -4314,7 +4314,7 @@ function addLegend() {
                                                         if (btn) btn.classList.add('active');
                                                       }
                                                       /* ================================================================
-                                                         INIT â€” i18next first, then app
+                                                         INIT” i18next first, then app
                                                          ================================================================ */
                                                       i18next.init({
                                                         lng: 'es',
@@ -4331,7 +4331,7 @@ function addLegend() {
                                                       });
 
                                                       /* ================================================================
-                                                         CONSENTIMIENTO DE COOKIES â€” implementaciÃ³n nativa
+                                                         CONSENTIMIENTO DE COOKIES ” implementación nativa
                                                          ================================================================ */
                                                       document.addEventListener('DOMContentLoaded', () => {
                                                         const banner = document.getElementById('cookie-banner');
