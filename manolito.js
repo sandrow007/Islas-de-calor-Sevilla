@@ -188,14 +188,14 @@ _systemPrompt() {
         ]);
 
         if (resultado === '__TIMEOUT__' || !resultado) {
-          return 'Illo, no me ha dao tiempo a conectar bien esta vez. Preguntame otra vez, anda, que seguro que ahora si entra.';
+          return 'Ill@, no me ha dao tiempo a conectar bien esta vez. Preguntame otra vez, anda, que seguro que ahora si entra.';
         }
 
         this.memory.push({ role: 'assistant', content: resultado });
         this._saveMemory();
         return resultado;
       } catch (e) {
-        return 'Illo, ahora mismo no puedo responder (el servidor esta espeso). Prueba otra vez en un momento.';
+        return 'Ill@, ahora mismo no puedo responder (el servidor está más espeso que el gazpacho). Prueba otra vez en un momento.';
       }
     }
 
@@ -343,7 +343,7 @@ _systemPrompt() {
             </div>
             <div id="m-title-wrap">
               <span id="m-title">MANOLIT&#8734;</span>
-              <div id="m-subtitle">TU MOTOR CUANTICO, EN ANDALUZ</div>
+              <div id="m-subtitle">TU MOTOR CUÁNTICO, EN ANDALUZ</div>
             </div>
             <button id="m-close">&#10005;</button>
           </div>
@@ -352,7 +352,7 @@ _systemPrompt() {
             <div id="m-log"></div>
           </div>
           <div id="m-cmd-row">
-            <input id="m-cmd" placeholder="Preguntale algo a Manolito...">
+            <input id="m-cmd" placeholder="Pregúntale algo a Manolito...">
             <button id="m-send">Enviar</button>
           </div>
         </div>
@@ -402,7 +402,7 @@ _systemPrompt() {
           log.scrollTop = log.scrollHeight;
         } catch (e) {
           if (typing && typing.parentNode) typing.remove();
-          log.insertAdjacentHTML('beforeend', `<div class="a">Illo, algo ha petao por aqui dentro. Intentalo otra vez, anda.</div>`);
+          log.insertAdjacentHTML('beforeend', `<div class="a">Ill@, algo ha petao (ya estas pensando en petas) por aqui dentro. Inténtalo otra vez, anda.</div>`);
           log.scrollTop = log.scrollHeight;
         } finally {
           this.busy = false;
