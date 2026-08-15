@@ -217,12 +217,7 @@ ready(() => {
 
   montarEnPestanaEspacio([cKp, cIss, cAurora, cHonestidad]);
 
-  cargarTendenciaKp(document.getElementById('extra-kp-trend-body'));
-  cargarRiesgoArrastreISS(document.getElementById('extra-iss-drag-body'));
-  cargarVisibilidadAurora(document.getElementById('extra-aurora-body'));
-
-  setInterval(() => cargarTendenciaKp(document.getElementById('extra-kp-trend-body')), 300000);
-  setInterval(() => cargarRiesgoArrastreISS(document.getElementById('extra-iss-drag-body')), 300000);
-  setInterval(() => cargarVisibilidadAurora(document.getElementById('extra-aurora-body')), 300000);
+  actualizarDatosClimaEspacial();
+  setInterval(actualizarDatosClimaEspacial, 300000);
 });
 })();
