@@ -333,13 +333,13 @@ _systemPrompt() {
         </style>
         <button class="m-fab" id="m-t" title="Habla con Manolito">
           <div class="m-ring"></div>
-          <div class="m-core"><span class="m-letra">Mâˆž</span></div>
+          <div class="m-core"><span class="m-letra">M∞</span></div>
         </button>
         <div id="m-panel">
           <div id="m-header">
             <div class="m-header-icon" id="m-header-icon">
               <div class="m-ring"></div>
-              <div class="m-core"><span class="m-letra">Mâˆž</span></div>
+              <div class="m-core"><span class="m-letra">M∞</span></div>
             </div>
             <div id="m-title-wrap">
               <span id="m-title">MANOLIT&#8734;</span>
