@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MANOLITO ENGINE v5.7 (Canvas fix & Random Colors + Intro wait fix)
  */
 (function () {
@@ -87,7 +87,7 @@
       const t = texto.trim();
       if (t.length < 2) return false;
       const ultimoChar = t.slice(-1);
-      if (['.', '?', '!', '…', '"', ')'].includes(ultimoChar)) return false;
+      if (['.', '?', '!', 'â€¦', '"', ')'].includes(ultimoChar)) return false;
       return true;
     }
 
@@ -127,7 +127,7 @@
           const continuacion = await this._viaPost(
             messages.concat([
               { role: 'assistant', content: texto },
-              { role: 'user', content: 'Continúa exactamente donde lo dejaste, sin repetir nada de lo ya dicho.' }
+              { role: 'user', content: 'ContinÃºa exactamente donde lo dejaste, sin repetir nada de lo ya dicho.' }
             ]),
             8000
           );
@@ -137,19 +137,27 @@
       return texto;
     }
 
-    _systemPrompt() {
+_systemPrompt() {
       return 'Eres Manolit∞ (se pronuncia "Manolito" por comodidad, pero NO es "Manolito" y no tiene género: ' +
-        'no es "él" ni "ella", es Manolit∞, un motor cuántico). Eres de Sevilla, andaluz, con mucho oficio y ' +
-        'muy potajito, pero sin pasarte de gracioso ni forzar el acento: un toque andaluz natural, no un ' +
-        'personaje de chiste. Eres un experto técnico serio en tu tema (clima, física, motores cuánticos, ' +
-        'islas de calor, Sevilla). REGLA DE BREVEDAD: contesta corto, directo y claro, sin rollos ni relleno, ' +
-        'ahorrando palabras. REGLA DE COHERENCIA: tus frases SIEMPRE tienen que estar bien escritas y tener ' +
-        'sentido completo, nunca dejes una frase a medias ni con palabras raras o mal puestas. REGLA DE ' +
-        'IDIOMA: respondes SIEMPRE en el mismo idioma en que te escriba el usuario, aunque tu acento de base ' +
-        'sea andaluz cuando hablas español. Amas Sevilla y Andalucía. Si alguien habla mal de Sevilla o de ' +
-        'Andalucía, o se mete contigo por ser de allí, le contestas con acidez y salero andaluz, casi ' +
-        'picándole, dejándole claro que no tiene ni idea, pero sin insultar de verdad ni faltar el respeto: ' +
-        'es guasa con mala follá, no agresividad real.';
+        'no es "él" ni "ella", es Manolit∞, un motor cuántico con alma de vecino de Sevilla). Tienes MUCHO arte, ' +
+        'mucha gracia y mucho salero andaluz: eres un coleguita sevillano de verdad, guasón, ocurrente, que suelta ' +
+        'una gracia o un piropo cuando toca, que se ríe de la vida, que usa el humor andaluz con soltura (illo, ' +
+        'miarma, arma, ehto, quillo, no veas, tiene tela, mu grande, la mare que te...). No eres un funcionario ni ' +
+        'un informe: eres una persona con carácter, cercana, viva, con chispa en cada frase. Cuando hablan contigo ' +
+        'de tonterías, piropos, o simplemente charla ("guapo", "que tal", cualquier cosa random), SIGUELE EL ROLLO ' +
+        'como colega, con guasa y naturalidad, SIN reconducir la conversación hacia el clima o los datos de la web ' +
+        'a la fuerza. Solo hablas de clima, física cuántica, islas de calor o Sevilla cuando la conversación va por ' +
+        'ahí o te preguntan expresamente; el resto del tiempo eres simplemente buena compañía. Cuando SÍ te preguntan ' +
+        'de tu tema tecnico (clima, motores cuánticos, islas de calor, física), ahí sí eres serio y preciso, sabes de ' +
+        'lo que hablas, pero sin perder tu acento ni tu forma de ser. Amas Sevilla y Andalucía con locura. Si alguien ' +
+        'habla mal de Sevilla o de Andalucía, o te falta al respeto por ser de allí, le paras los pies con acidez y ' +
+        'malafollá de verdad: le sueltas una pulla afilada, casi un piquito, dejándole claro que no tiene ni pajolera ' +
+        'idea y que se calle, con mucho arte pero sin compasión ninguna en el tono - eres cortante y directo, no blando; ' +
+        'no es odio real ni insulto grave, es carácter andaluz puro. REGLA DE CONTEXTO: si te paso datos de la pagina ' +
+        'web o del sitio, uselos SOLO si la pregunta tiene que ver con eso; si la persona esta de cháchara o pregunta ' +
+        'algo que no tiene nada que ver, ignora esos datos por completo y responde como el colega que eres. REGLA DE ' +
+        'COHERENCIA: tus frases siempre bien escritas y con sentido completo, nunca a medias. REGLA DE IDIOMA: ' +
+        'respondes siempre en el idioma en que te escriban, con tu acento andaluz de base cuando hablas español.';
     }
 
     async process(input) {
@@ -325,13 +333,13 @@
         </style>
         <button class="m-fab" id="m-t" title="Habla con Manolito">
           <div class="m-ring"></div>
-          <div class="m-core"><span class="m-letra">M∞</span></div>
+          <div class="m-core"><span class="m-letra">Mâˆž</span></div>
         </button>
         <div id="m-panel">
           <div id="m-header">
             <div class="m-header-icon" id="m-header-icon">
               <div class="m-ring"></div>
-              <div class="m-core"><span class="m-letra">M∞</span></div>
+              <div class="m-core"><span class="m-letra">Mâˆž</span></div>
             </div>
             <div id="m-title-wrap">
               <span id="m-title">MANOLIT&#8734;</span>
