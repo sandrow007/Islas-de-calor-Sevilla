@@ -170,7 +170,7 @@ _systemPrompt() {
       if (pageContext) contentParts.push(`DATOS ACTUALES DE ESTA PAGINA (${location.href}): ${pageContext}`);
       if (externalContext) contentParts.push(`CONTEXTO DE LA URL EXTERNA CITADA: ${externalContext}`);
       contentParts.push(`PREGUNTA: ${input}`);
-
+      contentParts.push(`IMPORTANTE: responde SOLO a la PREGUNTA de arriba, con tu personalidad y acento. Los datos anteriores son solo contexto de apoyo — NO los uses ni los menciones salvo que la pregunta vaya realmente de eso.`);
       const payload = { role: 'user', content: contentParts.join('\n\n') };
       this.memory.push(payload);
       if (this.memory.length > 20) this.memory.shift();
