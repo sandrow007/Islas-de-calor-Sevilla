@@ -1,19 +1,7 @@
-name = "manolito-infinito"
+name = "islas-de-calor-sevilla"
 main = "src/index.js"
 compatibility_date = "2024-07-21"
 compatibility_flags = ["nodejs_compat"]
 
 [ai]
 binding = "AI"
-
-[assets]
-binding = "ASSETS"
-directory = "."
-
-[[routes]]
-pattern = "islasdecalorsevilla.com/*"
-zone_name = "islasdecalorsevilla.com"
-
-[[routes]]
-pattern = "*islasdecalorsevilla.com/*"
-zone_name = "islasdecalorsevilla.com"
