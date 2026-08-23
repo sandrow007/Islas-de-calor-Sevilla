@@ -1,0 +1,8 @@
+name = "manolito-infinito"
+main = "src/index.js"
+compatibility_date = "2024-07-21"
+compatibility_flags = ["nodejs_compat"]
+account_id = "ed6cdbaae36a9343d5100523b4c1cd05"
+
+[ai]
+binding = "AI"

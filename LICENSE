@@ -1,0 +1,107 @@
+# Licencia Pública Ética Manolit∞ v1.0
+
+Copyright (C) 2026 Sandro (Aleksandre Dabrundashvili)
+
+Esta licencia se aplica a: Islas de Calor Sevilla, Manolitoaire y Manolit∞ Forestal
+(en adelante, "el Software"), incluyendo su código fuente, algoritmos, datos generados
+y assets asociados.
+
+Esta licencia se basa en los principios copyleft de la GNU Affero General Public
+License v3.0, con condiciones adicionales vinculantes descritas más abajo. En caso
+de conflicto, prevalecen las condiciones adicionales de este documento.
+
+## 1. Concesión de derechos
+
+Se concede permiso, libre de cargo, a cualquier persona que obtenga una copia del
+Software, para usarlo, copiarlo, modificarlo, fusionarlo, publicarlo y distribuirlo,
+incluyendo su uso como servicio accesible por red, **siempre y cuando se cumplan
+todas las condiciones descritas en las secciones 2 y 3**.
+
+El incumplimiento de cualquiera de estas condiciones **revoca automáticamente** los
+derechos concedidos por esta licencia, sin necesidad de aviso previo. El uso
+continuado del Software tras dicho incumplimiento constituye infracción de
+copyright.
+
+## 2. Condición de copyleft (herencia AGPL)
+
+Cualquier copia, modificación, obra derivada, o servicio que use el Software
+(incluido su uso exclusivamente por red, sin distribución del binario) debe:
+
+a) Publicar su código fuente completo, incluidas las modificaciones, bajo esta
+   misma licencia.
+b) Indicar de forma visible que el proyecto deriva de este Software, con enlace
+   al repositorio original.
+c) Mantener este aviso de licencia intacto en el código fuente.
+
+## 3. Condiciones éticas adicionales (vinculantes)
+
+Además de lo anterior, cualquier uso, copia, modificación o despliegue del
+Software, o de una obra derivada de él, queda expresamente prohibido de:
+
+a) **Publicidad.** Insertar anuncios, publicidad de terceros, contenido
+   patrocinado, o cualquier mecanismo de monetización basado en impresiones
+   o clics.
+
+b) **Rastreo y perfilado.** Usar cookies de rastreo, huella digital (fingerprinting),
+   analítica de comportamiento de terceros (Google Analytics, Meta Pixel, y
+   similares), o cualquier sistema que perfile, identifique o siga a
+   personas usuarias entre sesiones o entre sitios.
+
+c) **Recolección de datos personales no esenciales.** Recopilar, almacenar,
+   vender, ceder o compartir datos personales de quienes usan el Software,
+   salvo el mínimo técnico imprescindible para el funcionamiento (por ejemplo,
+   una posición GPS solicitada explícitamente y no persistida), y nunca con
+   fines comerciales, publicitarios o de perfilado.
+
+d) **Registro obligatorio.** Exigir creación de cuenta, inicio de sesión,
+   verificación de identidad, número de teléfono, correo electrónico o
+   cualquier dato personal como requisito para acceder a la funcionalidad
+   principal del Software.
+
+e) **Muro de pago sobre lo esencial.** Cobrar, mediante suscripción, pago
+   único, o "freemium" restrictivo, por el acceso a las funciones que en el
+   Software original son gratuitas y de acceso abierto. Se permite ofrecer
+   servicios de valor añadido de pago (consultoría, soporte, despliegues a
+   medida) siempre que la funcionalidad original permanezca gratuita y
+   accesible.
+
+f) **Uso con fines de vigilancia.** Emplear el Software, sus datos o sus
+   derivados para vigilancia estatal o corporativa de personas, represión,
+   discriminación algorítmica, o cualquier finalidad que vulnere la
+   Declaración Universal de los Derechos Humanos.
+
+## 4. Atribución
+
+Toda copia o uso del Software debe atribuir la autoría original a Sandro
+(Aleksandre Dabrundashvili), con enlace visible al proyecto original, en
+cualquier interfaz, documentación o material derivado.
+
+## 5. Sin garantía
+
+El Software se ofrece "tal cual", sin garantía de ningún tipo, expresa o
+implícita, incluyendo pero no limitándose a garantías de comerciabilidad,
+idoneidad para un propósito particular, y no infracción.
+
+## 6. Vigencia tras ausencia del autor
+
+Estas condiciones son irrevocables y permanecen vigentes independientemente
+de la disponibilidad, actividad o capacidad del autor original para hacerlas
+cumplir. Cualquier persona u organización que constate un incumplimiento de
+esta licencia por parte de terceros está autorizada a señalarlo públicamente
+y, si procede, a actuar legalmente para hacerla respetar en nombre del
+espíritu del proyecto.
+
+## 7. Idioma y jurisdicción
+
+El texto original de referencia de esta licencia está redactado en español.
+En caso de disputa, se interpretará conforme a la legislación española y de
+la Unión Europea en materia de propiedad intelectual.
+
+---
+
+*Nota: esta licencia prioriza los principios éticos del proyecto (sin
+publicidad, sin rastreo, sin muros de pago, sin recolección de datos) por
+encima de la compatibilidad con la definición estricta de "código abierto"
+(OSI) o "software libre" (FSF), que no permiten restricciones de uso de este
+tipo. Se recomienda revisión por un profesional de propiedad intelectual
+antes de su aplicación formal en un litigio real.*
