@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MANOLITO ENGINE v8.0 — "Cerebro en el servidor"
  * El system prompt de Manolito vive en el worker (src/index.js).
  * Este frontend solo manda la conversación limpia: nada de inyectar
