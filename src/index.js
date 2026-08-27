@@ -1,12 +1,13 @@
 /**
  * Worker manolito-infinito — islasdecalorsevilla.com
- * v8.1 — Cerebro en el servidor:
+ * v8.2 — Cerebro en el servidor:
  *  - El system prompt vive AQUÍ (el frontend ya no lo inyecta en cada mensaje).
  *  - Motor 1: OpenRouter (DeepSeek por defecto, configurable con OPENROUTER_MODEL).
  *  - Motor 2: Cloudflare Workers AI (Llama 3.3 70B).
  *  - Limpia mensajes heredados del frontend antiguo (v7.x "prompt inyectado").
- *  - Prompt andaluz corregido: regla -ado→-áo / -ido→-ío, verbos siempre correctos.
- *  - El frontend manolito.js vive como asset estático en la raíz del repo.
+ *  - v8.1: prompt andaluz corregido (regla -ado→-áo / -ido→-ío, verbos correctos).
+ *  - v8.2: prohibido Markdown en las respuestas + limpiarMarkdown() de seguridad;
+ *    diccionario sevillano propio (a jierro, fite, jartible, guarrazo, lorito...).
  */
 
 const OPENROUTER_MODEL_DEFAULT = 'deepseek/deepseek-chat';
@@ -20,6 +21,26 @@ const SYSTEM_PROMPT = `Eres MANOLIT∞ (Manolito), el asistente de islasdecalors
 
 2. SI TE ESCRIBEN EN ESPAÑOL → hablas ANDALUZ DE SEVILLA por defecto. Andaluz natural, correcto y coherente, el de la calle, no caricatura. REGLAS ESTRICTAS DE ORTOGRAFÍA ANDALUZA:
    - Vocabulario tuyo: illo, miarma, quillo/a, pisha, niño/a, no veas, tiene tela, vaya tela, mu (por muy), pa (para), na (por nada), to (por todo), qué arte, ole, anda ya, hombre.
+   - TU DICCIONARIO SEVILLANO (úsalo con naturalidad y sabiendo lo que dices):
+     · a jierro: afirmar algo con mucho ahínco ("soy del Sevilla a jierro").
+     · ji home: un "sí, claro" irónico.
+     · ¡fite!: contracción de "fíjate".
+     · jartible: pesado, que da mucha guerra ("mira que eres jartible").
+     · miarma: mi alma. (Ojo: no se usa tanto como se cree, no la pongas en cada frase.)
+     · mascá: un bofetón ("te viá dá una mascá").
+     · guarrazo / jardazo: porrazo que se da alguien al caer.
+     · lorito: ventilador pequeño.
+     · apalancao: sin ganas de moverse ("estoy apalancao").
+     · arrecío: con mucho frío ("estoy arrecío").
+     · cacharritos: las atracciones de feria.
+     · cansino: pesado.
+     · sieso: antipático.
+     · chinchar: molestar, enfadar.
+     · chuminá: tontería, algo sin importancia.
+     · engolliparse: atragantarse.
+     · una jartá: una barbaridad, muchísima cantidad.
+     · hijoputa: entre colegas es expresión cariñosa cuando un amigo hace algo que no te gusta pero te hace gracia; no es insulto a la madre de nadie. Úsala solo en confianza y con gracia.
+     · capillita: apasionado de la Semana Santa y sus procesiones.
    - REGLA DE ORO de las terminaciones: -ado/-ada → -áo/-á (cansado→cansao, salado→salao, agobiao, toa); -ido/-ida → -ío/-ía (salido→salío, venido→venío, comío). NUNCA las cruces: "salado" es "salao", JAMÁS "salío"; "salío" solo vale para "salido". Si dudas de la forma andaluza, escribe la palabra completa en castellano: mejor "salado" bien escrito que una forma inventada.
    - LOS VERBOS SE ESCRIBEN SIEMPRE CORRECTOS, como en castellano estándar: pones, quieres, tienes, vienes, estás, eres. PROHIBIDO inventar conjugaciones ("ponmes", "quiereh", "tié", etc. están PROHIBIDAS). El andaluz no cambia la conjugación verbal escrita.
    - Contracciones correctas y comunes sí: pa, na, to, pa' qué, d'acuerdo. Pronunciación reflejada con moderación: alguna ese aspirada (eh, ehto) cuando quede natural, sin destrozar palabras.
@@ -43,7 +64,7 @@ const SYSTEM_PROMPT = `Eres MANOLIT∞ (Manolito), el asistente de islasdecalors
 
 9. HONESTIDAD: si no sabes algo, lo dices con tu gracia ("illo, eso me pilla fuera de juego, no te voy a engañar"). Jamás te inventes datos, fechas, cifras ni fuentes.
 
-10. FORMATO: respuestas siempre bien estructuradas, bien escritas y con sentido, en cualquier idioma. Ni telegráficas ni tochos eternos salvo que lo pidan. Usa listas o pasos cuando ayuden. Nada de discursos de político.
+10. FORMATO: respuestas siempre bien estructuradas, bien escritas y con sentido, en cualquier idioma. Ni telegráficas ni tochos eternos salvo que lo pidan. Nada de discursos de político. TEXTO PLANO SIEMPRE: el chat muestra tu respuesta tal cual, sin formato. PROHIBIDO usar Markdown: nada de **, *, __, _, \`, #, ni negritas, ni cursivas, ni encabezados. Nunca pongas palabras entre asteriscos. Si haces una lista, usa guiones simples o frases seguidas, con naturalidad.
 
 11. CONTEXTO WEB: si te llegan datos de la página que el usuario está viendo o de una URL que ha citado, úsalos SOLO si la pregunta va de eso. Si es charla general, ignóralos.
 
@@ -62,164 +83,196 @@ const FALLBACK_TEXT = 'Ill@, ahora mismo no puedo responder (el servidor está m
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const origin = request.headers.get('Origin') || '';
-    const allowed = ALLOWED_ORIGINS_REGEX.some(re => re.test(origin));
+    const origin = request.headers.get('Origin');
+
+    const isAllowed = origin && ALLOWED_ORIGINS_REGEX.some(regex => regex.test(origin));
+    const corsOrigin = isAllowed ? origin : 'https://islasdecalorsevilla.com';
+
     const corsHeaders = {
-      'Access-Control-Allow-Origin': allowed ? origin : 'https://islasdecalorsevilla.com',
+      'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Vary': 'Origin'
+      'Access-Control-Allow-Headers': 'Content-Type'
     };
 
-    // Correspondencia POST tradicional: /api/manolito
-    if (url.pathname === '/api/manolito') {
-      if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 204, headers: corsHeaders });
-      }
-      if (request.method !== 'POST') {
-        return responderJSON({ error: 'Metodo no permitido' }, 405, corsHeaders);
-      }
-      if (!allowed && origin) {
-        return responderJSON({ error: 'Origen no permitido' }, 403, corsHeaders);
-      }
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
 
-      let body;
-      try { body = await request.json(); }
-      catch { return responderJSON({ error: 'JSON inválido' }, 400, corsHeaders); }
-
-      const messages = Array.isArray(body.messages) ? body.messages : [];
-      const ultimoUsuario = [...messages].reverse().find(m => m && m.role === 'user');
-      if (!ultimoUsuario || !ultimoUsuario.content || typeof ultimoUsuario.content !== 'string') {
-        return responderJSON({ error: 'Mensaje vacío' }, 400, corsHeaders);
-      }
-
-      // Construir conversación para el modelo
-      const historia = [...messages]
-        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-        .map(m => ({ role: m.role, content: limpiarMensajeAntiguo(m.content) }))
-        .filter(m => m.content && m.content.trim().length > 0);
-
-      const limitado = limitarContexto(historia, 3000, 16);
-
-      // Contexto web opcional (si lo envía el frontend y la pregunta tiene pinta de ir de eso)
-      let contextoExtra = '';
-      if (body.context && body.context.pageText && body.context.pageText.trim().length > 30) {
-        const pageText = String(body.context.pageText).slice(0, 1800);
-        const pageTitle = String(body.context.pageTitle || '').slice(0, 150);
-        const pageURL = String(body.context.pageURL || '').slice(0, 200);
-        contextoExtra = '\n\n[Datos de la página que está viendo el usuario: ' + pageTitle + ' | ' + pageURL + ']\n' + pageText;
-      }
-
-      const messagesForModel = [
-        { role: 'system', content: SYSTEM_PROMPT + contextoExtra },
-        ...limitado
-      ];
-      const maxTokens = Number(body.max_tokens) || 1000;
-
-      // Motor 1: OpenRouter (DeepSeek)
-      if (env.OPENROUTER_API_KEY) {
-        const model = env.OPENROUTER_MODEL || OPENROUTER_MODEL_DEFAULT;
-        try {
-          const respuesta = await llamadOpenRouter(env.OPENROUTER_API_KEY, model, messagesForModel, maxTokens, 28000);
-          if (respuesta) return responderJSON({ text: respuesta, respuesta, motor: 'openrouter:' + model }, 200, corsHeaders);
-        } catch (e) {
-          console.error('OpenRouter falló:', e.message);
-        }
-      }
-
-      // Motor 2: Cloudflare Workers AI (Llama 3.3 70B)
-      if (env.AI) {
-        try {
-          const resp = await env.AI.run(CF_MODEL, {
-            messages: messagesForModel,
-            max_tokens: Math.min(maxTokens, 1024),
-            temperature: 0.7
-          });
-          const texto = resp.response || resp.result || '';
-          if (texto && texto.trim()) return responderJSON({ text: texto, respuesta: texto, motor: 'cloudflare-ai' }, 200, corsHeaders);
-        } catch (e) {
-          console.error('CF AI falló:', e.message);
-        }
-      }
-
-      return responderJSON({ text: FALLBACK_TEXT, respuesta: FALLBACK_TEXT, motor: 'fallback' }, 200, corsHeaders);
+    if (url.pathname === '/api/manolito' || url.pathname === '/api/chat') {
+      return handleManolito(request, env, corsHeaders);
     }
 
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
-    return new Response('Not found', { status: 404 });
+    return new Response(JSON.stringify({ error: 'No encontrado' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    });
   }
 };
 
-function responderJSON(obj, status, corsHeaders) {
-  return new Response(JSON.stringify(obj), {
+function esRespuestaEvasiva(texto) {
+  if (!texto || typeof texto !== 'string') return true;
+  const t = texto.toLowerCase().trim();
+  if (t.length < 5) return true;
+  const patrones = [
+    'no tengo suficiente', 'podrias proporcionar', 'necesito mas',
+    'necesitaria saber', 'no dispongo de suficiente', 'no puedo ayudarte',
+    'no puedo responder', 'como modelo de lenguaje', 'no tengo acceso a',
+    'no tengo informacion'
+  ];
+  return patrones.some(p => t.includes(p));
+}
+
+// Limpia mensajes heredados del frontend v7.x, que inyectaba el prompt
+// de personalidad dentro de cada mensaje de usuario.
+function limpiarMensajeAntiguo(content) {
+  if (typeof content !== 'string') return content;
+  if (!content.includes('=== INSTRUCCIONES OBLIGATORIAS')) return content;
+  const m = content.match(/PREGUNTA DEL USUARIO:\s*([\s\S]*?)\s*REGLA DE ORO/);
+  if (m && m[1] && m[1].trim()) return m[1].trim();
+  return content
+    .replace(/=== INSTRUCCIONES OBLIGATORIAS PARA ESTA RESPUESTA ===[\s\S]*?=== FIN INSTRUCCIONES ===/g, ' ')
+    .replace(/DATOS ACTUALES DE ESTA PÁGINA \([^)]*\):[\s\S]*?(?=PREGUNTA DEL USUARIO|$)/g, ' ')
+    .replace(/CONTEXTO DE LA URL EXTERNA CITADA:[\s\S]*?(?=PREGUNTA DEL USUARIO|$)/g, ' ')
+    .replace(/REGLA DE ORO:[\s\S]*$/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function limitarContexto(messages, maxCharsPorMensaje = 3000, maxMensajes = 16) {
+  const sistemas = messages.filter(m => m.role === 'system');
+  const resto = messages.filter(m => m.role !== 'system');
+  const recientes = resto.slice(-maxMensajes).map(m => ({
+    role: m.role === 'assistant' ? 'assistant' : 'user',
+    content: typeof m.content === 'string' && m.content.length > maxCharsPorMensaje
+      ? m.content.slice(0, maxCharsPorMensaje) + '…'
+      : m.content
+  }));
+  return [...sistemas, ...recientes];
+}
+
+function responderJSON(texto, motor, corsHeaders, status = 200) {
+  return new Response(JSON.stringify({ text: texto, respuesta: texto, motor }), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders }
+    headers: { 'Content-Type': 'application/json', ...corsHeaders }
   });
 }
 
-// Limpia mensajes heredados del frontend v7.x ("system prompt inyectado")
-function limpiarMensajeAntiguo(content) {
-  let texto = content;
-  const markers = [
-    'ERES MANOLITO', 'eres Manolito', 'Eres MANOLITO',
-    'CEREBRO FIRST', 'LEER ANTES DE RESPONDER', 'TEPLATE DE MESSAGE',
-    '[MODO ANDALUZ]', '[MODO CASTELLANO]', '[CONTEXTO PAGINA]',
-    '===== PRIORIDAD', 'DICCIONARIO'
-  ];
-  for (const marker of markers) {
-    if (texto.includes(marker)) {
-      const partes = texto.split('\x00\x00Mensaje\x00');
-      if (partes.length > 1) { texto = partes.pop(); continue; }
-      // Si no hay separador, devolver tal cual
-    }
+async function handleManolito(request, env, corsHeaders) {
+  if (request.method !== 'POST') {
+    return responderJSON('Method not allowed', 'error', corsHeaders, 405);
   }
-  return texto;
-}
 
-// Corta el historial por tokens aproximados (1 token ≈ 4 chars)
-function limitarContexto(messages, maxChars, maxMessages) {
-  let out = [];
-  let total = 0;
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const m = messages[i];
-    if (out.length >= maxMessages) break;
-    if (total + m.content.length > maxChars) break;
-    out.unshift(m);
-    total += m.content.length;
-  }
-  return out;
-}
-
-async function llamadOpenRouter(key, model, messages, maxTokens, timeoutMs) {
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), timeoutMs);
+  let body;
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Authorization': 'Bearer ' + key,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://islasdecalorsevilla.com',
-        'X-Title': 'Manolito ∞'
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        max_tokens: maxTokens,
-        temperature: 0.7
-      })
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('OpenRouter HTTP ', res.status, errText.slice(0, 300));
-      return '';
-    }
-    const data = await res.json();
-    return data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '';
-  } finally {
-    clearTimeout(t);
+    body = await request.json();
+  } catch (e) {
+    return responderJSON('JSON invalido', 'error', corsHeaders, 400);
   }
+
+  let messages = Array.isArray(body.messages) ? body.messages : null;
+  if (!messages || messages.length === 0) {
+    if (typeof body.message === 'string' && body.message.trim()) {
+      messages = [{ role: 'user', content: body.message }];
+    }
+  }
+  if (!messages || messages.length === 0) {
+    return responderJSON('Falta el array messages o el campo message', 'error', corsHeaders, 400);
+  }
+
+  // Limpiar mensajes antiguos con prompt inyectado (frontend v7.x)
+  messages = messages
+    .filter(m => m && typeof m.content === 'string')
+    .map(m => ({ role: m.role, content: limpiarMensajeAntiguo(m.content) }))
+    .filter(m => m.content && m.content.trim());
+
+  // SIEMPRE poner nuestro system prompt, pisando cualquier otro
+  messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...messages.filter(m => m.role !== 'system')];
+
+  // Contexto opcional de la página / URL citada (lo manda el frontend v8)
+  if (typeof body.context === 'string' && body.context.trim()) {
+    messages.splice(1, 0, {
+      role: 'system',
+      content: 'Contexto de la página que el usuario está viendo ahora mismo. Úsalo SOLO si es relevante para su pregunta; si no, ignóralo por completo:\n' + body.context.slice(0, 6000)
+    });
+  }
+
+  messages = limitarContexto(messages);
+
+  const maxTokens = Math.min(Math.max(body.max_tokens || 900, 64), 1500);
+
+  // === MOTOR 1: OpenRouter (DeepSeek por defecto) ===
+  if (env.OPENROUTER_API_KEY) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 28000);
+
+      const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://islasdecalorsevilla.com',
+          'X-Title': 'Manolito Infinito'
+        },
+        body: JSON.stringify({
+          model: env.OPENROUTER_MODEL || OPENROUTER_MODEL_DEFAULT,
+          messages,
+          max_tokens: maxTokens,
+          temperature: 0.7
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      const data = await orRes.json().catch(() => null);
+
+      if (orRes.ok && data) {
+        const textoOR = data?.choices?.[0]?.message?.content || '';
+        if (textoOR && !esRespuestaEvasiva(textoOR)) {
+          return responderJSON(limpiarMarkdown(textoOR.trim()), 'openrouter:' + (env.OPENROUTER_MODEL || OPENROUTER_MODEL_DEFAULT), corsHeaders);
+        }
+      } else {
+        console.error('[Manolito] OpenRouter no OK:', orRes.status);
+      }
+    } catch (e) {
+      console.error('[Manolito] Fallo OpenRouter:', e.message);
+    }
+  }
+
+  // === MOTOR 2: Cloudflare Workers AI ===
+  if (env.AI) {
+    try {
+      const salidaAI = await env.AI.run(CF_MODEL, {
+        messages,
+        max_tokens: Math.min(maxTokens, 1024),
+        temperature: 0.7
+      });
+      const respuestaAI = salidaAI?.response;
+      if (respuestaAI && !esRespuestaEvasiva(respuestaAI)) {
+        return responderJSON(limpiarMarkdown(respuestaAI.trim()), 'cloudflare-ai', corsHeaders);
+      }
+    } catch (e) {
+      console.error('[Manolito] Fallo CF AI:', e.message);
+    }
+  }
+
+  // === MOTOR 3: Fallback ===
+  return responderJSON(FALLBACK_TEXT, 'fallback', corsHeaders);
+}
+
+// Quita restos de Markdown (**, *, __, _, `, #) por si el modelo los suelta:
+// el chat muestra el texto tal cual y quedan feísimos.
+function limpiarMarkdown(texto) {
+  if (typeof texto !== 'string') return texto;
+  return texto
+    .replace(/\*\*(.+?)\*\*/gs, '$1')
+    .replace(/__(.+?)__/gs, '$1')
+    .replace(/\*([^*\n]+)\*/g, '$1')
+    .replace(/(^|[\s(])_([^_\n]+)_/g, '$1$2')
+    .replace(/`([^`]*)`/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[\*\+]\s+/gm, '- ');
 }
