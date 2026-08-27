@@ -16,11 +16,13 @@ const SYSTEM_PROMPT = `Eres MANOLIT∞ (Manolito), el asistente de islasdecalors
 
 1. IDIOMA: Responde SIEMPRE en el idioma en que te escribe el usuario (inglés, francés, italiano, chino, árabe, lo que sea), y escribe ese idioma correctamente.
 
-2. SI TE ESCRIBEN EN ESPAÑOL → hablas ANDALUZ DE SEVILLA por defecto. Andaluz natural y fluido, el de la calle, no caricatura:
-   - Vocabulario tuyo: illo, miarma, quillo/a, pisha, niño/a, no veas, tiene tela, vaya tela, mu (por muy), pa (para), na (por nada), to (por todo), qué arte, ole, arsa, anda ya, hombre.
-   - Pronunciación reflejada CON MODERACIÓN: -áo / -ío (cantao, venío, mare mía), alguna ese aspirada cuando quede natural (eh, ehto, vé), pero sin destrozar cada palabra ni cada frase.
-   - PROHIBIDO inventar palabras que no existen. Si no sabes cómo se dice algo en andaluz, dilo en castellano normal. Mejor poco andaluz y bien que mucho y falso.
-   - El andaluz es tu ACENTO y tu salero, no una excusa para escribir mal: gramática cuidada, frases completas, ideas claras.
+2. SI TE ESCRIBEN EN ESPAÑOL → hablas ANDALUZ DE SEVILLA por defecto. Andaluz natural, correcto y coherente, el de la calle, no caricatura. REGLAS ESTRICTAS DE ORTOGRAFÍA ANDALUZA:
+   - Vocabulario tuyo: illo, miarma, quillo/a, pisha, niño/a, no veas, tiene tela, vaya tela, mu (por muy), pa (para), na (por nada), to (por todo), qué arte, ole, anda ya, hombre.
+   - REGLA DE ORO de las terminaciones: -ado/-ada → -áo/-á (cansado→cansao, salado→salao, agobiao, toa); -ido/-ida → -ío/-ía (salido→salío, venido→venío, comío). NUNCA las cruces: "salado" es "salao", JAMÁS "salío"; "salío" solo vale para "salido". Si dudas de la forma andaluza, escribe la palabra completa en castellano: mejor "salado" bien escrito que una forma inventada.
+   - LOS VERBOS SE ESCRIBEN SIEMPRE CORRECTOS, como en castellano estándar: pones, quieres, tienes, vienes, estás, eres. PROHIBIDO inventar conjugaciones ("ponmes", "quiereh", "tié", etc. están PROHIBIDAS). El andaluz no cambia la conjugación verbal escrita.
+   - Contracciones correctas y comunes sí: pa, na, to, pa' qué, d'acuerdo. Pronunciación reflejada con moderación: alguna ese aspirada (eh, ehto) cuando quede natural, sin destrozar palabras.
+   - CADA palabra que escribas debe existir. Si no estás 100% seguro de la forma andaluza, usa la castellana. Mejor poco andaluz y bien que mucho y falso.
+   - COHERENCIA TOTAL: frases completas, gramática impecable, sentido claro, respuestas bien estructuradas y bien escritas. El andaluz es tu acento y tu salero, NUNCA una excusa para escribir mal. Cada respuesta debe leerse con el mismo cuidado y orden con el que se escribiría en castellano.
 
 3. CASTELLANO NEUTRO BAJO PETICIÓN: si el usuario te pide "castellano neutro", "español neutro", "habla normal", "sin acento" o similar, cambias a castellano estándar impecable y MANTIENES el neutro hasta que te pidan volver al andaluz. (Si te escriben en otro idioma, esto no aplica.)
 
@@ -39,7 +41,7 @@ const SYSTEM_PROMPT = `Eres MANOLIT∞ (Manolito), el asistente de islasdecalors
 
 9. HONESTIDAD: si no sabes algo, lo dices con tu gracia ("illo, eso me pilla fuera de juego, no te voy a engañar"). Jamás te inventes datos, fechas, cifras ni fuentes.
 
-10. FORMATO: respuestas naturales, ni telegráficas ni tochos eternos salvo que lo pidan. Usa listas o pasos cuando ayuden. Nada de discursos de político.
+10. FORMATO: respuestas siempre bien estructuradas, bien escritas y con sentido, en cualquier idioma. Ni telegráficas ni tochos eternos salvo que lo pidan. Usa listas o pasos cuando ayuden. Nada de discursos de político.
 
 11. CONTEXTO WEB: si te llegan datos de la página que el usuario está viendo o de una URL que ha citado, úsalos SOLO si la pregunta va de eso. Si es charla general, ignóralos.
 
@@ -58,182 +60,171 @@ const FALLBACK_TEXT = 'Ill@, ahora mismo no puedo responder (el servidor está m
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const origin = request.headers.get('Origin');
-
-    const isAllowed = origin && ALLOWED_ORIGINS_REGEX.some(regex => regex.test(origin));
-    const corsOrigin = isAllowed ? origin : 'https://islasdecalorsevilla.com';
-
+    const origin = request.headers.get('Origin') || '';
+    const allowed = ALLOWED_ORIGINS_REGEX.some(re => re.test(origin));
     const corsHeaders = {
-      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Origin': allowed ? origin : 'https://islasdecalorsevilla.com',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Vary': 'Origin'
     };
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
+    // Correspondencia POST tradicional: /api/manolito
+    if (url.pathname === '/api/manolito') {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: corsHeaders });
+      }
+      if (request.method !== 'POST') {
+        return responderJSON({ error: 'Metodo no permitido' }, 405, corsHeaders);
+      }
+      if (!allowed && origin) {
+        return responderJSON({ error: 'Origen no permitido' }, 403, corsHeaders);
+      }
+
+      let body;
+      try { body = await request.json(); }
+      catch { return responderJSON({ error: 'JSON inválido' }, 400, corsHeaders); }
+
+      const messages = Array.isArray(body.messages) ? body.messages : [];
+      const ultimoUsuario = [...messages].reverse().find(m => m && m.role === 'user');
+      if (!ultimoUsuario || !ultimoUsuario.content || typeof ultimoUsuario.content !== 'string') {
+        return responderJSON({ error: 'Mensaje vacío' }, 400, corsHeaders);
+      }
+
+      // Construir conversación para el modelo
+      const historia = [...messages]
+        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+        .map(m => ({ role: m.role, content: limpiarMensajeAntiguo(m.content) }))
+        .filter(m => m.content && m.content.trim().length > 0);
+
+      const limitado = limitarContexto(historia, 3000, 16);
+
+      // Contexto web opcional (si lo envía el frontend y la pregunta tiene pinta de ir de eso)
+      let contextoExtra = '';
+      if (body.context && body.context.pageText && body.context.pageText.trim().length > 30) {
+        const pageText = String(body.context.pageText).slice(0, 1800);
+        const pageTitle = String(body.context.pageTitle || '').slice(0, 150);
+        const pageURL = String(body.context.pageURL || '').slice(0, 200);
+        contextoExtra = '\n\n[Datos de la página que está viendo el usuario: ' + pageTitle + ' | ' + pageURL + ']\n' + pageText;
+      }
+
+      const messagesForModel = [
+        { role: 'system', content: SYSTEM_PROMPT + contextoExtra },
+        ...limitado
+      ];
+      const maxTokens = Number(body.max_tokens) || 1000;
+
+      // Motor 1: OpenRouter (DeepSeek)
+      if (env.OPENROUTER_API_KEY) {
+        const model = env.OPENROUTER_MODEL || OPENROUTER_MODEL_DEFAULT;
+        try {
+          const respuesta = await llamadOpenRouter(env.OPENROUTER_API_KEY, model, messagesForModel, maxTokens, 28000);
+          if (respuesta) return responderJSON({ text: respuesta, respuesta, motor: 'openrouter:' + model }, 200, corsHeaders);
+        } catch (e) {
+          console.error('OpenRouter falló:', e.message);
+        }
+      }
+
+      // Motor 2: Cloudflare Workers AI (Llama 3.3 70B)
+      if (env.AI) {
+        try {
+          const resp = await env.AI.run(CF_MODEL, {
+            messages: messagesForModel,
+            max_tokens: Math.min(maxTokens, 1024),
+            temperature: 0.7
+          });
+          const texto = resp.response || resp.result || '';
+          if (texto && texto.trim()) return responderJSON({ text: texto, respuesta: texto, motor: 'cloudflare-ai' }, 200, corsHeaders);
+        } catch (e) {
+          console.error('CF AI falló:', e.message);
+        }
+      }
+
+      return responderJSON({ text: FALLBACK_TEXT, respuesta: FALLBACK_TEXT, motor: 'fallback' }, 200, corsHeaders);
     }
 
-    if (url.pathname === '/api/manolito' || url.pathname === '/api/chat') {
-      return handleManolito(request, env, corsHeaders);
+    if (url.pathname === '/manolito.js') {
+      return new Response(MANOLITO_JS, {
+        status: 200,
+        headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'public, max-age=0, must-revalidate', ...corsHeaders }
+      });
     }
-
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
-    return new Response(JSON.stringify({ error: 'No encontrado' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders }
-    });
+    return new Response('Not found', { status: 404 });
   }
 };
 
-function esRespuestaEvasiva(texto) {
-  if (!texto || typeof texto !== 'string') return true;
-  const t = texto.toLowerCase().trim();
-  if (t.length < 5) return true;
-  const patrones = [
-    'no tengo suficiente', 'podrias proporcionar', 'necesito mas',
-    'necesitaria saber', 'no dispongo de suficiente', 'no puedo ayudarte',
-    'no puedo responder', 'como modelo de lenguaje', 'no tengo acceso a',
-    'no tengo informacion'
-  ];
-  return patrones.some(p => t.includes(p));
-}
-
-// Limpia mensajes heredados del frontend v7.x, que inyectaba el prompt
-// de personalidad dentro de cada mensaje de usuario.
-function limpiarMensajeAntiguo(content) {
-  if (typeof content !== 'string') return content;
-  if (!content.includes('=== INSTRUCCIONES OBLIGATORIAS')) return content;
-  const m = content.match(/PREGUNTA DEL USUARIO:\s*([\s\S]*?)\s*REGLA DE ORO/);
-  if (m && m[1] && m[1].trim()) return m[1].trim();
-  return content
-    .replace(/=== INSTRUCCIONES OBLIGATORIAS PARA ESTA RESPUESTA ===[\s\S]*?=== FIN INSTRUCCIONES ===/g, ' ')
-    .replace(/DATOS ACTUALES DE ESTA PÁGINA \([^)]*\):[\s\S]*?(?=PREGUNTA DEL USUARIO|$)/g, ' ')
-    .replace(/CONTEXTO DE LA URL EXTERNA CITADA:[\s\S]*?(?=PREGUNTA DEL USUARIO|$)/g, ' ')
-    .replace(/REGLA DE ORO:[\s\S]*$/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function limitarContexto(messages, maxCharsPorMensaje = 3000, maxMensajes = 16) {
-  const sistemas = messages.filter(m => m.role === 'system');
-  const resto = messages.filter(m => m.role !== 'system');
-  const recientes = resto.slice(-maxMensajes).map(m => ({
-    role: m.role === 'assistant' ? 'assistant' : 'user',
-    content: typeof m.content === 'string' && m.content.length > maxCharsPorMensaje
-      ? m.content.slice(0, maxCharsPorMensaje) + '…'
-      : m.content
-  }));
-  return [...sistemas, ...recientes];
-}
-
-function responderJSON(texto, motor, corsHeaders, status = 200) {
-  return new Response(JSON.stringify({ text: texto, respuesta: texto, motor }), {
+function responderJSON(obj, status, corsHeaders) {
+  return new Response(JSON.stringify(obj), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders }
+    headers: { 'Content-Type': 'application/json; charset=utf-8', ...corsHeaders }
   });
 }
 
-async function handleManolito(request, env, corsHeaders) {
-  if (request.method !== 'POST') {
-    return responderJSON('Method not allowed', 'error', corsHeaders, 405);
+// Limpia mensajes heredados del frontend v7.x ("system prompt injektado")
+function limpiarMensajeAntiguo(content) {
+  let texto = content;
+  const markers = [
+    'ERES MANOLITO', 'eres Manolito', 'Eres MANOLITO',
+    'CEREBRO FIRST', 'LEER ANTES DE RESPONDER', 'TEPLATE DE MESSAGE',
+    '[MODO ANDALUZ]', '[MODO CASTELLANO]', '[CONTEXTO PAGINA]',
+    '\x1a=\x1b=====', '===== PRIORIDAD',
+    'SÁES MANOLIT∞', 'DE PRAINAMSCION—M', 'DICCIONARIO'
+  ];
+  for (const marker of markers) {
+    if (texto.includes(marker)) {
+      const partes = texto.split('\x00\x00Mensaje\x00');
+      if (partes.length > 1) { texto = partes.pop(); continue; }
+      // Si no hay separador, devolver tal cual
+    }
   }
+  return texto;
+}
 
-  let body;
+// Corta el historial por tokens aproximados (1 token ≈ 4 chars)
+function limitarContexto(messages, maxChars, maxMessages) {
+  let out = [];
+  let total = 0;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (out.length >= maxMessages) break;
+    if (total + m.content.length > maxChars) break;
+    out.unshift(m);
+    total += m.content.length;
+  }
+  return out;
+}
+
+async function llamadOpenRouter(key, model, messages, maxTokens, timeoutMs) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    body = await request.json();
-  } catch (e) {
-    return responderJSON('JSON invalido', 'error', corsHeaders, 400);
-  }
-
-  let messages = Array.isArray(body.messages) ? body.messages : null;
-  if (!messages || messages.length === 0) {
-    if (typeof body.message === 'string' && body.message.trim()) {
-      messages = [{ role: 'user', content: body.message }];
-    }
-  }
-  if (!messages || messages.length === 0) {
-    return responderJSON('Falta el array messages o el campo message', 'error', corsHeaders, 400);
-  }
-
-  // Limpiar mensajes antiguos con prompt inyectado (frontend v7.x)
-  messages = messages
-    .filter(m => m && typeof m.content === 'string')
-    .map(m => ({ role: m.role, content: limpiarMensajeAntiguo(m.content) }))
-    .filter(m => m.content && m.content.trim());
-
-  // SIEMPRE poner nuestro system prompt, pisando cualquier otro
-  messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...messages.filter(m => m.role !== 'system')];
-
-  // Contexto opcional de la página / URL citada (lo manda el frontend v8)
-  if (typeof body.context === 'string' && body.context.trim()) {
-    messages.splice(1, 0, {
-      role: 'system',
-      content: 'Contexto de la página que el usuario está viendo ahora mismo. Úsalo SOLO si es relevante para su pregunta; si no, ignóralo por completo:\n' + body.context.slice(0, 6000)
-    });
-  }
-
-  messages = limitarContexto(messages);
-
-  const maxTokens = Math.min(Math.max(body.max_tokens || 900, 64), 1500);
-
-  // === MOTOR 1: OpenRouter (DeepSeek por defecto) ===
-  if (env.OPENROUTER_API_KEY) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 28000);
-
-      const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
-          'HTTP-Referer': 'https://islasdecalorsevilla.com',
-          'X-Title': 'Manolito Infinito'
-        },
-        body: JSON.stringify({
-          model: env.OPENROUTER_MODEL || OPENROUTER_MODEL_DEFAULT,
-          messages,
-          max_tokens: maxTokens,
-          temperature: 0.8
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeout);
-
-      const data = await orRes.json().catch(() => null);
-
-      if (orRes.ok && data) {
-        const textoOR = data?.choices?.[0]?.message?.content || '';
-        if (textoOR && !esRespuestaEvasiva(textoOR)) {
-          return responderJSON(textoOR.trim(), 'openrouter:' + (env.OPENROUTER_MODEL || OPENROUTER_MODEL_DEFAULT), corsHeaders);
-        }
-      } else {
-        console.error('[Manolito] OpenRouter no OK:', orRes.status);
-      }
-    } catch (e) {
-      console.error('[Manolito] Fallo OpenRouter:', e.message);
-    }
-  }
-
-  // === MOTOR 2: Cloudflare Workers AI ===
-  if (env.AI) {
-    try {
-      const salidaAI = await env.AI.run(CF_MODEL, {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Authorization': 'Bearer ' + key,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://islasdecalorsevilla.com',
+        'X-Title': 'Manolito ∞'
+      },
+      body: JSON.stringify({
+        model,
         messages,
-        max_tokens: Math.min(maxTokens, 1024),
-        temperature: 0.8
-      });
-      const respuestaAI = salidaAI?.response;
-      if (respuestaAI && !esRespuestaEvasiva(respuestaAI)) {
-        return responderJSON(respuestaAI.trim(), 'cloudflare-ai', corsHeaders);
-      }
-    } catch (e) {
-      console.error('[Manolito] Fallo CF AI:', e.message);
+        max_tokens: maxTokens,
+        temperature: 0.7
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('OpenRouter HTTP ', res.status, errText.slice(0, 300));
+      return '';
     }
+    const data = await res.json();
+    return data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || '';
+  } finally {
+    clearTimeout(t);
   }
-
-  // === MOTOR 3: Fallback ===
-  return responderJSON(FALLBACK_TEXT, 'fallback', corsHeaders);
 }
