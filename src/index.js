@@ -1,10 +1,12 @@
 /**
  * Worker manolito-infinito — islasdecalorsevilla.com
- * v8.0 — Cerebro en el servidor:
+ * v8.1 — Cerebro en el servidor:
  *  - El system prompt vive AQUÍ (el frontend ya no lo inyecta en cada mensaje).
  *  - Motor 1: OpenRouter (DeepSeek por defecto, configurable con OPENROUTER_MODEL).
  *  - Motor 2: Cloudflare Workers AI (Llama 3.3 70B).
  *  - Limpia mensajes heredados del frontend antiguo (v7.x "prompt inyectado").
+ *  - Prompt andaluz corregido: regla -ado→-áo / -ido→-ío, verbos siempre correctos.
+ *  - El frontend manolito.js vive como asset estático en la raíz del repo.
  */
 
 const OPENROUTER_MODEL_DEFAULT = 'deepseek/deepseek-chat';
@@ -143,12 +145,6 @@ export default {
       return responderJSON({ text: FALLBACK_TEXT, respuesta: FALLBACK_TEXT, motor: 'fallback' }, 200, corsHeaders);
     }
 
-    if (url.pathname === '/manolito.js') {
-      return new Response(MANOLITO_JS, {
-        status: 200,
-        headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'public, max-age=0, must-revalidate', ...corsHeaders }
-      });
-    }
     if (env.ASSETS) {
       return env.ASSETS.fetch(request);
     }
@@ -163,15 +159,14 @@ function responderJSON(obj, status, corsHeaders) {
   });
 }
 
-// Limpia mensajes heredados del frontend v7.x ("system prompt injektado")
+// Limpia mensajes heredados del frontend v7.x ("system prompt inyectado")
 function limpiarMensajeAntiguo(content) {
   let texto = content;
   const markers = [
     'ERES MANOLITO', 'eres Manolito', 'Eres MANOLITO',
     'CEREBRO FIRST', 'LEER ANTES DE RESPONDER', 'TEPLATE DE MESSAGE',
     '[MODO ANDALUZ]', '[MODO CASTELLANO]', '[CONTEXTO PAGINA]',
-    '\x1a=\x1b=====', '===== PRIORIDAD',
-    'SÁES MANOLIT∞', 'DE PRAINAMSCION—M', 'DICCIONARIO'
+    '===== PRIORIDAD', 'DICCIONARIO'
   ];
   for (const marker of markers) {
     if (texto.includes(marker)) {
