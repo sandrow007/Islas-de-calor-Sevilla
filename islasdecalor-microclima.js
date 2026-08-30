@@ -1,37 +1,30 @@
 /* ============================================================
-   MICROCLIMA URBANO SEVILLA — mapa de calor continuo (opcional)
+   MICROCLIMA URBANO SEVILLA v2 — mapa de calor continuo
    ------------------------------------------------------------
-   Adaptado del módulo "Microclima Global" de Manolito Aire
-   (MapLibre) a la arquitectura Leaflet de islasdecalorsevilla.com.
-
-   Qué pinta: un mapa de calor CONTINUO sobre toda la ciudad
-   (no solo los puntos), opcional y desplegable, usando:
-
-     1) La física YA EXISTENTE de la web: physCore.compute()
-        (Stefan-Boltzmann + Brutsaert) con el tiempo real (ATMOS)
-     2) Las densidades REALES de HEAT_ZONES (ya calculadas desde
-        OpenStreetMap) como anclas, interpoladas con IDW
-     3) Anclas frías del Guadalquivir y grandes parques
-
-   HONESTIDAD (criterio de la casa): esto es una ESTIMACIÓN por
-   modelo, NO una medición por satélite. La leyenda lo dice claro.
-
-   RENDIMIENTO: apagado por defecto. Solo calcula al activarlo y
-   recalcula (con debounce) al mover el mapa o cambiar el tiempo.
-   CERO llamadas extra a APIs si ATMOS ya tiene datos.
+   Cambios v2 (tras revisión del mapa completo):
+   - CONTRASTE REAL: la intensidad se normaliza con el rango del
+     propio campo (fresco→caliente de verdad), no con escala fija:
+     ya no es una manta naranja uniforme.
+   - BASE TRANSPARENTE: las zonas frescas no tiñen el mapa; solo
+     se ve color donde hay calor de verdad.
+   - RADIO ADAPTATIVO al zoom: al acercar, el detalle mejora en
+     vez de ponerse todo rojo.
+   - NADA FIJO: todo cuadro del mapa se puede plegar u ocultar:
+     · Panel microclima: desplegable (▸/▾).
+     · Leyenda UHI: se pliega con ▸/▾ (la envuelve este módulo).
+     · Control de capas y créditos: botón 👁 que lo oculta TODO.
    ============================================================ */
 
 (function () {
   'use strict';
 
   /* ---- CONSTANTES AJUSTABLES ---- */
-  const REJILLA = 46;              // celdas por eje del campo interpolado
-  const IDW_POTENCIA = 2.2;        // potencia de interpolación IDW
+  const REJILLA = 56;              // celdas por eje del campo interpolado
+  const IDW_POTENCIA = 2.2;
   const DEBOUNCE_MS = 400;
-  const RADIO_HEAT = 55, BLUR_HEAT = 40, OPACIDAD_MIN = 0.35;
+  const OPACIDAD_MIN = 0.30;
 
-  // Anclas frías extra: el río y masas de agua/verde que enfrían
-  // (densidad ~0 = sin isla de calor). Complementan HEAT_ZONES.
+  // Anclas frías: el río y grandes zonas verdes (densidad ~0)
   const ANCLAS_FRIAS = [
     [37.4080, -6.0130, 0.02, 'Guadalquivir Norte'],
     [37.3970, -6.0080, 0.02, 'Guadalquivir Centro'],
@@ -48,19 +41,23 @@
   let temporizador = null;
   let ultimaTemp = null;
 
+  /* ---- radio/blur adaptativos al zoom ---- */
+  function radioParaZoom() {
+    const z = mapa ? mapa.getZoom() : 12;
+    const r = Math.round(15 * Math.pow(1.38, z - 12));
+    return Math.max(16, Math.min(64, r));
+  }
+
   /* ---- motor del campo térmico ---- */
 
   function fisicaActual() {
-    // Usa EXACTAMENTE el mismo modelo que el resto de la web.
     if (typeof physCore === 'undefined' || typeof ATMOS === 'undefined') return null;
     if (ATMOS.src === 'init' || !ATMOS.T) return null;
     return physCore.compute(ATMOS.T, ATMOS.RH || 50, ATMOS.P || 1013, ATMOS.ws || 5, ATMOS.S_in || 0, 'urban');
   }
 
   async function temperaturaBase() {
-    // 1) Preferir los datos reales que ya tiene la web (cero llamadas)
     if (typeof ATMOS !== 'undefined' && ATMOS.src !== 'init' && ATMOS.T) return ATMOS.T;
-    // 2) Respaldo honesto: Open-Meteo (1 llamada)
     try {
       const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.389&longitude=-5.984&current=temperature_2m');
       const d = await r.json();
@@ -70,7 +67,6 @@
   }
 
   function densidadInterpolada(lat, lon, anclas) {
-    // IDW: la densidad en un punto es la media ponderada por 1/d^p
     let num = 0, den = 0;
     for (const [la, lo, d] of anclas) {
       const dist2 = (lat - la) * (lat - la) + (lon - lo) * (lon - lo);
@@ -87,34 +83,51 @@
     const tBase = await temperaturaBase();
     if (tBase === null || !activo) return;
     const fis = fisicaActual();
-    const deltaUHI = fis ? parseFloat(fis.delta_UHI) : 3.0; // respaldo si la física aún no está lista
+    const deltaUHI = fis ? parseFloat(fis.delta_UHI) : 3.0;
     ultimaTemp = tBase;
 
     const bounds = mapa.getBounds();
     const anclas = (typeof HEAT_ZONES !== 'undefined' ? HEAT_ZONES : []).concat(ANCLAS_FRIAS);
 
-    const puntos = [];
-    let uhiMax = 0;
+    // Primera pasada: campo de UHI para conocer el rango real
+    const celdas = [];
+    let uMin = Infinity, uMax = -Infinity;
     for (let i = 0; i < REJILLA; i++) {
       for (let j = 0; j < REJILLA; j++) {
         const lat = bounds.getSouth() + (bounds.getNorth() - bounds.getSouth()) * (i + 0.5) / REJILLA;
         const lon = bounds.getWest() + (bounds.getEast() - bounds.getWest()) * (j + 0.5) / REJILLA;
-        const dens = densidadInterpolada(lat, lon, anclas);
-        const uhi = deltaUHI * dens;
-        if (uhi > uhiMax) uhiMax = uhi;
-        // Misma normalización que los puntos existentes de la web
-        const intensidad = Math.max(0.08, Math.min(1, (uhi + 1) / 5.5));
-        puntos.push([lat, lon, intensidad]);
+        const uhi = deltaUHI * densidadInterpolada(lat, lon, anclas);
+        celdas.push([lat, lon, uhi]);
+        if (uhi < uMin) uMin = uhi;
+        if (uhi > uMax) uMax = uhi;
       }
     }
 
+    // Segunda pasada: normalización RELATIVA (contraste real del campo)
+    const rango = (uMax - uMin) || 1;
+    const puntos = celdas.map(([lat, lon, uhi]) => {
+      const rel = (uhi - uMin) / rango;          // 0 = lo más fresco visible, 1 = lo más caliente
+      const intensidad = Math.pow(rel, 1.25);     // realza las diferencias
+      return [lat, lon, intensidad];
+    });
+
     if (capa) { try { mapa.removeLayer(capa); } catch (e) {} }
+    const radio = radioParaZoom();
     capa = L.heatLayer(puntos, {
-      radius: RADIO_HEAT, blur: BLUR_HEAT, maxZoom: 17, minOpacity: OPACIDAD_MIN,
-      gradient: { 0.0: 'rgba(0,255,140,.75)', 0.3: 'rgba(180,255,0,.78)', 0.55: 'rgba(255,221,0,.82)', 0.75: 'rgba(255,136,0,.85)', 1.0: 'rgba(255,40,0,.9)' }
+      radius: radio, blur: Math.round(radio * 0.8), maxZoom: 18, minOpacity: OPACIDAD_MIN,
+      // Base transparente: lo fresco NO tiñe; el color entra solo donde hay calor
+      gradient: {
+        0.00: 'rgba(0,255,140,0)',
+        0.18: 'rgba(0,255,140,0.12)',
+        0.35: 'rgba(180,255,0,0.28)',
+        0.55: 'rgba(255,221,0,0.45)',
+        0.75: 'rgba(255,136,0,0.62)',
+        0.90: 'rgba(255,72,0,0.78)',
+        1.00: 'rgba(255,30,0,0.88)'
+      }
     }).addTo(mapa);
 
-    actualizarPanel(tBase, deltaUHI, uhiMax);
+    actualizarPanel(tBase, deltaUHI, uMax);
   }
 
   /* ---- panel desplegable ---- */
@@ -124,9 +137,21 @@
     const cont = document.getElementById('lmap');
     if (!cont) return;
 
+    // CSS: nada fijo — el botón 👁 oculta TODOS los cuadros del mapa
+    const css = document.createElement('style');
+    css.textContent =
+      '.mc-todo-oculto .leaflet-control-layers,' +
+      '.mc-todo-oculto .uhi-legend,' +
+      '.mc-todo-oculto #map-credits,' +
+      '.mc-todo-oculto #microclima-panel { display:none !important; }' +
+      '#mc-ojo { position:absolute; top:96px; left:10px; z-index:900; width:34px; height:34px;' +
+      'border-radius:10px; border:1px solid rgba(0,240,255,.25); background:rgba(8,12,24,0.88);' +
+      'color:#e8f0ff; cursor:pointer; font-size:15px; line-height:1; backdrop-filter:blur(6px); }';
+    document.head.appendChild(css);
+
     const panel = document.createElement('div');
     panel.id = 'microclima-panel';
-    panel.style.cssText = 'position:absolute;top:10px;left:10px;z-index:800;width:220px;' +
+    panel.style.cssText = 'position:absolute;top:10px;left:52px;z-index:800;width:224px;' +
       'background:rgba(8,12,24,0.88);color:#e8f0ff;border:1px solid rgba(0,240,255,.25);' +
       'border-radius:12px;font-family:inherit;font-size:12px;backdrop-filter:blur(6px);' +
       'box-shadow:0 4px 18px rgba(0,0,0,.4);overflow:hidden;';
@@ -145,7 +170,6 @@
       '<div style="font-size:9px;opacity:0.7;margin-top:5px;line-height:1.3;">ⓘ Estimación por modelo físico (Stefan-Boltzmann + densidad real OSM + río/parques), no medición por satélite.</div>' +
       '</div></div>';
 
-    cont.style.position = cont.style.position || 'relative';
     cont.appendChild(panel);
 
     document.getElementById('mc-toggle-panel').addEventListener('click', () => {
@@ -157,6 +181,45 @@
 
     document.getElementById('mc-activar').addEventListener('change', (e) => {
       if (e.target.checked) encender(); else apagar();
+    });
+
+    // Botón ojo: oculta/muestra TODOS los cuadros fijos del mapa
+    const ojo = document.createElement('button');
+    ojo.id = 'mc-ojo';
+    ojo.title = 'Ocultar/mostrar todos los paneles del mapa';
+    ojo.textContent = '👁';
+    cont.appendChild(ojo);
+    ojo.addEventListener('click', () => {
+      cont.classList.toggle('mc-todo-oculto');
+      ojo.textContent = cont.classList.contains('mc-todo-oculto') ? '🚫' : '👁';
+    });
+  }
+
+  /* ---- pliega la leyenda UHI fija (la envuelve con ▸/▾) ---- */
+  function hacerLeyendaPlegable() {
+    const leyenda = document.querySelector('#lmap .uhi-legend');
+    if (!leyenda || leyenda.dataset.mcPlegable) return;
+    leyenda.dataset.mcPlegable = '1';
+
+    const hijos = Array.from(leyenda.childNodes);
+    const cuerpo = document.createElement('div');
+    cuerpo.className = 'uhi-legend-cuerpo';
+    hijos.forEach(h => cuerpo.appendChild(h));
+
+    const cab = document.createElement('button');
+    cab.textContent = 'UHI (°C) ▸';
+    cab.style.cssText = 'background:none;border:none;color:#00f0ff;font-size:10px;font-weight:700;' +
+      'letter-spacing:2px;cursor:pointer;padding:0 0 4px 0;font-family:inherit;';
+
+    leyenda.innerHTML = '';
+    leyenda.appendChild(cab);
+    leyenda.appendChild(cuerpo);
+    cuerpo.style.display = 'none'; // plegada por defecto
+
+    cab.addEventListener('click', () => {
+      const abierto = cuerpo.style.display !== 'none';
+      cuerpo.style.display = abierto ? 'none' : 'block';
+      cab.textContent = abierto ? 'UHI (°C) ▸' : 'UHI (°C) ▾';
     });
   }
 
@@ -200,7 +263,13 @@
     crearPanel();
     mapa.on('moveend zoomend', alMoverse);
 
-    // Si cambian los datos meteorológicos, recalcula (sondeo ligero)
+    // La leyenda UHI se crea en initMap(); la plegamos cuando aparezca
+    const obs = setInterval(() => {
+      hacerLeyendaPlegable();
+      if (document.querySelector('#lmap .uhi-legend[data-mc-plegable]')) clearInterval(obs);
+    }, 700);
+
+    // Si cambian los datos meteorológicos, recalcula
     setInterval(() => {
       if (!activo) return;
       if (typeof ATMOS !== 'undefined' && ATMOS.T && ATMOS.T !== ultimaTemp) recalcular();
