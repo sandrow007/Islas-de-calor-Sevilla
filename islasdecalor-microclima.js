@@ -1,28 +1,28 @@
 /* ============================================================
-   MICROCLIMA URBANO SEVILLA v2 — mapa de calor continuo
+   MICROCLIMA URBANO SEVILLA v3.1 — campo térmico estilo meteoblue
+   con tonalidades Manolit∞
    ------------------------------------------------------------
-   Cambios v2 (tras revisión del mapa completo):
-   - CONTRASTE REAL: la intensidad se normaliza con el rango del
-     propio campo (fresco→caliente de verdad), no con escala fija:
-     ya no es una manta naranja uniforme.
-   - BASE TRANSPARENTE: las zonas frescas no tiñen el mapa; solo
-     se ve color donde hay calor de verdad.
-   - RADIO ADAPTATIVO al zoom: al acercar, el detalle mejora en
-     vez de ponerse todo rojo.
-   - NADA FIJO: todo cuadro del mapa se puede plegar u ocultar:
-     · Panel microclima: desplegable (▸/▾).
-     · Leyenda UHI: se pliega con ▸/▾ (la envuelve este módulo).
-     · Control de capas y créditos: botón 👁 que lo oculta TODO.
+   Cambios v3:
+   - Adiós leaflet.heat (manchas redondas = manta). Ahora el campo
+     se dibuja PÍXEL A PÍXEL con interpolación bilineal sobre la
+     rejilla IDW: degradado suave y continuo estilo meteoblue.
+   - Translúcido de verdad: las calles se leen debajo.
+   - Paleta Manolit∞: teal (fresco) → cian → violeta → magenta
+     → rojo intenso (más calor). Nada de semáforo genérico.
+   - Leyenda con rango real en °C dentro del panel desplegable.
+   - Sigue sin haber nada fijo: panel ▸/▾, leyenda UHI plegable
+     y botón 👁 que oculta TODOS los cuadros del mapa.
    ============================================================ */
 
 (function () {
   'use strict';
 
   /* ---- CONSTANTES AJUSTABLES ---- */
-  const REJILLA = 56;              // celdas por eje del campo interpolado
+  const REJILLA = 56;              // celdas por eje del campo (física)
+  const RES_CANVAS = 320;          // resolución del lienzo dibujado
   const IDW_POTENCIA = 2.2;
-  const DEBOUNCE_MS = 400;
-  const OPACIDAD_MIN = 0.30;
+  const DEBOUNCE_MS = 350;
+  const CURVA = 1.6;               // realce de contraste (>1 = más contraste)
 
   // Anclas frías: el río y grandes zonas verdes (densidad ~0)
   const ANCLAS_FRIAS = [
@@ -35,17 +35,43 @@
     [37.3770, -5.9870, 0.05, 'María Luisa (refuerzo)']
   ];
 
+  // Paleta Manolit∞: paradas [posición 0..1, r, g, b, alpha 0..255]
+  // Alphas bajos hasta la zona caliente: solo los focos de calor brillan,
+  // el resto deja ver el mapa (nada de manta uniforme).
+  const PALETA = [
+    [0.00,   0, 255, 200,   0],   // teal, invisible (fresco)
+    [0.30,   0, 240, 255,  14],   // cian Manolito, velo suave
+    [0.52, 123,  47, 255,  38],   // violeta
+    [0.72, 255,   0, 229,  72],   // magenta
+    [0.87, 255, 106,  60, 104],   // coral caliente
+    [1.00, 255,  40,   0, 132]    // rojo intenso (máximo calor)
+  ];
+
   let mapa = null;
-  let capa = null;
+  let capaImagen = null;
+  let lienzo = null;
   let activo = false;
   let temporizador = null;
   let ultimaTemp = null;
 
-  /* ---- radio/blur adaptativos al zoom ---- */
-  function radioParaZoom() {
-    const z = mapa ? mapa.getZoom() : 12;
-    const r = Math.round(15 * Math.pow(1.38, z - 12));
-    return Math.max(16, Math.min(64, r));
+  /* ---- color de la paleta para v en 0..1 ---- */
+  function colorPaleta(v) {
+    v = Math.max(0, Math.min(1, v));
+    for (let i = 1; i < PALETA.length; i++) {
+      if (v <= PALETA[i][0]) {
+        const [p0, r0, g0, b0, a0] = PALETA[i - 1];
+        const [p1, r1, g1, b1, a1] = PALETA[i];
+        const f = (v - p0) / (p1 - p0 || 1);
+        return [
+          Math.round(r0 + (r1 - r0) * f),
+          Math.round(g0 + (g1 - g0) * f),
+          Math.round(b0 + (b1 - b0) * f),
+          Math.round(a0 + (a1 - a0) * f)
+        ];
+      }
+    }
+    const p = PALETA[PALETA.length - 1];
+    return [p[1], p[2], p[3], p[4]];
   }
 
   /* ---- motor del campo térmico ---- */
@@ -77,8 +103,46 @@
     return den > 0 ? num / den : 0.6;
   }
 
+  /* ---- dibujo píxel a píxel (bilineal sobre la rejilla) ---- */
+  function pintarCampo(grid, n, bounds) {
+    if (!lienzo) {
+      lienzo = document.createElement('canvas');
+      lienzo.width = RES_CANVAS; lienzo.height = RES_CANVAS;
+    }
+    const ctx = lienzo.getContext('2d');
+    const img = ctx.createImageData(RES_CANVAS, RES_CANVAS);
+    const px = img.data;
+    const paso = (n - 1) / (RES_CANVAS - 1);
+
+    for (let y = 0; y < RES_CANVAS; y++) {
+      const gy = y * paso;
+      const y0 = Math.floor(gy), y1 = Math.min(n - 1, y0 + 1);
+      const fy = gy - y0;
+      for (let x = 0; x < RES_CANVAS; x++) {
+        const gx = x * paso;
+        const x0 = Math.floor(gx), x1 = Math.min(n - 1, x0 + 1);
+        const fx = gx - x0;
+        const v = grid[y0][x0] * (1 - fx) * (1 - fy) + grid[y0][x1] * fx * (1 - fy)
+                + grid[y1][x0] * (1 - fx) * fy + grid[y1][x1] * fx * fy;
+        const [r, g, b, a] = colorPaleta(v);
+        const k = (y * RES_CANVAS + x) * 4;
+        px[k] = r; px[k + 1] = g; px[k + 2] = b; px[k + 3] = a;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+
+    const url = lienzo.toDataURL('image/png');
+    const b = [[bounds.getSouth(), bounds.getWest()], [bounds.getNorth(), bounds.getEast()]];
+    if (capaImagen) {
+      capaImagen.setUrl(url);
+      capaImagen.setBounds(b);
+    } else {
+      capaImagen = L.imageOverlay(url, b, { opacity: 1, interactive: false, zIndex: 350 }).addTo(mapa);
+    }
+  }
+
   async function recalcular() {
-    if (!activo || !mapa || typeof L === 'undefined' || typeof L.heatLayer !== 'function') return;
+    if (!activo || !mapa || typeof L === 'undefined') return;
 
     const tBase = await temperaturaBase();
     if (tBase === null || !activo) return;
@@ -89,45 +153,27 @@
     const bounds = mapa.getBounds();
     const anclas = (typeof HEAT_ZONES !== 'undefined' ? HEAT_ZONES : []).concat(ANCLAS_FRIAS);
 
-    // Primera pasada: campo de UHI para conocer el rango real
-    const celdas = [];
+    // Rejilla física: valor UHI por celda
+    const crudo = [];
     let uMin = Infinity, uMax = -Infinity;
     for (let i = 0; i < REJILLA; i++) {
+      crudo[i] = [];
       for (let j = 0; j < REJILLA; j++) {
         const lat = bounds.getSouth() + (bounds.getNorth() - bounds.getSouth()) * (i + 0.5) / REJILLA;
         const lon = bounds.getWest() + (bounds.getEast() - bounds.getWest()) * (j + 0.5) / REJILLA;
         const uhi = deltaUHI * densidadInterpolada(lat, lon, anclas);
-        celdas.push([lat, lon, uhi]);
+        crudo[i][j] = uhi;
         if (uhi < uMin) uMin = uhi;
         if (uhi > uMax) uMax = uhi;
       }
     }
 
-    // Segunda pasada: normalización RELATIVA (contraste real del campo)
+    // Normalización relativa con curva de contraste
     const rango = (uMax - uMin) || 1;
-    const puntos = celdas.map(([lat, lon, uhi]) => {
-      const rel = (uhi - uMin) / rango;          // 0 = lo más fresco visible, 1 = lo más caliente
-      const intensidad = Math.pow(rel, 1.25);     // realza las diferencias
-      return [lat, lon, intensidad];
-    });
+    const grid = crudo.map(fila => fila.map(uhi => Math.pow((uhi - uMin) / rango, CURVA)));
 
-    if (capa) { try { mapa.removeLayer(capa); } catch (e) {} }
-    const radio = radioParaZoom();
-    capa = L.heatLayer(puntos, {
-      radius: radio, blur: Math.round(radio * 0.8), maxZoom: 18, minOpacity: OPACIDAD_MIN,
-      // Base transparente: lo fresco NO tiñe; el color entra solo donde hay calor
-      gradient: {
-        0.00: 'rgba(0,255,140,0)',
-        0.18: 'rgba(0,255,140,0.12)',
-        0.35: 'rgba(180,255,0,0.28)',
-        0.55: 'rgba(255,221,0,0.45)',
-        0.75: 'rgba(255,136,0,0.62)',
-        0.90: 'rgba(255,72,0,0.78)',
-        1.00: 'rgba(255,30,0,0.88)'
-      }
-    }).addTo(mapa);
-
-    actualizarPanel(tBase, deltaUHI, uMax);
+    pintarCampo(grid, REJILLA, bounds);
+    actualizarPanel(tBase, uMin, uMax);
   }
 
   /* ---- panel desplegable ---- */
@@ -137,7 +183,6 @@
     const cont = document.getElementById('lmap');
     if (!cont) return;
 
-    // CSS: nada fijo — el botón 👁 oculta TODOS los cuadros del mapa
     const css = document.createElement('style');
     css.textContent =
       '.mc-todo-oculto .leaflet-control-layers,' +
@@ -156,6 +201,9 @@
       'border-radius:12px;font-family:inherit;font-size:12px;backdrop-filter:blur(6px);' +
       'box-shadow:0 4px 18px rgba(0,0,0,.4);overflow:hidden;';
 
+    const gradCSS = 'linear-gradient(90deg,' +
+      PALETA.map(p => `rgba(${p[1]},${p[2]},${p[3]},${(p[4] / 128).toFixed(2)}) ${(p[0] * 100).toFixed(0)}%`).join(',') + ')';
+
     panel.innerHTML =
       '<button id="mc-toggle-panel" style="width:100%;text-align:left;background:none;border:none;color:#e8f0ff;' +
       'padding:9px 12px;cursor:pointer;font-weight:600;font-size:12px;display:flex;justify-content:space-between;align-items:center;">' +
@@ -165,8 +213,8 @@
       '<input type="checkbox" id="mc-activar"> Mapa de calor continuo</label>' +
       '<div id="mc-datos" style="display:none;font-size:11px;line-height:1.5;opacity:.9;margin-top:4px;"></div>' +
       '<div id="mc-leyenda" style="display:none;margin-top:6px;">' +
-      '<div style="height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(0,255,140,.9),rgba(180,255,0,.9),rgba(255,221,0,.9),rgba(255,136,0,.9),rgba(255,40,0,.95));"></div>' +
-      '<div style="display:flex;justify-content:space-between;font-size:10px;margin-top:2px;opacity:.8;"><span>fresco</span><span>más calor</span></div>' +
+      '<div style="height:8px;border-radius:4px;background:' + gradCSS + ';"></div>' +
+      '<div id="mc-rango" style="display:flex;justify-content:space-between;font-size:10px;margin-top:2px;opacity:.8;"><span></span><span></span></div>' +
       '<div style="font-size:9px;opacity:0.7;margin-top:5px;line-height:1.3;">ⓘ Estimación por modelo físico (Stefan-Boltzmann + densidad real OSM + río/parques), no medición por satélite.</div>' +
       '</div></div>';
 
@@ -183,7 +231,6 @@
       if (e.target.checked) encender(); else apagar();
     });
 
-    // Botón ojo: oculta/muestra TODOS los cuadros fijos del mapa
     const ojo = document.createElement('button');
     ojo.id = 'mc-ojo';
     ojo.title = 'Ocultar/mostrar todos los paneles del mapa';
@@ -214,7 +261,7 @@
     leyenda.innerHTML = '';
     leyenda.appendChild(cab);
     leyenda.appendChild(cuerpo);
-    cuerpo.style.display = 'none'; // plegada por defecto
+    cuerpo.style.display = 'none';
 
     cab.addEventListener('click', () => {
       const abierto = cuerpo.style.display !== 'none';
@@ -223,16 +270,21 @@
     });
   }
 
-  function actualizarPanel(tBase, deltaUHI, uhiMax) {
+  function actualizarPanel(tBase, uMin, uMax) {
     const datos = document.getElementById('mc-datos');
     const leyenda = document.getElementById('mc-leyenda');
+    const rango = document.getElementById('mc-rango');
     if (!datos) return;
     datos.style.display = 'block';
     leyenda.style.display = 'block';
     datos.innerHTML =
       'Aire ahora: <b>' + tBase.toFixed(1) + '°C</b><br>' +
-      'Isla de calor máx.: <b>+' + uhiMax.toFixed(1) + '°C</b> en zonas densas<br>' +
-      'Suelo urbano estimado: <b>hasta ' + (tBase + uhiMax).toFixed(0) + '°C</b>';
+      'Isla de calor máx.: <b>+' + uMax.toFixed(1) + '°C</b> en zonas densas<br>' +
+      'Suelo urbano estimado: <b>hasta ' + (tBase + uMax).toFixed(0) + '°C</b>';
+    if (rango) {
+      rango.children[0].textContent = (tBase + uMin).toFixed(0) + '°C';
+      rango.children[1].textContent = (tBase + uMax).toFixed(0) + '°C';
+    }
   }
 
   function encender() {
@@ -242,7 +294,7 @@
 
   function apagar() {
     activo = false;
-    if (capa && mapa) { try { mapa.removeLayer(capa); } catch (e) {} capa = null; }
+    if (capaImagen && mapa) { try { mapa.removeLayer(capaImagen); } catch (e) {} capaImagen = null; }
     const datos = document.getElementById('mc-datos');
     const leyenda = document.getElementById('mc-leyenda');
     if (datos) datos.style.display = 'none';
@@ -263,13 +315,11 @@
     crearPanel();
     mapa.on('moveend zoomend', alMoverse);
 
-    // La leyenda UHI se crea en initMap(); la plegamos cuando aparezca
     const obs = setInterval(() => {
       hacerLeyendaPlegable();
       if (document.querySelector('#lmap .uhi-legend[data-mc-plegable]')) clearInterval(obs);
     }, 700);
 
-    // Si cambian los datos meteorológicos, recalcula
     setInterval(() => {
       if (!activo) return;
       if (typeof ATMOS !== 'undefined' && ATMOS.T && ATMOS.T !== ultimaTemp) recalcular();
